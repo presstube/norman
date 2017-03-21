@@ -7,14 +7,97 @@
     <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
   </head>
   <body>
+
+    <script type="text/javascript">
+      AFRAME.registerComponent('hello', {
+        schema: {
+          width: {type: 'number', default: 1},
+          height: {type: 'number', default: 1},
+          depth: {type: 'number', default: 2},
+          color: {type: 'color', default: 'pink'}
+        },
+      
+        /**
+         * Initial creation and setting of the mesh.
+         */
+        init: function () {
+          var data = this.data;
+          var el = this.el;
+          // Create material.
+          this.material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+          // Create geometry.
+          this.geometry = new THREE.Geometry();
+          this.geometry.vertices.push(new THREE.Vector3(-1, 0.5, -3));
+          this.geometry.vertices.push(new THREE.Vector3(-1.2, 0.6, -2));
+          this.geometry.vertices.push(new THREE.Vector3(-1.5, 0.7, -4));
+          // Create mesh.
+          this.line = new THREE.Line(this.geometry, this.material);
+          // Set mesh on entity.
+          el.setObject3D('line', this.line);
+
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[hand-controls]'));
+          console.log(this.controllers)
+
+        },
+
+        play: function () {
+          this.controllers.forEach(function (controller){
+            controller.addEventListener('triggerdown', this.onTriggerDown.bind(this));
+            controller.addEventListener('triggerup', this.onTriggerUp.bind(this));
+          }.bind(this));
+        },
+
+        onTriggerDown: function(e) {
+          console.log('trigger down')
+        },
+
+        onTriggerUp: function() {
+          console.log('trigger up')
+        },
+
+        /**
+         * Update the mesh in response to property updates.
+         */
+        update: function (oldData) {
+          console.log('updating')
+        },
+
+        tick: function(time, delta) {
+          var randomX = 3 - Math.random() * 1.5;
+          var randomY = 3 - Math.random() * 1.5;
+          var randomZ = 3 - Math.random() * 1.5;
+          this.geometry.vertices.push(new THREE.Vector3(randomX, randomY, randomY));
+          this.el.emit('change', { color: "pink" });
+          this.color = "pink";
+          // console.log(time, timeDelta);
+        },
+
+        remove: function () {
+          this.el.removeObject3D('line');
+        }
+
+      });
+
+    </script>
     <a-scene>
+
+      <a-sky color="green"></a-sky>
+      <a-entity hand-controls="left"></a-entity>
+      <a-entity hand-controls="right"></a-entity>
+      <a-entity hello></a-entity>
+    </a-scene>
+
+  </body>
+</html>
+
+<!--
+  
       <a-box position="-1 0.5 -3" rotation="0 45 0" color="yellow"></a-box>
       <a-sphere position="0 1.25 -5" radius="1.25" color="red"></a-sphere>
       <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="blue"></a-cylinder>
       <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="hotpink"></a-plane>
-      <a-sky color="green"></a-sky>
-      <a-entity hand-controls="left"></a-entity>
-      <a-entity hand-controls="right"></a-entity>
-    </a-scene>
-  </body>
-</html>
+
+
+-->
+
+
