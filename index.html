@@ -22,6 +22,10 @@
           this.material = this.material = new THREE.LineBasicMaterial({color: 'black'});
           this.line = new THREE.Line(this.geometry,  this.material);
           this.el.setObject3D('line', this.line);
+
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll("a-entity[hand-controls]"))
+          console.log("hand: ", this.controllers[0].el)
+
           this.updatePositions()
         },
 
@@ -33,6 +37,10 @@
           this.drawCount = ( this.drawCount + 1 ) % this.MAX_POINTS;
           this.geometry.setDrawRange(0, this.drawCount);
           this.updatePositions();
+
+          var hand = this.controllers[0]
+
+          console.log("hand.position: ", hand.object3D.position)
         },
 
         remove: function () {
