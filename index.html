@@ -14,7 +14,7 @@
 
         init: function () {
           //
-          this.MAX_POINTS = 500
+          this.MAX_POINTS = 10000
           this.drawCount = 2
           this.linePoints = []
           this.geometry = new THREE.BufferGeometry()
@@ -26,6 +26,7 @@
           this.line = new THREE.Line(this.geometry, this.material)
           this.updatePositions()
           this.el.setObject3D('line', this.line)
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[hand-controls]'));
         },
 
         updatePositions: function() {
@@ -46,6 +47,9 @@
 
         tick: function(time, delta) {
           //
+          
+          // console.log("hand: ", hand.object3D.position.x)
+
           this.addPoint()
           this.drawCount = this.linePoints.length
           this.line.geometry.setDrawRange(0, this.drawCount)
@@ -58,10 +62,8 @@
         },
 
         addPoint() {
-          this.linePoints.push(new THREE.Vector3(
-            -1 - Math.random(), 
-            1 - Math.random(), 
-            -4 - Math.random()));
+          var handPos = this.controllers[1].object3D.position
+          this.linePoints.push(new THREE.Vector3(handPos.x, handPos.y, handPos.z));
         }
 
 
