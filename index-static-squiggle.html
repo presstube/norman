@@ -28,6 +28,7 @@
           this.material = new THREE.LineBasicMaterial({ color: 0xff0000 });
           // Create geometry.
           this.geometry = new THREE.Geometry();
+          this.geometry.dynamic = true;
           this.addPoint();
           this.addPoint();
           this.addPoint();
@@ -68,6 +69,7 @@
           document.onkeydown = function() {
             // console.log('asdasd: ');
             that.addPoint()
+            that.line.geometry.verticesNeedUpdate = true;
           }
 
 
@@ -98,12 +100,19 @@
 
         addPoint: function() {
           // console.log('adding point', this)
-          this.geometry.vertices.push(new THREE.Vector3(-1 - Math.random(), 1 - Math.random(), -4 - Math.random()));
+          this.geometry.vertices.push(new THREE.Vector3(
+            -1 - Math.random(), 
+            1 - Math.random(), 
+            -4 - Math.random()));
         },
 
         tick: function(time, delta) {
 
-          // console.log(time, timeDelta);
+          // this.addPoint()
+          this.geometry.vertices[8].x = (Math.random() * 8) - 4;
+          this.geometry.verticesNeedUpdate = true;
+
+          // console.log(this.geometry.vertices.length);
           // this.addPoint()
           // this.addPoint()
           // this.addPoint()

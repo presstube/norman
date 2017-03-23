@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Hello, World! - A-Frame</title>
+    <title>Drawing a dynamic line</title>
     <meta name="description" content="Hello, World! - A-Frame">
     <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
   </head>
@@ -13,43 +13,56 @@
       AFRAME.registerComponent('hello', {
 
         init: function () {
-          this.MAX_POINTS = 500;
-          this.drawCount = 2;
-          var positions = new Float32Array(this.MAX_POINTS * 3);
-          this.geometry = new THREE.BufferGeometry();
-          this.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3 ));
-          this.geometry.setDrawRange(0, this.drawCount);
-          this.material = this.material = new THREE.LineBasicMaterial({color: 'black'});
-          this.line = new THREE.Line(this.geometry,  this.material);
-          this.el.setObject3D('line', this.line);
+          //
+          this.MAX_POINTS = 500
+          this.drawCount = 2
+          this.linePoints = []
+          this.geometry = new THREE.BufferGeometry()
+          this.positions = new Float32Array(this.MAX_POINTS * 3)
+          this.geometry.addAttribute('position', new THREE.BufferAttribute(this.positions, 3))
+          // console.log('geo: ', )
+          this.geometry.setDrawRange(0, this.drawCount) // may just fold this into update or tick?
+          this.material = new THREE.LineBasicMaterial({color: "black"})
+          this.line = new THREE.Line(this.geometry, this.material)
           this.updatePositions()
-        },
-
-        update: function (oldData) {
-          console.log('updating')
-        },
-
-        tick: function(time, delta) {
-          this.drawCount = ( this.drawCount + 1 ) % this.MAX_POINTS;
-          this.geometry.setDrawRange(0, this.drawCount);
-          this.updatePositions();
-        },
-
-        remove: function () {
-          this.el.removeObject3D('line');
+          this.el.setObject3D('line', this.line)
         },
 
         updatePositions: function() {
-          var positions = this.line.geometry.attributes.position.array;
-          var x = y = z = index = 0;
-          for ( var i = 0, l = this.MAX_POINTS; i < l; i ++ ) {
-            positions[ index ++ ] = x;
-            positions[ index ++ ] = y;
-            positions[ index ++ ] = z;
-            x += ( Math.random() - 0.5 ) * 30;
-            y += ( Math.random() - 0.5 ) * 30;
-            z += ( Math.random() - 0.5 ) * 30;
+          //
+          var positions = this.line.geometry.attributes.position.array
+          console.log('positions: ', positions)
+          var index = 0
+
+          for (var i = 0; i < this.linePoints.length; i++) {
+            positions[index++] = this.linePoints[i].x
+            positions[index++] = this.linePoints[i].y
+            positions[index++] = this.linePoints[i].z
           }
+        },
+
+        update: function (oldData) {
+          //
+        },
+
+        tick: function(time, delta) {
+          //
+          this.addPoint()
+          this.drawCount = this.linePoints.length
+          this.line.geometry.setDrawRange(0, this.drawCount)
+          this.updatePositions()
+          this.line.geometry.attributes.position.needsUpdate = true
+        },
+
+        remove: function () {
+          //
+        },
+
+        addPoint() {
+          this.linePoints.push(new THREE.Vector3(
+            -1 - Math.random(), 
+            1 - Math.random(), 
+            -4 - Math.random()));
         }
 
 
@@ -57,7 +70,7 @@
 
     </script>
     <a-scene>
-
+      <a-camera id="camera"></a-camera>
       <a-sky color="#ddd"></a-sky>
       <a-entity hand-controls="left"></a-entity>
       <a-entity hand-controls="right"></a-entity>
