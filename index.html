@@ -26,7 +26,7 @@
           this.line = new THREE.Line(this.geometry, this.material)
           this.updatePositions()
           this.el.setObject3D('line', this.line)
-          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[hand-controls]'));
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'));
         },
 
         updatePositions: function() {
@@ -73,8 +73,8 @@
     <a-scene>
       <a-camera id="camera"></a-camera>
       <a-sky color="#ddd"></a-sky>
-      <a-entity hand-controls="left"></a-entity>
-      <a-entity hand-controls="right"></a-entity>
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
       <a-entity hello></a-entity>
     </a-scene>
 
