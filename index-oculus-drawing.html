@@ -14,10 +14,7 @@
 
         init: function () {
           //
-          this.MAX_POINTS = 100000
-          this.isDrawing = false
-          this.isTrackedControllers = false
-          this.wanderPos = new THREE.Vector3(0, 0, 0)
+          this.MAX_POINTS = 10000
           this.drawCount = 2
           this.linePoints = []
           this.geometry = new THREE.BufferGeometry()
@@ -52,52 +49,22 @@
           //
           
           // console.log("hand: ", hand.object3D.position.x)
-          var ronnle = Math.random()
 
-          // console.log('ronnle: ', ronnle)
-
-          if (ronnle < 0.1) {
-            this.drawing = !this.drawing
-            // console.log('DRAWING: ', this.drawing)
-          }
-
-          if (this.drawing) { 
-            if (this.isTrackedControllers) {
-              this.addPointFromTrackedController()
-            } else {
-              this.addPointFromWanderPos()
-            }
-            this.drawCount = this.linePoints.length
-            this.line.geometry.setDrawRange(0, this.drawCount)
-            // this.material.color.setHex( Math.random() * 0xffffff );
-            this.updatePositions()
-            this.line.geometry.attributes.position.needsUpdate = true
-          }
-
-          this.moveWanderPos()
-
+          this.addPoint()
+          this.drawCount = this.linePoints.length
+          this.line.geometry.setDrawRange(0, this.drawCount)
+          this.updatePositions()
+          this.line.geometry.attributes.position.needsUpdate = true
         },
 
         remove: function () {
           //
         },
 
-        addPointFromTrackedController: function() {
+        addPoint() {
           var handPos = this.controllers[1].object3D.position
           this.linePoints.push(new THREE.Vector3(handPos.x, handPos.y, handPos.z));
-        },
-
-        moveWanderPos: function() {
-          var scalar = 0.1
-          this.wanderPos.x += (Math.random() - 0.5) * scalar
-          this.wanderPos.y += (Math.random() - 0.5) * scalar
-          this.wanderPos.z += (Math.random() - 0.5) * scalar
-
-        },
-
-        addPointFromWanderPos: function() {
-          this.linePoints.push(new THREE.Vector3(this.wanderPos.x, this.wanderPos.y, this.wanderPos.z));
-        },
+        }
 
 
       });
@@ -108,7 +75,7 @@
       <a-sky color="#ddd"></a-sky>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
-      <a-entity hello position="-1 0.5 -3"></a-entity>
+      <a-entity hello></a-entity>
     </a-scene>
 
   </body>
