@@ -16,13 +16,16 @@
 
         init: function () {
           var animData = this.makeAnimData({
-            numFramesRange: {min: 3, max: 20},
-            numLinesPerFrameRange: {min: 3, max: 20},
-            numPointsPerLineRange: {min: 3, max: 20},
+            numFramesRange: {min: 3, max: 10},
+            numLinesPerFrameRange: {min: 3, max: 10},
+            numPointsPerLineRange: {min: 3, max: 10},
           })
+          console.log('animData: ', JSON.stringify(animData))
 
-          console.log('animData: ', animData)
+          this.makeAnimEntity(animData)
         },
+
+        // TODO: collapse this factory into a static helper?
 
         /*
         config: {
@@ -68,28 +71,79 @@
           return Math.floor(Math.random() * span) + range.min
         },
 
-        makeLinePoints: function(linelength) {
-          var line = []
-          var range = 5
-          var wanderPos = new THREE.Vector3(
-            ((Math.random() * range) - (range * 0.5)),
-            ((Math.random() * range) - (range * 0.5)),
-            ((Math.random() * range) - (range * 0.5)))
-          var index = 0
-          var linelength = 500
-          for (var i = 0; i < linelength; i++) {
-            line.push(new THREE.Vector3(wanderPos.x, wanderPos.y, wanderPos.z))
-            wanderPos.x += (Math.random() - 0.5) * 0.1
-            wanderPos.y += (Math.random() - 0.5) * 0.1
-            wanderPos.z += (Math.random() - 0.5) * 0.1
-          }
-          return line
+        makeAnimEntity: function(animData) {
+          console.log('making anim entity: ', animData)
+          var animEntity = document.createElement('a-entity');
+          this.el.appendChild(animEntity);
+          animEntity.setAttribute('anim', {animData: animData});
+          return animEntity
         },
 
-        makeLineEntities: function(rawLine) {
+      });
+
+      AFRAME.registerComponent('anim', {
+
+        schema: {
+          animData: {type: 'array'}
+        },
+
+        init: function () {
+          this.counter = 0
+          this.currentFrame = 0
+          this.frameEntities = _.map(this.data.animData, this.makeFrameEntity.bind(this))
+          var frameEnt = this.frameEntities[0]
+          
+          // console.log('frameEnt: ', frameEnt)
+
+          this.totalFrames = this.frameEntities.length
+        },
+
+        tick: function() {
+          // console.log('tick:', this.counter)
+          this.counter++
+          if (this.counter % 10 == 0) {
+            if (this.currentFrame + 1 == this.totalFrames) {
+              this.currentFrame = 0
+            } else {
+              this.currentFrame++
+            }
+            // console.log('frame step', this.currentFrame)
+            _.map(this.frameEntities, function(frameEnt, index) {
+              // console.log('frame entity: ', frameEnt, index, this.currentFrame)
+              if (index == this.currentFrame) {
+                frameEnt.setAttribute('visible', true)
+              } else {
+                frameEnt.setAttribute('visible', false)
+              }
+              
+            }.bind(this))
+          }
+        },
+
+        makeFrameEntity: function(frameData) {
+          var frameEntity = document.createElement('a-entity');
+          this.el.appendChild(frameEntity);
+          frameEntity.setAttribute('frame', {frameData: frameData});
+          return frameEntity
+        },
+
+      });
+
+
+      AFRAME.registerComponent('frame', {
+
+        schema: {
+          frameData: {type: 'array'}
+        },
+
+        init: function () {
+          var lineEntities = _.map(this.data.frameData, this.makeLineEntity.bind(this))
+        },
+
+        makeLineEntity: function(lineData) {
           var lineEntity = document.createElement('a-entity');
           this.el.appendChild(lineEntity);
-          lineEntity.setAttribute('line', {linePoints: rawLine});
+          lineEntity.setAttribute('line', {lineData: lineData});
           return lineEntity
         },
 
@@ -98,7 +152,7 @@
       AFRAME.registerComponent('line', {
 
         schema: {
-          linePoints: {type: 'array'}
+          lineData: {type: 'array'}
         },
 
         init: function () {
@@ -106,7 +160,7 @@
             color: 'black'
           });
           var geometry = new THREE.Geometry();
-          geometry.vertices = this.data.linePoints
+          geometry.vertices = this.data.lineData
           var lineMesh = new THREE.Line(geometry, material);
           this.el.setObject3D('line', lineMesh)
         },
@@ -114,7 +168,7 @@
       });
 
     </script>
-    <a-scene fog="color: #CCC; near: 0; far: 3">
+    <a-scene fog="color: #CCC; near: 0; far: 10 ">
       <a-camera id="camera"></a-camera>
       <a-sky color="#ddd"></a-sky>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
@@ -123,6 +177,7 @@
     </a-scene>
 
     <!-- 
+    <a-scene>
       <a-entity norman position="0 1.7 -3"></a-entity>
 
     -->
