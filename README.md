@@ -1,3 +1,3 @@
 # Norman
 
-Coming soon to a browser near you...
+A WebVR frame-by-frame animation experiment I'm working on with @pitaru and @bzor for Google Creative Lab.
