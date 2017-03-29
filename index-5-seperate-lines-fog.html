@@ -15,57 +15,12 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-          var animData = this.makeAnimData({
-            numFramesRange: {min: 3, max: 20},
-            numLinesPerFrameRange: {min: 3, max: 20},
-            numPointsPerLineRange: {min: 3, max: 20},
-          })
-
-          console.log('animData: ', animData)
-        },
-
-        /*
-        config: {
-            numFramesRange: {min: 3, max: 20},
-            numLinesPerFrameRange: {min: 3, max: 20},
-            numPointsPerLineRange: {min: 3, max: 20},
-        }
-        */
-        makeAnimData: function(config) {
-          var numFrames = this.numFromRange(config.numFramesRange)
-          var makeFrameDataPartial = _.partial(this.makeFrameData, config).bind(this)
-          return _.times(numFrames, makeFrameDataPartial)
-        },
-
-        makeFrameData: function(config) {
-          var numLines = this.numFromRange(config.numLinesPerFrameRange)
-          var makeLineDataPartial = _.partial(this.makeLineData, config).bind(this)
-          return _.times(numLines, makeLineDataPartial)
-          // console.log('linesData: ', linesData)
-        },
-
-        makeLineData: function(config) {
-          var numPoints = this.numFromRange(config.numPointsPerLineRange)
-          var pointsData = []
-          var range = 5
-          var wanderPos = new THREE.Vector3(
-            ((Math.random() * range) - (range * 0.5)),
-            ((Math.random() * range) - (range * 0.5)),
-            ((Math.random() * range) - (range * 0.5)))
-          var index = 0
-          for (var i = 0; i < numPoints; i++) {
-            pointsData.push(new THREE.Vector3(wanderPos.x, wanderPos.y, wanderPos.z))
-            wanderPos.x += (Math.random() - 0.5) * 0.1
-            wanderPos.y += (Math.random() - 0.5) * 0.1
-            wanderPos.z += (Math.random() - 0.5) * 0.1
+          var numLines = 20
+          var rawLines = _.times(numLines, this.makeLinePoints)
+          this.lineEntitites = _.map(rawLines, this.makeLineEntities.bind(this))
+          document.onkeypress = function() {
+            console.log('keypress')
           }
-          return pointsData
-        },
-
-        // for utils?
-        numFromRange: function(range) {
-          var span = range.max - range.min
-          return Math.floor(Math.random() * span) + range.min
         },
 
         makeLinePoints: function(linelength) {
