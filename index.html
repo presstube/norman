@@ -15,7 +15,7 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-          var numLines = 10
+          var numLines = 20
           var rawLines = _.times(numLines, this.makeLinePoints)
           this.lineEntitites = _.map(rawLines, this.makeLineEntities.bind(this))
           document.onkeypress = function() {
@@ -25,7 +25,7 @@
 
         makeLinePoints: function(linelength) {
           var line = []
-          var range = 3
+          var range = 5
           var wanderPos = new THREE.Vector3(
             ((Math.random() * range) - (range * 0.5)),
             ((Math.random() * range) - (range * 0.5)),
@@ -74,8 +74,13 @@
       <a-sky color="#ddd"></a-sky>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
-      <a-entity norman position="0 1.7 -3"></a-entity>
+      <a-entity norman position="0 0 0"></a-entity>
     </a-scene>
+
+    <!-- 
+      <a-entity norman position="0 1.7 -3"></a-entity>
+
+    -->
 
   </body>
 </html>
