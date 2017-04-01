@@ -89,7 +89,15 @@
           console.log('making anim entity: ', animData)
           var animEntity = document.createElement('a-entity');
           this.el.appendChild(animEntity);
-          animEntity.setAttribute('anim', {animData: animData});
+          animEntity.setAttribute('anim', {
+            animData: animData,
+            // position: {x:-0.38, y:0.66, z:-0.21},
+            rotation: {x:-2922, y:156.42, z:31.51}
+          });
+
+          animEntity.setAttribute('position', '-0.35 0.51 -0.21')
+          animEntity.setAttribute('rotation', '-2922 156.42 31.51')
+
           return animEntity
         },
 
@@ -182,8 +190,12 @@
       })
 
     </script>
-    <a-scene fog="color: #CCC; near: 0; far: 10 ">
-      <a-camera id="camera"></a-camera>
+    <a-scene fog="color: #eee; near: 0.3; far: 0.5">
+      <a-camera 
+        id="camera" 
+        look-controls="standing: false" 
+        wasd-controls="acceleration: 3; easing: 5; fly: true"
+        ></a-camera>
       <a-sky color="#ddd"></a-sky>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
@@ -191,6 +203,9 @@
     </a-scene>
 
     <!-- 
+
+<a-camera id="camera" look-controls="standing:false" wasd-controls="acceleration:3;easing:5;fly:true" position="" rotation="" camera="active:false;near:0.01;userHeight:1.6"></a-camera>
+
     <a-scene>
       <a-entity norman position="0 1.7 -3"></a-entity>
 
@@ -198,3 +213,6 @@
 
   </body>
 </html>
+
+
+
