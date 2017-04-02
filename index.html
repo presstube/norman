@@ -39,8 +39,6 @@
           name: 'face-1.json', 
           posOffset: '-0.35 0.51 -0.21', 
           rotOffset: '-2922 156.42 31.51'
-          // posOffset: '0 0 0', 
-          // rotOffset: '0 0 0'
         },
 
         {
@@ -66,13 +64,27 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
+
+          this.animToLoadIndex = 0
+
           this.loadAnimation(dataFiles[0])
+
+          setInterval(this.loadNext.bind(this), 5000)
 
           document.onkeypress = function(e) {
             if (e.charCode >= 48 && e.charCode < 58) {
               this.loadAnimation(dataFiles[e.key-1])
             }
           }.bind(this)
+
+        },
+
+        loadNext: function() {
+          this.animToLoadIndex++
+          if (this.animToLoadIndex == dataFiles.length) {
+            this.animToLoadIndex = 0
+          }
+          this.loadAnimation(dataFiles[this.animToLoadIndex])
         },
 
         loadAnimation: function(dataFileInfo) {
