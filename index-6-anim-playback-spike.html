@@ -16,77 +16,91 @@
 
     <script type="text/javascript">
 
-      var dataFilesPath = 'unity-exports/'
-      var dataFileIndex = 1
+      
 
-      var loadingAnimData
-
-      var loadingAnimFileInfo = {
-        name: 'loading-1.json',
-        posOffset: '0.14 0.58 -0.96',
-        rotOffset: '0 -26.36 0'
-      }
-
-      $.getJSON(dataFilesPath + loadingAnimFileInfo.name, function(json) {
-          console.log("Loading anim data", json);
-          loadingAnimData = json.data 
-          // this.animEntity = this.makeAnimEntity(json.data)
-      }.bind(this))
-
-      var dataFiles = [
-        {
-          name: 'normanArrayData2.json', 
-          posOffset: '-0.35 0.51 -0.21', 
-          rotOffset: '-2922 156.42 31.51'
-        },
-        {
-          name: 'normanArrayDataX.json', 
-          posOffset: '-0.35 0.51 -0.21', 
-          rotOffset: '-2922 156.42 31.51'
-        }
-      ]
+      // console.log('animData: ', animData)
 
       AFRAME.registerComponent('norman', {
 
         init: function () {
+          // var animData = this.makeAnimData({
+          //   numFramesRange: {min: 20, max: 40},
+          //   numLinesPerFrameRange: {min: 10, max: 30},
+          //   numPointsPerLineRange: {min: 10, max: 30},
+          // })
+          // console.log('animData: ', JSON.stringify(animData))
 
-          // this.loadAnimation(dataFiles[0])
-
-          document.onkeypress = function(e) {
-            if (e.charCode >= 48 && e.charCode < 58) {
-              this.loadAnimation(dataFiles[e.key])
-            }
-          }.bind(this)
-        },
-
-        loadAnimation: function(dataFileInfo) {
-          this.unloadAnim()
-
-          this.animEntity = this.makeAnimEntity(loadingAnimData, loadingAnimFileInfo)
-
-          $.getJSON(dataFilesPath + dataFileInfo.name, function(json) {
-              this.unloadAnim()
-              this.animEntity = this.makeAnimEntity(json.data, dataFileInfo)
+          $.getJSON("normanArrayData2.json", function(json) {
+              console.log(json); // this will show the info it in firebug console
+              this.makeAnimEntity(json.data)
           }.bind(this))
+
+
+
         },
 
-        unloadAnim: function() {
-          if (this.animEntity) {
-            this.el.removeChild(this.animEntity)
-            this.animEntity = null
+        // TODO: collapse this factory into a static helper?
+
+        /*
+        config: {
+            numFramesRange: {min: 3, max: 20},
+            numLinesPerFrameRange: {min: 3, max: 20},
+            numPointsPerLineRange: {min: 3, max: 20},
+        }
+        */
+        makeAnimData: function(config) {
+          var numFrames = this.numFromRange(config.numFramesRange)
+          var makeFrameDataPartial = _.partial(this.makeFrameData, config).bind(this)
+          return _.times(numFrames, makeFrameDataPartial)
+        },
+
+        makeFrameData: function(config) {
+          var numLines = this.numFromRange(config.numLinesPerFrameRange)
+          var makeLineDataPartial = _.partial(this.makeLineData, config).bind(this)
+          return _.times(numLines, makeLineDataPartial)
+          // console.log('linesData: ', linesData)
+        },
+
+        makeLineData: function(config) {
+          var numPoints = this.numFromRange(config.numPointsPerLineRange)
+          var pointsData = []
+          var range = 5
+          var wanderPos = new THREE.Vector3(
+            ((Math.random() * range) - (range * 0.5)),
+            ((Math.random() * range) - (range * 0.5)),
+            ((Math.random() * range) - (range * 0.5)))
+          var index = 0
+          for (var i = 0; i < numPoints; i++) {
+            pointsData.push(new THREE.Vector3(wanderPos.x, wanderPos.y, wanderPos.z))
+            wanderPos.x += (Math.random() - 0.5) * 0.1
+            wanderPos.y += (Math.random() - 0.5) * 0.1
+            wanderPos.z += (Math.random() - 0.5) * 0.1
           }
+          return pointsData
         },
 
-        makeAnimEntity: function(animData, loadingAnimFileInfo) {
-          console.log("animData: ", animData)
+        // for utils?
+        numFromRange: function(range) {
+          var span = range.max - range.min
+          return Math.floor(Math.random() * span) + range.min
+        },
+
+        makeAnimEntity: function(animData) {
+          console.log('making anim entity: ', animData)
           var animEntity = document.createElement('a-entity');
           this.el.appendChild(animEntity);
-          animEntity.setAttribute('anim', {animData: animData});
-          animEntity.setAttribute('position', loadingAnimFileInfo.posOffset)
-          animEntity.setAttribute('rotation', loadingAnimFileInfo.rotOffset)
+          animEntity.setAttribute('anim', {
+            animData: animData,
+            // position: {x:-0.38, y:0.66, z:-0.21},
+            rotation: {x:-2922, y:156.42, z:31.51}
+          });
+
+          animEntity.setAttribute('position', '-0.35 0.51 -0.21')
+          animEntity.setAttribute('rotation', '-2922 156.42 31.51')
 
           return animEntity
         },
+
       });
 
       AFRAME.registerComponent('anim', {
@@ -176,7 +190,7 @@
       })
 
     </script>
-    <a-scene>
+    <a-scene fog="color: #eee; near: 0.3; far: 0.5">
       <a-camera 
         id="camera" 
         look-controls="standing: false" 
@@ -189,9 +203,6 @@
     </a-scene>
 
     <!-- 
-
-
-     fog="color: #eee; near: 0; far: 1"
 
 <a-camera id="camera" look-controls="standing:false" wasd-controls="acceleration:3;easing:5;fly:true" position="" rotation="" camera="active:false;near:0.01;userHeight:1.6"></a-camera>
 
