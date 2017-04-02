@@ -34,27 +34,40 @@
       }.bind(this))
 
       var dataFiles = [
+
         {
-          name: 'normanArrayData2.json', 
+          name: 'face-1.json', 
           posOffset: '-0.35 0.51 -0.21', 
           rotOffset: '-2922 156.42 31.51'
         },
+
         {
-          name: 'normanArrayDataX.json', 
+          name: 'twirl-1.json', 
           posOffset: '-0.35 0.51 -0.21', 
           rotOffset: '-2922 156.42 31.51'
-        }
+        },
+ 
+        {
+          name: 'fungus.json', 
+          posOffset: '-0.05 0.99 -.02', 
+          rotOffset: '0 174.75 4.014'
+        }, 
+
+        {
+          name: 'handup.json', 
+          posOffset: '-.06 0.61 -0.16', 
+          rotOffset: '0 174.75 4.01'
+        },
+
       ]
 
       AFRAME.registerComponent('norman', {
 
         init: function () {
 
-          // this.loadAnimation(dataFiles[0])
-
           document.onkeypress = function(e) {
             if (e.charCode >= 48 && e.charCode < 58) {
-              this.loadAnimation(dataFiles[e.key])
+              this.loadAnimation(dataFiles[e.key-1])
             }
           }.bind(this)
         },
@@ -78,13 +91,11 @@
         },
 
         makeAnimEntity: function(animData, loadingAnimFileInfo) {
-          console.log("animData: ", animData)
           var animEntity = document.createElement('a-entity');
           this.el.appendChild(animEntity);
           animEntity.setAttribute('anim', {animData: animData});
           animEntity.setAttribute('position', loadingAnimFileInfo.posOffset)
           animEntity.setAttribute('rotation', loadingAnimFileInfo.rotOffset)
-
           return animEntity
         },
       });
@@ -180,7 +191,7 @@
       <a-camera 
         id="camera" 
         look-controls="standing: false" 
-        wasd-controls="acceleration: 3; easing: 5; fly: false"
+        wasd-controls="acceleration: 3; easing: 5; fly: true"
         ></a-camera>
       <a-sky color="#ddd"></a-sky>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
