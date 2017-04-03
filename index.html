@@ -217,7 +217,7 @@
 
         init: function () {
           var material = new THREE.LineBasicMaterial({ 
-            color: '#eee'
+            color: '#fff'
           });
           var geometry = new THREE.Geometry();
           geometry.vertices = this.data.lineData
@@ -237,9 +237,9 @@
         camera="userHeight: 0"
         ></a-camera>
       <a-sky color="#222"></a-sky>
+      <a-entity norman position="0 0 -0.5"></a-entity>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
-      <a-entity norman position="0 0 -0.5"></a-entity>
     </a-scene>
 
     <!-- 
