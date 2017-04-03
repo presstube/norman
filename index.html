@@ -23,12 +23,11 @@
 
       var loadingAnimFileInfo = {
         name: 'loading-1.json',
-        posOffset: '0.14 0.58 -0.96',
+        posOffset: '0.12 -1.02 -0.358',
         rotOffset: '0 -26.36 0'
       }
 
       $.getJSON(dataFilesPath + loadingAnimFileInfo.name, function(json) {
-          console.log("Loading anim data", json);
           loadingAnimData = json.data 
           // this.animEntity = this.makeAnimEntity(json.data)
       }.bind(this))
@@ -37,26 +36,41 @@
 
         {
           name: 'face-1.json', 
-          posOffset: '-0.35 0.51 -0.21', 
-          rotOffset: '-2922 156.42 31.51'
+          posOffset: '-0.21 -1.11 -0.03', 
+          rotOffset: '-47.56 152.41 23.49'
         },
 
         {
           name: 'twirl-1.json', 
-          posOffset: '-0.35 0.51 -0.21', 
+          posOffset: '0 -1.08 -0.09', 
           rotOffset: '-2922 156.42 31.51'
         },
  
         {
           name: 'fungus.json', 
-          posOffset: '-0.05 0.99 -.02', 
-          rotOffset: '0 174.75 4.014'
+          posOffset: '-0.01 -0.28 .44', 
+          rotOffset: '0 174.75 4.01',
+          scale: '0.54 0.54 0.54'
         }, 
 
         {
           name: 'handup.json', 
-          posOffset: '-.06 0.61 -0.16', 
-          rotOffset: '0 174.75 4.01'
+          posOffset: '-.10 -2.34 0.16', 
+          rotOffset: '0 174.75 4.01', 
+          scale: '2.28 2.28 2.28'
+        }, 
+
+        {
+          name: 'whaaa.json', 
+          posOffset: '-0.1 -0.95 -1.71', 
+          rotOffset: '0 0 0',
+          scale: '1.77 1.77 1.77'
+        }, 
+      
+        {
+          name: 'leelee.json', 
+          posOffset: '-0.72 -0.53 0.08', 
+          rotOffset: '0 85.37 0'
         },
 
       ]
@@ -69,7 +83,7 @@
 
           this.loadAnimation(dataFiles[0])
 
-          setInterval(this.loadNext.bind(this), 5000)
+          setInterval(this.loadNext.bind(this), 10000)
 
           document.onkeypress = function(e) {
             if (e.charCode >= 48 && e.charCode < 58) {
@@ -85,6 +99,7 @@
             this.animToLoadIndex = 0
           }
           this.loadAnimation(dataFiles[this.animToLoadIndex])
+
         },
 
         loadAnimation: function(dataFileInfo) {
@@ -111,8 +126,22 @@
           animEntity.setAttribute('anim', {animData: animData});
           animEntity.setAttribute('position', loadingAnimFileInfo.posOffset)
           animEntity.setAttribute('rotation', loadingAnimFileInfo.rotOffset)
+          if (loadingAnimFileInfo.scale) {
+            animEntity.setAttribute('scale', loadingAnimFileInfo.scale)
+          }
+          this.el.setAttribute('rotation', '0 0 0')
           return animEntity
         },
+
+        tick: function() {
+          var rot = this.el.getAttribute('rotation')
+          this.el.setAttribute('rotation', {
+            x: rot.x,
+            y: rot.y + 0.5,
+            z: rot.z
+          })
+        },
+
       });
 
       AFRAME.registerComponent('anim', {
@@ -127,13 +156,10 @@
           this.frameEntities = _.map(this.data.animData, this.makeFrameEntity.bind(this))
           var frameEnt = this.frameEntities[0]
           
-          // console.log('frameEnt: ', frameEnt)
-
           this.totalFrames = this.frameEntities.length
         },
 
         tick: function() {
-          // console.log('tick:', this.counter)
           this.counter++
           if (this.counter % 2 == 0) {
             if (this.currentFrame + 1 == this.totalFrames) {
@@ -191,7 +217,7 @@
 
         init: function () {
           var material = new THREE.LineBasicMaterial({ 
-            color: 'black'
+            color: '#eee'
           });
           var geometry = new THREE.Geometry();
           geometry.vertices = this.data.lineData
@@ -202,16 +228,18 @@
       })
 
     </script>
-    <a-scene>
+    <a-scene fog="color: #222; near: 0; far: 1">
       <a-camera 
         id="camera" 
         look-controls="standing: false" 
-        wasd-controls="acceleration: 3; easing: 5; fly: true"
+        wasd-controls="acceleration: 10w; easing: 10; fly: false"
+        position="0 0 0"
+        camera="userHeight: 0"
         ></a-camera>
-      <a-sky color="#ddd"></a-sky>
+      <a-sky color="#222"></a-sky>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
-      <a-entity norman position="0 0 0"></a-entity>
+      <a-entity norman position="0 0 -0.5"></a-entity>
     </a-scene>
 
     <!-- 
