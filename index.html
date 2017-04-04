@@ -3,8 +3,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>First crack at Anim playback component</title>
-    <meta name="description" content="Hello, World! - A-Frame">
+    <title>Norman: Dark turntable displaying proto exports on 10 sec timer</title>
+    <meta name="description" content="Norman: Dark turntable displaying proto exports on 10 sec timer">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script
   src="https://code.jquery.com/jquery-3.2.1.min.js"
@@ -161,7 +161,7 @@
 
         tick: function() {
           this.counter++
-          if (this.counter % 2 == 0) {
+          if (this.counter % 3 == 0) {
             if (this.currentFrame + 1 == this.totalFrames) {
               this.currentFrame = 0
             } else {
@@ -231,21 +231,23 @@
     <a-scene fog="color: #222; near: 0; far: 1">
       <a-camera 
         id="camera" 
-        look-controls="standing: false" 
         wasd-controls="acceleration: 10w; easing: 10; fly: false"
         position="0 0 0"
         camera="userHeight: 0"
         ></a-camera>
       <a-sky color="#222"></a-sky>
       <a-entity norman position="0 0 -0.5"></a-entity>
-      <a-entity oculus-touch-controls="hand: left"></a-entity>
-      <a-entity oculus-touch-controls="hand: right"></a-entity>
     </a-scene>
 
     <!-- 
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
 
+      <a-entity hand-controls="left"></a-entity>
+      <a-entity hand-controls="right"></a-entity>
 
-     fog="color: #eee; near: 0; far: 1"
+        look-controls="standing: false" 
+
 
 <a-camera id="camera" look-controls="standing:false" wasd-controls="acceleration:3;easing:5;fly:true" position="" rotation="" camera="active:false;near:0.01;userHeight:1.6"></a-camera>
 
