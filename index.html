@@ -16,11 +16,10 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-          this.currentFrame = 0
-          this.animData = _.times(10, function() {return []})
           this.isDrawing = false
           this.addWanderer()
           this.setupKeyboard()
+          this.addAnim()
         },
 
         tick: function() {
@@ -29,24 +28,18 @@
 
         setupKeyboard: function() {
 
-          document.onkeydown = function(e) {
-            console.log('code: ', e.code)
+
+          document.addEventListener('keydown', function(e) {
             if (e.code == 'Space') {
               this.startDrawing()
-            } else if (e.code == 'Comma') {
-              this.gotoPrevFrame()
-            } else if (e.code == 'Period') {
-              this.gotoNextFrame()
-            } else if (e.code == 'KeyA') {
-              this.addAnim();
             }
-          }.bind(this)
+          }.bind(this))
           
-          document.onkeyup = function(e) {
+          document.addEventListener('keyup', function(e) {
             if (e.code == 'Space') {
               this.stopDrawing()
             }
-          }.bind(this)
+          }.bind(this))
 
         },
 
@@ -83,35 +76,13 @@
           this.el.removeChild(this.drawlineEnt)
         },
 
-        gotoNextFrame: function() {
-          if (this.currentFrame + 1 == this.animData.length - 1) {
-            this.currentFrame = 0
-          } else {
-            this.currentFrame++
-          }
-          console.log('currentFrame: ', this.currentFrame)
-        },
-
-        gotoPrevFrame: function() {
-          if (this.currentFrame == 0) {
-            this.currentFrame = this.animData.length - 1
-          } else {
-            this.currentFrame--
-          }
-          console.log('currentFrame: ', this.currentFrame)
-        },
-
-        addLineData: function(lineData) {
-          // console.log('adding line data: ', lineData)
-          this.animData[this.currentFrame].push(lineData)
-          console.log('animData: ', this.animData)
-        },
-
         addAnim: function() {
           this.animEnt = document.createElement('a-entity')
-          this.animEnt.setAttribute('anim', {animData: this.animData})
+          this.animEnt.setAttribute('anim', {})
+          this.animEnt.setAttribute('id', 'anim')
+          this.animEnt.components.anim.setAnimData(_.times(10, function() {return []}))
           this.el.appendChild(this.animEnt) 
-        }
+        },
 
       })
 
@@ -120,7 +91,7 @@
         init: function() {
 
           /*
-            This probably isn't the idiomatic way of doing this. 
+            This probably isn't the right way of doing this. 
             
             The html equivilent would be:
             
@@ -189,7 +160,7 @@
         },
 
         remove: function() {
-          var normanComp = document.querySelector('#norman').components.norman
+          var normanComp = document.querySelector('#anim').components.anim
           normanComp.addLineData(this.linePoints)
         }
 
@@ -197,29 +168,40 @@
 
       AFRAME.registerComponent('anim', {
 
-        schema: {
-          animData: {type: 'array'}
-        },
-
         init: function () {
+          this.isAnimPlaying = false // isPlaying conflicts with internal
           this.counter = 0
           this.currentFrame = 0
-          this.frameEntities = _.map(this.data.animData, this.makeFrameEntity.bind(this))
+          this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           this.showOnlyCurrentFrame()
-          var frameEnt = this.frameEntities[0]
-          this.totalFrames = this.frameEntities.length
+
+          document.addEventListener('keydown', function(e) {
+            if (e.code == 'Enter') {
+              this.isAnimPlaying = !this.isAnimPlaying
+            } else if (e.code == 'Comma') {
+              this.gotoPrevFrame()
+            } else if (e.code == 'Period') {
+              this.gotoNextFrame()
+            }
+          }.bind(this))                   
+
+
+        },
+
+        update: function(oldData) {
+          console.log('anim updated: ', oldData, this.data)
         },
 
         tick: function() {
-          this.counter++
-          if (this.counter % 3 == 0) {
-            if (this.currentFrame + 1 == this.totalFrames) {
-              this.currentFrame = 0
-            } else {
-              this.currentFrame++
+
+          if (this.isAnimPlaying) {
+
+            this.counter++
+            if (this.counter % 3 == 0) {
+              this.gotoNextFrame()
             }
+            this.showOnlyCurrentFrame()
           }
-          this.showOnlyCurrentFrame();
         },
 
         showOnlyCurrentFrame: function() {
@@ -233,11 +215,50 @@
         },
 
         makeFrameEntity: function(frameData) {
-          var frameEntity = document.createElement('a-entity');
-          this.el.appendChild(frameEntity);
-          frameEntity.setAttribute('frame', {frameData: frameData});
+          var frameEntity = document.createElement('a-entity')
+          this.el.appendChild(frameEntity)
+          frameEntity.setAttribute('frame', {frameData: frameData})
           return frameEntity
         },
+
+        rebuild() {
+          _.map(this.frameEntities, function(frameEnt, index) {
+            this.el.removeChild(frameEnt)
+          }.bind(this))
+          
+          this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+          this.showOnlyCurrentFrame()
+
+        },
+
+        setAnimData: function(animData) {
+          this.animData = animData
+          this.rebuild()
+        },
+
+        gotoNextFrame: function() {
+          if (this.currentFrame + 1 == this.animData.length) {
+            this.currentFrame = 0
+          } else {
+            this.currentFrame++
+          }
+          this.showOnlyCurrentFrame()
+        },
+
+        gotoPrevFrame: function() {
+          if (this.currentFrame - 1 < 0) {
+            this.currentFrame = this.animData.length - 1
+          } else {
+            this.currentFrame--
+          }
+          this.showOnlyCurrentFrame()
+        },
+
+        addLineData(lineData) {
+          this.animData[this.currentFrame].push(lineData)
+          this.rebuild()
+        },
+
 
       })
 
