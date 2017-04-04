@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Norman: WebVR drawing spike</title>
+    <title>Norman: WebVR animation authoring spike</title>
     <meta name="description" content="Norman: WebVR drawing spike">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -17,8 +17,9 @@
 
         init: function () {
           this.isDrawing = false
-          this.addWanderer()
+          // this.addWanderer()
           this.setupKeyboard()
+          this.setupControllers()
           this.addAnim()
 
         },
@@ -42,6 +43,19 @@
             }
           }.bind(this))
 
+        },
+
+        setupControllers: function() {
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
+          console.log('contttt')
+
+          this.controllers[1].addEventListener('triggerdown', function() {
+            this.startDrawing()
+          }.bind(this))
+
+          this.controllers[1].addEventListener('triggerup', function() {
+            this.stopDrawing()
+          }.bind(this))
         },
 
         startDrawing: function() {
@@ -124,7 +138,7 @@
       AFRAME.registerComponent('drawline', {
 
         init: function() {
-          this.target = document.querySelector('#wanderer')
+          // this.target = document.querySelector('#wanderer')
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
           this.MAX_POINTS = 100000
           this.drawCount = 2
@@ -163,8 +177,8 @@
         },
 
         remove: function() {
-          var normanComp = document.querySelector('#anim').components.anim
-          normanComp.addLineData(this.linePoints)
+          var animComp = document.querySelector('#anim').components.anim
+          animComp.addLineData(this.linePoints)
         }
 
       })
@@ -172,12 +186,24 @@
       AFRAME.registerComponent('anim', {
 
         init: function () {
+          this.blumpy = 0
           this.isAnimPlaying = false // isPlaying conflicts with internal
           this.counter = 0
           this.currentFrame = 0
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           this.showOnlyCurrentFrame()
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
 
+          this.controllers[1].addEventListener('Bdown', function(e) {
+            this.isAnimPlaying = !this.isAnimPlaying
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Ydown', function(e) {
+            this.gotoNextFrame()
+          }.bind(this))
+          this.controllers[0].addEventListener('Xdown', function(e) {
+            this.gotoPrevFrame()
+          }.bind(this))
 
           document.addEventListener('keydown', function(e) {
             if (e.code == 'Enter') {
@@ -197,6 +223,11 @@
         },
 
         tick: function() {
+          this.blumpy++
+
+          if (this.blumpy % 100 == 0) {
+            // console.log(this.controllers[0].components["oculus-touch-controls"])
+          }
 
           if (this.isAnimPlaying) {
 
@@ -259,8 +290,10 @@
         },
 
         addLineData(lineData) {
+          // this double-accounting is smelly, but for now...
           this.animData[this.currentFrame].push(lineData)
-          this.rebuild()
+          this.frameEntities[this.currentFrame].components.frame.makeLineEntity(lineData)
+          // this.rebuild()
         },
 
 
@@ -314,7 +347,7 @@
         camera="userHeight: 0"
         >
       </a-camera>
-      <a-sky color="#777"></a-sky>
+      <a-sky color="#eee"></a-sky>
       <a-entity id="norman" norman position="0 0 0"></a-entity>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
