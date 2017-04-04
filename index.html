@@ -16,13 +16,53 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
+          var wanderEnt = document.createElement('a-entity');
+          wanderEnt.setAttribute('wanderer', {})
+          this.el.appendChild(wanderEnt)
         },
 
         tick: function() {
 
         },
 
-      });
+      })
+
+      AFRAME.registerComponent('wanderer', {
+        
+        init: function() {
+
+          /*
+            This likely isn't the idiomatic way of doing this. 
+            
+            The html equivilent would be:
+            
+            <a-sphere 
+              position="0 0 -0.5" 
+              color="black" 
+              radius="0.005">
+            </a-sphere>
+
+            But until I know better...
+          */
+
+          var sphereEnt = document.createElement('a-entity');
+          sphereEnt.setAttribute('geometry', {primitive: 'sphere', radius: 0.002})
+          sphereEnt.setAttribute('material', {color: 'black'})
+          sphereEnt.setAttribute('position', '0 0 -0.5')
+          this.el.appendChild(sphereEnt)
+
+        },
+        
+        tick: function() {
+          var pos = this.el.getAttribute('position')
+          this.el.setAttribute('position', {
+            x: pos.x + ((Math.random() - 0.5)*0.01),
+            y: pos.y + ((Math.random() - 0.5)*0.01),
+            z: pos.z + ((Math.random() - 0.5)*0.01)
+          })
+        }
+
+      })
 
       AFRAME.registerComponent('anim', {
 
@@ -110,19 +150,21 @@
 
     </script>
 
-    <a-scene fog="color: #222; near: 0; far: 1">
+    <a-scene >
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10w; easing: 10; fly: false"
         position="0 0 0"
         camera="userHeight: 0"
-        ></a-camera>
-      <a-sky color="#222"></a-sky>
-      <a-entity norman position="0 0 -0.5"></a-entity>
+        >
+      </a-camera>
+      <a-sky color="#777"></a-sky>
+      <a-entity norman position="0 0 0"></a-entity>
     </a-scene>
 
     <!-- 
-
+      <a-sphere position="0 0 -0.5" color="black" radius="0.005"></a-sphere>
+fog="color: #222; near: 0; far: 1"
     -->
 
   </body>
