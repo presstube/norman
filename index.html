@@ -16,20 +16,58 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-          var wandererEnt = document.createElement('a-entity')
-          wandererEnt.setAttribute('wanderer', {})
-          wandererEnt.setAttribute('id', 'wanderer')
-          this.el.appendChild(wandererEnt)
 
-          var drawlineEnt = document.createElement('a-entity')
-          drawlineEnt.setAttribute('drawline', {})
-          this.el.appendChild(drawlineEnt)
-          console.log('asldkjad: ', drawlineEnt)
+          this.addWanderer()
+          this.isDrawing = false
+          document.onkeydown = function(e) {
+            if (e.code == 'Space') {
+              this.startDrawing()
+            }
+          }.bind(this)
+          document.onkeyup = function(e) {
+            if (e.code == 'Space') {
+              this.stopDrawing()
+            }
+          }.bind(this)
         },
 
         tick: function() {
 
         },
+
+        startDrawing: function() {
+          if (!this.isDrawing) {
+            console.log('starting drawing')
+            this.isDrawing = true
+            this.addDrawline()
+          }
+        },
+
+        stopDrawing: function() {
+          if (this.isDrawing) {
+            console.log('stopping drawing')
+            this.isDrawing = false
+            this.removeDrawline()
+          }
+        },
+
+        addWanderer: function() {
+          var wandererEnt = document.createElement('a-entity')
+          wandererEnt.setAttribute('wanderer', {})
+          wandererEnt.setAttribute('id', 'wanderer')
+          this.el.appendChild(wandererEnt)
+        },
+
+        addDrawline: function() {
+          this.drawlineEnt = document.createElement('a-entity')
+          this.drawlineEnt.setAttribute('drawline', {})
+          this.el.appendChild(this.drawlineEnt)
+          
+        },
+
+        removeDrawline: function() {
+          this.el.removeChild(this.drawlineEnt)
+        }
 
       })
 
