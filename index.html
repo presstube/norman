@@ -16,22 +16,37 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-
-          this.addWanderer()
+          this.currentFrame = 0
+          this.animData = _.times(10, function() {return []})
           this.isDrawing = false
+          this.addWanderer()
+          this.setupKeyboard()
+        },
+
+        tick: function() {
+
+        },
+
+        setupKeyboard: function() {
+
           document.onkeydown = function(e) {
+            console.log('code: ', e.code)
             if (e.code == 'Space') {
               this.startDrawing()
+            } else if (e.code == 'Comma') {
+              this.gotoPrevFrame()
+            } else if (e.code == 'Period') {
+              this.gotoNextFrame()
+            } else if (e.code == 'KeyA') {
+              this.addAnim();
             }
           }.bind(this)
+          
           document.onkeyup = function(e) {
             if (e.code == 'Space') {
               this.stopDrawing()
             }
           }.bind(this)
-        },
-
-        tick: function() {
 
         },
 
@@ -62,11 +77,40 @@
           this.drawlineEnt = document.createElement('a-entity')
           this.drawlineEnt.setAttribute('drawline', {})
           this.el.appendChild(this.drawlineEnt)
-          
         },
 
         removeDrawline: function() {
           this.el.removeChild(this.drawlineEnt)
+        },
+
+        gotoNextFrame: function() {
+          if (this.currentFrame + 1 == this.animData.length - 1) {
+            this.currentFrame = 0
+          } else {
+            this.currentFrame++
+          }
+          console.log('currentFrame: ', this.currentFrame)
+        },
+
+        gotoPrevFrame: function() {
+          if (this.currentFrame == 0) {
+            this.currentFrame = this.animData.length - 1
+          } else {
+            this.currentFrame--
+          }
+          console.log('currentFrame: ', this.currentFrame)
+        },
+
+        addLineData: function(lineData) {
+          // console.log('adding line data: ', lineData)
+          this.animData[this.currentFrame].push(lineData)
+          console.log('animData: ', this.animData)
+        },
+
+        addAnim: function() {
+          this.animEnt = document.createElement('a-entity')
+          this.animEnt.setAttribute('anim', {animData: this.animData})
+          this.el.appendChild(this.animEnt) 
         }
 
       })
@@ -142,8 +186,12 @@
             positions[index++] = this.linePoints[i].y
             positions[index++] = this.linePoints[i].z
           }
-          // console.log('lp:: ', positions)
         },
+
+        remove: function() {
+          var normanComp = document.querySelector('#norman').components.norman
+          normanComp.addLineData(this.linePoints)
+        }
 
       })
 
@@ -221,7 +269,7 @@
 
         init: function () {
           var material = new THREE.LineBasicMaterial({ 
-            color: '#fff'
+            color: '#222'
           });
           var geometry = new THREE.Geometry();
           geometry.vertices = this.data.lineData
@@ -242,7 +290,7 @@
         >
       </a-camera>
       <a-sky color="#777"></a-sky>
-      <a-entity norman position="0 0 0"></a-entity>
+      <a-entity id="norman" norman position="0 0 0"></a-entity>
     </a-scene>
 
     <!-- 
