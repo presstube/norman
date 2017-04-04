@@ -16,9 +16,15 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-          var wanderEnt = document.createElement('a-entity');
-          wanderEnt.setAttribute('wanderer', {})
-          this.el.appendChild(wanderEnt)
+          var wandererEnt = document.createElement('a-entity')
+          wandererEnt.setAttribute('wanderer', {})
+          wandererEnt.setAttribute('id', 'wanderer')
+          this.el.appendChild(wandererEnt)
+
+          var drawlineEnt = document.createElement('a-entity')
+          drawlineEnt.setAttribute('drawline', {})
+          this.el.appendChild(drawlineEnt)
+          console.log('asldkjad: ', drawlineEnt)
         },
 
         tick: function() {
@@ -32,15 +38,11 @@
         init: function() {
 
           /*
-            This likely isn't the idiomatic way of doing this. 
+            This probably isn't the idiomatic way of doing this. 
             
             The html equivilent would be:
             
-            <a-sphere 
-              position="0 0 -0.5" 
-              color="black" 
-              radius="0.005">
-            </a-sphere>
+            <a-sphere position="0 0 -0.5" color="black" radius="0.005"></a-sphere>
 
             But until I know better...
           */
@@ -48,7 +50,8 @@
           var sphereEnt = document.createElement('a-entity');
           sphereEnt.setAttribute('geometry', {primitive: 'sphere', radius: 0.002})
           sphereEnt.setAttribute('material', {color: 'black'})
-          sphereEnt.setAttribute('position', '0 0 -0.5')
+          sphereEnt.setAttribute('position', '0 0 0')
+          this.el.setAttribute('position', '0 0 -0.5')
           this.el.appendChild(sphereEnt)
 
         },
@@ -61,6 +64,48 @@
             z: pos.z + ((Math.random() - 0.5)*0.01)
           })
         }
+
+      })
+
+      AFRAME.registerComponent('drawline', {
+
+        init: function() {
+          this.target = document.querySelector('#wanderer')
+          this.MAX_POINTS = 100000
+          this.drawCount = 2
+          this.linePoints = []
+          this.geometry = new THREE.BufferGeometry()
+          this.positions = new Float32Array(this.MAX_POINTS * 3)
+          this.geometry.addAttribute('position', new THREE.BufferAttribute(this.positions, 3))
+          this.geometry.setDrawRange(0, this.drawCount)
+          this.material = new THREE.LineBasicMaterial({color: "black"})
+          this.line = new THREE.Line(this.geometry, this.material)
+          this.el.setObject3D('line', this.line)
+        },
+        
+        tick: function() {
+          var wanderPos = this.target.getAttribute('position')
+
+          this.linePoints.push(new THREE.Vector3(
+            wanderPos.x, 
+            wanderPos.y, 
+            wanderPos.z));
+
+          this.line.geometry.setDrawRange(0, this.linePoints.length)
+          this.updatePositions()
+          this.line.geometry.attributes.position.needsUpdate = true
+        },
+
+        updatePositions: function() {
+          var positions = this.line.geometry.attributes.position.array
+          var index = 0
+          for (var i = 0; i < this.linePoints.length; i++) {
+            positions[index++] = this.linePoints[i].x
+            positions[index++] = this.linePoints[i].y
+            positions[index++] = this.linePoints[i].z
+          }
+          // console.log('lp:: ', positions)
+        },
 
       })
 
@@ -163,8 +208,7 @@
     </a-scene>
 
     <!-- 
-      <a-sphere position="0 0 -0.5" color="black" radius="0.005"></a-sphere>
-fog="color: #222; near: 0; far: 1"
+fog="color: #777; near: 0; far: 1"
     -->
 
   </body>
