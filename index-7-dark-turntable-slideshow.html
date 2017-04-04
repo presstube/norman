@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Norman: Dark turntable displaying proto exports on 10 sec timer</title>
+    <meta name="description" content="Norman: Dark turntable displaying proto exports on 10 sec timer">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+    <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+
+
+
+      var dataFiles = [
+
+        {
+          name: 'face-1.json', 
+          posOffset: '-0.21 -1.11 -0.03', 
+          rotOffset: '-47.56 152.41 23.49'
+        },
+
+        {
+          name: 'twirl-1.json', 
+          posOffset: '0 -1.08 -0.09', 
+          rotOffset: '-2922 156.42 31.51'
+        },
+ 
+        {
+          name: 'fungus.json', 
+          posOffset: '-0.01 -0.28 .44', 
+          rotOffset: '0 174.75 4.01',
+          scale: '0.54 0.54 0.54'
+        }, 
+
+        {
+          name: 'handup.json', 
+          posOffset: '-.10 -2.34 0.16', 
+          rotOffset: '0 174.75 4.01', 
+          scale: '2.28 2.28 2.28'
+        }, 
+
+        {
+          name: 'whaaa.json', 
+          posOffset: '-0.1 -0.95 -1.71', 
+          rotOffset: '0 0 0',
+          scale: '1.77 1.77 1.77'
+        }, 
+      
+        {
+          name: 'leelee.json', 
+          posOffset: '-0.72 -0.53 0.08', 
+          rotOffset: '0 85.37 0'
+        },
+
+      ]
+
+      AFRAME.registerComponent('norman', {
+
+        init: function () {
+          this.animToLoadIndex = 0
+          this.dataFilesPath = 'unity-exports/'
+          this.dataFileIndex = 1
+
+          this.loadingAnimData
+          this.loadingAnimEnt
+
+          this.loadingAnimFileInfo = {
+            name: 'loading-1.json',
+            posOffset: '0.12 -1.02 -0.358',
+            rotOffset: '0 -26.36 0'
+          }
+
+          $.getJSON(this.dataFilesPath + this.loadingAnimFileInfo.name, function(json) {
+            this.loadingAnimEnt = this.makeAnimEntity(json.data, this.loadingAnimFileInfo)
+            this.loadAnimation(dataFiles[0])
+            setInterval(this.loadNext.bind(this), 10000)
+          }.bind(this))
+
+          document.onkeypress = function(e) {
+            if (e.charCode >= 48 && e.charCode < 58) {
+              this.loadAnimation(dataFiles[e.key-1])
+            }
+          }.bind(this)
+        },
+
+        loadNext: function() {
+          this.animToLoadIndex++
+          if (this.animToLoadIndex == dataFiles.length) {
+            this.animToLoadIndex = 0
+          }
+          this.loadAnimation(dataFiles[this.animToLoadIndex])
+        },
+
+        loadAnimation: function(dataFileInfo) {
+          this.unloadAnim()
+
+          this.el.setAttribute('rotation', '0 0 0')
+          this.loadingAnimEnt.setAttribute('visible', true)
+
+          $.getJSON(this.dataFilesPath + dataFileInfo.name, function(json) {
+              this.loadingAnimEnt.setAttribute('visible', false)
+              this.animEntity = this.makeAnimEntity(json.data, dataFileInfo)
+          }.bind(this))
+        },
+
+        unloadAnim: function() {
+          if (this.animEntity) {
+            this.el.removeChild(this.animEntity)
+            this.animEntity = null
+          }
+        },
+
+        makeAnimEntity: function(animData, loadingAnimFileInfo) {
+          var animEntity = document.createElement('a-entity');
+          this.el.appendChild(animEntity);
+          animEntity.setAttribute('anim', {animData: animData});
+          animEntity.setAttribute('position', loadingAnimFileInfo.posOffset)
+          animEntity.setAttribute('rotation', loadingAnimFileInfo.rotOffset)
+          if (loadingAnimFileInfo.scale) {
+            animEntity.setAttribute('scale', loadingAnimFileInfo.scale)
+          }
+          this.el.setAttribute('rotation', '0 0 0')
+          return animEntity
+        },
+
+        tick: function() {
+          var rot = this.el.getAttribute('rotation')
+          this.el.setAttribute('rotation', {
+            x: rot.x,
+            y: rot.y + 0.5,
+            z: rot.z
+          })
+        },
+
+      });
+
+      AFRAME.registerComponent('anim', {
+
+        schema: {
+          animData: {type: 'array'}
+        },
+
+        init: function () {
+          this.counter = 0
+          this.currentFrame = 0
+          this.frameEntities = _.map(this.data.animData, this.makeFrameEntity.bind(this))
+          this.showOnlyCurrentFrame()
+          var frameEnt = this.frameEntities[0]
+          this.totalFrames = this.frameEntities.length
+        },
+
+        tick: function() {
+          this.counter++
+          if (this.counter % 3 == 0) {
+            if (this.currentFrame + 1 == this.totalFrames) {
+              this.currentFrame = 0
+            } else {
+              this.currentFrame++
+            }
+          }
+          this.showOnlyCurrentFrame();
+        },
+
+        showOnlyCurrentFrame: function() {
+          _.map(this.frameEntities, function(frameEnt, index) {
+            if (index == this.currentFrame) {
+              frameEnt.setAttribute('visible', true)
+            } else {
+              frameEnt.setAttribute('visible', false)
+            }
+          }.bind(this))
+        },
+
+        makeFrameEntity: function(frameData) {
+          var frameEntity = document.createElement('a-entity');
+          this.el.appendChild(frameEntity);
+          frameEntity.setAttribute('frame', {frameData: frameData});
+          return frameEntity
+        },
+
+      })
+
+
+      AFRAME.registerComponent('frame', {
+
+        schema: {
+          frameData: {type: 'array'}
+        },
+
+        init: function () {
+          var lineEntities = _.map(this.data.frameData, this.makeLineEntity.bind(this))
+        },
+
+        makeLineEntity: function(lineData) {
+          var lineEntity = document.createElement('a-entity');
+          this.el.appendChild(lineEntity);
+          lineEntity.setAttribute('line', {lineData: lineData});
+          return lineEntity
+        },
+
+      })
+
+      AFRAME.registerComponent('line', {
+
+        schema: {
+          lineData: {type: 'array'}
+        },
+
+        init: function () {
+          var material = new THREE.LineBasicMaterial({ 
+            color: '#fff'
+          });
+          var geometry = new THREE.Geometry();
+          geometry.vertices = this.data.lineData
+          var lineMesh = new THREE.Line(geometry, material);
+          this.el.setObject3D('line', lineMesh)
+        },
+
+      })
+
+    </script>
+    <a-scene fog="color: #222; near: 0; far: 1">
+      <a-camera 
+        id="camera" 
+        wasd-controls="acceleration: 10w; easing: 10; fly: false"
+        position="0 0 0"
+        camera="userHeight: 0"
+        ></a-camera>
+      <a-sky color="#222"></a-sky>
+      <a-entity norman position="0 0 -0.5"></a-entity>
+    </a-scene>
+
+    <!-- 
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
+
+      <a-entity hand-controls="left"></a-entity>
+      <a-entity hand-controls="right"></a-entity>
+
+        look-controls="standing: false" 
+
+
+<a-camera id="camera" look-controls="standing:false" wasd-controls="acceleration:3;easing:5;fly:true" position="" rotation="" camera="active:false;near:0.01;userHeight:1.6"></a-camera>
+
+    <a-scene>
+      <a-entity norman position="0 1.7 -3"></a-entity>
+
+    -->
+
+  </body>
+</html>
+
+
+
