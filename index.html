@@ -20,6 +20,7 @@
           this.addWanderer()
           this.setupKeyboard()
           this.addAnim()
+
         },
 
         tick: function() {
@@ -124,6 +125,7 @@
 
         init: function() {
           this.target = document.querySelector('#wanderer')
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
           this.MAX_POINTS = 100000
           this.drawCount = 2
           this.linePoints = []
@@ -137,7 +139,8 @@
         },
         
         tick: function() {
-          var wanderPos = this.target.getAttribute('position')
+          // var wanderPos = this.target.getAttribute('position')
+          var wanderPos = this.controllers[1].getAttribute('position')
 
           this.linePoints.push(new THREE.Vector3(
             wanderPos.x, 
@@ -174,6 +177,7 @@
           this.currentFrame = 0
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           this.showOnlyCurrentFrame()
+
 
           document.addEventListener('keydown', function(e) {
             if (e.code == 'Enter') {
@@ -312,6 +316,8 @@
       </a-camera>
       <a-sky color="#777"></a-sky>
       <a-entity id="norman" norman position="0 0 0"></a-entity>
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
     </a-scene>
 
     <!-- 
