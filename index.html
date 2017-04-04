@@ -16,21 +16,7 @@
 
     <script type="text/javascript">
 
-      var dataFilesPath = 'unity-exports/'
-      var dataFileIndex = 1
 
-      var loadingAnimData
-
-      var loadingAnimFileInfo = {
-        name: 'loading-1.json',
-        posOffset: '0.12 -1.02 -0.358',
-        rotOffset: '0 -26.36 0'
-      }
-
-      $.getJSON(dataFilesPath + loadingAnimFileInfo.name, function(json) {
-          loadingAnimData = json.data 
-          // this.animEntity = this.makeAnimEntity(json.data)
-      }.bind(this))
 
       var dataFiles = [
 
@@ -78,19 +64,30 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
-
           this.animToLoadIndex = 0
+          this.dataFilesPath = 'unity-exports/'
+          this.dataFileIndex = 1
 
-          this.loadAnimation(dataFiles[0])
+          this.loadingAnimData
+          this.loadingAnimEnt
 
-          setInterval(this.loadNext.bind(this), 10000)
+          this.loadingAnimFileInfo = {
+            name: 'loading-1.json',
+            posOffset: '0.12 -1.02 -0.358',
+            rotOffset: '0 -26.36 0'
+          }
+
+          $.getJSON(this.dataFilesPath + this.loadingAnimFileInfo.name, function(json) {
+            this.loadingAnimEnt = this.makeAnimEntity(json.data, this.loadingAnimFileInfo)
+            this.loadAnimation(dataFiles[0])
+            setInterval(this.loadNext.bind(this), 10000)
+          }.bind(this))
 
           document.onkeypress = function(e) {
             if (e.charCode >= 48 && e.charCode < 58) {
               this.loadAnimation(dataFiles[e.key-1])
             }
           }.bind(this)
-
         },
 
         loadNext: function() {
@@ -99,16 +96,16 @@
             this.animToLoadIndex = 0
           }
           this.loadAnimation(dataFiles[this.animToLoadIndex])
-
         },
 
         loadAnimation: function(dataFileInfo) {
           this.unloadAnim()
 
-          this.animEntity = this.makeAnimEntity(loadingAnimData, loadingAnimFileInfo)
+          this.el.setAttribute('rotation', '0 0 0')
+          this.loadingAnimEnt.setAttribute('visible', true)
 
-          $.getJSON(dataFilesPath + dataFileInfo.name, function(json) {
-              this.unloadAnim()
+          $.getJSON(this.dataFilesPath + dataFileInfo.name, function(json) {
+              this.loadingAnimEnt.setAttribute('visible', false)
               this.animEntity = this.makeAnimEntity(json.data, dataFileInfo)
           }.bind(this))
         },
@@ -154,8 +151,8 @@
           this.counter = 0
           this.currentFrame = 0
           this.frameEntities = _.map(this.data.animData, this.makeFrameEntity.bind(this))
+          this.showOnlyCurrentFrame()
           var frameEnt = this.frameEntities[0]
-          
           this.totalFrames = this.frameEntities.length
         },
 
@@ -167,17 +164,18 @@
             } else {
               this.currentFrame++
             }
-            // console.log('frame step', this.currentFrame)
-            _.map(this.frameEntities, function(frameEnt, index) {
-              // console.log('frame entity: ', frameEnt, index, this.currentFrame)
-              if (index == this.currentFrame) {
-                frameEnt.setAttribute('visible', true)
-              } else {
-                frameEnt.setAttribute('visible', false)
-              }
-              
-            }.bind(this))
           }
+          this.showOnlyCurrentFrame();
+        },
+
+        showOnlyCurrentFrame: function() {
+          _.map(this.frameEntities, function(frameEnt, index) {
+            if (index == this.currentFrame) {
+              frameEnt.setAttribute('visible', true)
+            } else {
+              frameEnt.setAttribute('visible', false)
+            }
+          }.bind(this))
         },
 
         makeFrameEntity: function(frameData) {
