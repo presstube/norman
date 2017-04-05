@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Norman: WebVR animation authoring spike</title>
+    <meta name="description" content="Norman: WebVR drawing spike">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
+  </head>
+  <body>
+
+    <script type="text/javascript">
+
+      AFRAME.registerComponent('norman', {
+
+        init: function () {
+          this.isDrawing = false
+          // this.addWanderer()
+          this.setupKeyboard()
+          this.setupControllers()
+          this.addAnim()
+
+        },
+
+        tick: function() {
+
+        },
+
+        setupKeyboard: function() {
+
+
+          document.addEventListener('keydown', function(e) {
+            if (e.code == 'Space') {
+              this.startDrawing()
+            }
+          }.bind(this))
+          
+          document.addEventListener('keyup', function(e) {
+            if (e.code == 'Space') {
+              this.stopDrawing()
+            }
+          }.bind(this))
+
+        },
+
+        setupControllers: function() {
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
+          console.log('contttt')
+
+          this.controllers[1].addEventListener('triggerdown', function() {
+            this.startDrawing()
+          }.bind(this))
+
+          this.controllers[1].addEventListener('triggerup', function() {
+            this.stopDrawing()
+          }.bind(this))
+        },
+
+        startDrawing: function() {
+          if (!this.isDrawing) {
+            console.log('starting drawing')
+            this.isDrawing = true
+            this.addDrawline()
+          }
+        },
+
+        stopDrawing: function() {
+          if (this.isDrawing) {
+            console.log('stopping drawing')
+            this.isDrawing = false
+            this.removeDrawline()
+          }
+        },
+
+        addWanderer: function() {
+          var wandererEnt = document.createElement('a-entity')
+          wandererEnt.setAttribute('wanderer', {})
+          wandererEnt.setAttribute('id', 'wanderer')
+          this.el.appendChild(wandererEnt)
+        },
+
+        addDrawline: function() {
+          this.drawlineEnt = document.createElement('a-entity')
+          this.drawlineEnt.setAttribute('drawline', {})
+          this.el.appendChild(this.drawlineEnt)
+        },
+
+        removeDrawline: function() {
+          this.el.removeChild(this.drawlineEnt)
+        },
+
+        addAnim: function() {
+          this.animEnt = document.createElement('a-entity')
+          this.animEnt.setAttribute('anim', {})
+          this.animEnt.setAttribute('id', 'anim')
+          this.animEnt.components.anim.setAnimData(_.times(20, function() {return []}))
+          this.el.appendChild(this.animEnt) 
+        },
+
+      })
+
+      AFRAME.registerComponent('wanderer', {
+        
+        init: function() {
+
+          /*
+            This probably isn't the right way of doing this. 
+            
+            The html equivilent would be:
+            
+            <a-sphere position="0 0 -0.5" color="black" radius="0.005"></a-sphere>
+
+            But until I know better...
+          */
+
+          var sphereEnt = document.createElement('a-entity');
+          sphereEnt.setAttribute('geometry', {primitive: 'sphere', radius: 0.002})
+          sphereEnt.setAttribute('material', {color: 'black'})
+          sphereEnt.setAttribute('position', '0 0 0')
+          this.el.setAttribute('position', '0 0 -0.5')
+          this.el.appendChild(sphereEnt)
+
+        },
+        
+        tick: function() {
+          var pos = this.el.getAttribute('position')
+          this.el.setAttribute('position', {
+            x: pos.x + ((Math.random() - 0.5)*0.01),
+            y: pos.y + ((Math.random() - 0.5)*0.01),
+            z: pos.z + ((Math.random() - 0.5)*0.01)
+          })
+        }
+
+      })
+
+      AFRAME.registerComponent('drawline', {
+
+        init: function() {
+          // this.target = document.querySelector('#wanderer')
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
+          this.animComp = document.querySelector('#anim').components.anim
+          this.currentFrame = this.animComp.currentFrame
+          console.log('currentFrame: ', this.currentFrame)
+          this.MAX_POINTS = 100000
+          this.drawCount = 2
+          this.linePoints = []
+          this.geometry = new THREE.BufferGeometry()
+          this.positions = new Float32Array(this.MAX_POINTS * 3)
+          this.geometry.addAttribute('position', new THREE.BufferAttribute(this.positions, 3))
+          this.geometry.setDrawRange(0, this.drawCount)
+          this.material = new THREE.LineBasicMaterial({color: "black"})
+          this.line = new THREE.Line(this.geometry, this.material)
+          this.el.setObject3D('line', this.line)
+        },
+        
+        tick: function() {
+          // var wanderPos = this.target.getAttribute('position')
+          var wanderPos = this.controllers[1].getAttribute('position')
+
+          this.linePoints.push(new THREE.Vector3(
+            wanderPos.x, 
+            wanderPos.y, 
+            wanderPos.z));
+
+          this.line.geometry.setDrawRange(0, this.linePoints.length)
+          this.updatePositions()
+          this.line.geometry.attributes.position.needsUpdate = true
+        },
+
+        updatePositions: function() {
+          var positions = this.line.geometry.attributes.position.array
+          var index = 0
+          for (var i = 0; i < this.linePoints.length; i++) {
+            positions[index++] = this.linePoints[i].x
+            positions[index++] = this.linePoints[i].y
+            positions[index++] = this.linePoints[i].z
+          }
+        },
+
+        remove: function() {
+          this.animComp.addLineData(this.linePoints, this.currentFrame)
+          if (this.animComp.autoAdvance) {
+            this.animComp.gotoNextFrame()
+          }
+        }
+
+      })
+
+      AFRAME.registerComponent('anim', {
+
+        init: function () {
+          this.blumpy = 0
+          this.autoAdvance = false
+          this.isAnimPlaying = false // isPlaying conflicts with internal
+          this.counter = 0
+          this.currentFrame = 0
+          this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+          this.showOnlyCurrentFrame()
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
+
+          this.controllers[1].addEventListener('Bdown', function(e) {
+            this.isAnimPlaying = !this.isAnimPlaying
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Ydown', function(e) {
+            this.gotoNextFrame()
+            this.autoAdvance = true
+          }.bind(this))
+          this.controllers[0].addEventListener('Yup', function(e) {
+            this.autoAdvance = false
+          }.bind(this))
+          this.controllers[0].addEventListener('Xdown', function(e) {
+            this.gotoPrevFrame()
+          }.bind(this))
+
+          document.addEventListener('keydown', function(e) {
+            if (e.code == 'Enter') {
+              this.isAnimPlaying = !this.isAnimPlaying
+            } else if (e.code == 'Comma') {
+              this.gotoPrevFrame()
+            } else if (e.code == 'Period') {
+              this.gotoNextFrame()
+            }
+          }.bind(this))                   
+
+
+        },
+
+        update: function(oldData) {
+          console.log('anim updated: ', oldData, this.data)
+        },
+
+        tick: function() {
+          this.blumpy++
+
+          if (this.blumpy % 100 == 0) {
+            // console.log(this.controllers[0].components["oculus-touch-controls"])
+          }
+
+          if (this.isAnimPlaying) {
+
+            this.counter++
+            if (this.counter % 3 == 0) {
+              this.gotoNextFrame()
+            }
+            this.showOnlyCurrentFrame()
+          }
+        },
+
+        showOnlyCurrentFrame: function() {
+          _.map(this.frameEntities, function(frameEnt, index) {
+            if (index == this.currentFrame) {
+              frameEnt.setAttribute('visible', true)
+            } else {
+              frameEnt.setAttribute('visible', false)
+            }
+          }.bind(this))
+        },
+
+        makeFrameEntity: function(frameData) {
+          var frameEntity = document.createElement('a-entity')
+          this.el.appendChild(frameEntity)
+          frameEntity.setAttribute('frame', {frameData: frameData})
+          return frameEntity
+        },
+
+        rebuild() {
+          _.map(this.frameEntities, function(frameEnt, index) {
+            this.el.removeChild(frameEnt)
+          }.bind(this))
+          
+          this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+          this.showOnlyCurrentFrame()
+
+        },
+
+        setAnimData: function(animData) {
+          this.animData = animData
+          this.rebuild()
+        },
+
+        gotoNextFrame: function() {
+          if (this.currentFrame + 1 == this.animData.length) {
+            this.currentFrame = 0
+          } else {
+            this.currentFrame++
+          }
+          this.showOnlyCurrentFrame()
+        },
+
+        gotoPrevFrame: function() {
+          if (this.currentFrame - 1 < 0) {
+            this.currentFrame = this.animData.length - 1
+          } else {
+            this.currentFrame--
+          }
+          this.showOnlyCurrentFrame()
+        },
+
+        addLineData(lineData, frameIndex) {
+          // this double-accounting is smelly, but for now...
+          this.animData[this.currentFrame].push(lineData)
+          this.frameEntities[frameIndex].components.frame.makeLineEntity(lineData)
+          // this.rebuild()
+        },
+
+
+      })
+
+
+      AFRAME.registerComponent('frame', {
+
+        schema: {
+          frameData: {type: 'array'}
+        },
+
+        init: function () {
+          var lineEntities = _.map(this.data.frameData, this.makeLineEntity.bind(this))
+        },
+
+        makeLineEntity: function(lineData) {
+          var lineEntity = document.createElement('a-entity');
+          this.el.appendChild(lineEntity);
+          lineEntity.setAttribute('line', {lineData: lineData});
+          return lineEntity
+        },
+
+      })
+
+      AFRAME.registerComponent('line', {
+
+        schema: {
+          lineData: {type: 'array'}
+        },
+
+        init: function () {
+          var material = new THREE.LineBasicMaterial({ 
+            color: '#222'
+          });
+          var geometry = new THREE.Geometry();
+          geometry.vertices = this.data.lineData
+          var lineMesh = new THREE.Line(geometry, material);
+          this.el.setObject3D('line', lineMesh)
+        },
+
+      })
+
+    </script>
+
+    <a-scene fog="color: #eee; near: 0; far: 2">
+      <a-camera 
+        id="camera" 
+        wasd-controls="acceleration: 10w; easing: 10; fly: false"
+        position="0 0 0"
+        camera="userHeight: 0"
+        >
+      </a-camera>
+      <a-sky color="#eee"></a-sky>
+      <a-entity id="norman" norman position="0 0 0"></a-entity>
+      <a-entity oculus-touch-controls="hand: left"></a-entity>
+      <a-entity oculus-touch-controls="hand: right"></a-entity>
+      <a-ring color="tomato" radius-inner="1" radius-outer="1.001" rotation="-90 0 0"></a-ring>
+    </a-scene>
+
+    <!-- 
+fog="color: #777; near: 0; far: 1"
+    -->
+
+  </body>
+</html>
+
+
+
