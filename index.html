@@ -17,32 +17,9 @@
 
         init: function () {
           this.isDrawing = false
-          // this.addWanderer()
-          this.setupKeyboard()
-          _.delay(this.setupControllers.bind(this), 1) // needs this in order to pickup the controllers?
+          // needs this in order to pickup the controllers?
+          _.delay(this.setupControllers.bind(this), 1) 
           this.addAnim()
-
-        },
-
-        tick: function() {
-
-        },
-
-        setupKeyboard: function() {
-
-
-          document.addEventListener('keydown', function(e) {
-            if (e.code == 'Space') {
-              this.startDrawing()
-            }
-          }.bind(this))
-          
-          document.addEventListener('keyup', function(e) {
-            if (e.code == 'Space') {
-              this.stopDrawing()
-            }
-          }.bind(this))
-
         },
 
         setupControllers: function() {
@@ -200,11 +177,6 @@
         },
 
         tick: function() {
-          this.blumpy++
-
-          if (this.blumpy % 100 == 0) {
-            // console.log(this.controllers[0].components["oculus-touch-controls"])
-          }
 
           if (this.isAnimPlaying) {
 
