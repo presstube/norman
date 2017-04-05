@@ -349,7 +349,7 @@
 
     </script>
 
-    <a-scene >
+    <a-scene fog="color: #eee; near: 0; far: 2">
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10w; easing: 10; fly: false"
@@ -361,6 +361,7 @@
       <a-entity id="norman" norman position="0 0 0"></a-entity>
       <a-entity oculus-touch-controls="hand: left"></a-entity>
       <a-entity oculus-touch-controls="hand: right"></a-entity>
+      <a-ring color="tomato" radius-inner="1" radius-outer="1.001" rotation="-90 0 0"></a-ring>
     </a-scene>
 
     <!-- 
