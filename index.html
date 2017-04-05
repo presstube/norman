@@ -20,6 +20,7 @@
           // needs this in order to pickup the controllers?
           _.delay(this.setupControllers.bind(this), 1) 
           this.addAnim()
+
         },
 
         setupControllers: function() {
@@ -75,7 +76,7 @@
           this.animEnt.setAttribute('anim', {})
           this.animEnt.setAttribute('id', 'anim')
           this.animEnt.components.anim.setAnimData(_.times(20, function() {return []}))
-          this.el.appendChild(this.animEnt) 
+          this.el.appendChild(this.animEnt)
         },
 
       })
@@ -84,9 +85,12 @@
 
         init: function() {
           // this.target = document.querySelector('#wanderer')
-          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
+          this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
           this.currentFrame = this.animComp.currentFrame
+          this.boundFrameChangeListener = this.onFrameChanged.bind(this)
+          this.animEnt.addEventListener('FRAME_CHANGED', this.boundFrameChangeListener)
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
           this.MAX_POINTS = 100000
           this.drawCount = 2
           this.linePoints = []
@@ -123,7 +127,14 @@
           }
         },
 
+        onFrameChanged: function(e) {
+          // console.log('drawline heard frame change: ', e.detail, this)
+          this.animComp.addLineData(this.linePoints, e.detail.frame)
+          this.linePoints = []
+        },
+
         remove: function() {
+          this.animEnt.removeEventListener('FRAME_CHANGED', this.boundFrameChangeListener)
           this.animComp.addLineData(this.linePoints, this.currentFrame)
           if (this.animComp.autoAdvance) {
             this.animComp.gotoNextFrame()
@@ -135,7 +146,7 @@
       AFRAME.registerComponent('anim', {
 
         init: function () {
-          this.frameInterval = 1000 / 60
+          this.frameInterval = 1000 / 30
           this.frameChangeTime = null
           this.blumpy = 0
           this.autoAdvance = false
@@ -185,9 +196,12 @@
             var diff = time - this.frameChangeTime
             if (diff >= this.frameInterval) {
               this.frameChangeTime = time
+              this.el.emit('FRAME_CHANGED', {frame: this.currentFrame})
               this.gotoNextFrame()
             }
             this.showOnlyCurrentFrame()
+            // console.log(this)
+            
           }
         },
 
