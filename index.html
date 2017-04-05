@@ -135,6 +135,8 @@
       AFRAME.registerComponent('anim', {
 
         init: function () {
+          this.frameInterval = 1000 / 60
+          this.frameChangeTime = null
           this.blumpy = 0
           this.autoAdvance = false
           this.isAnimPlaying = false // isPlaying conflicts with internal
@@ -169,19 +171,20 @@
             }
           }.bind(this))                   
 
-
         },
 
         update: function(oldData) {
           console.log('anim updated: ', oldData, this.data)
         },
 
-        tick: function() {
+        tick: function(time, timeDelta) {
 
           if (this.isAnimPlaying) {
-
+            if (!this.frameChangeTime) this.frameChangeTime = time
             this.counter++
-            if (this.counter % 3 == 0) {
+            var diff = time - this.frameChangeTime
+            if (diff >= this.frameInterval) {
+              this.frameChangeTime = time
               this.gotoNextFrame()
             }
             this.showOnlyCurrentFrame()
