@@ -3,8 +3,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Norman: WebVR animation authoring spike</title>
-    <meta name="description" content="Norman: WebVR drawing spike">
+    <title>Norman: Timepen spike</title>
+    <meta name="description" content="Norman: Timepen spike">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
@@ -19,7 +19,7 @@
           this.isDrawing = false
           // this.addWanderer()
           this.setupKeyboard()
-          this.setupControllers()
+          _.delay(this.setupControllers.bind(this), 1) // needs this in order to pickup the controllers?
           this.addAnim()
 
         },
@@ -47,7 +47,9 @@
 
         setupControllers: function() {
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
-          console.log('contttt')
+
+          var pensphereEnt = document.querySelector("#pensphere")
+          this.controllers[1].setObject3D('pensphereEnt', pensphereEnt.object3D)
 
           this.controllers[1].addEventListener('triggerdown', function() {
             this.startDrawing()
@@ -60,7 +62,7 @@
 
         startDrawing: function() {
           if (!this.isDrawing) {
-            console.log('starting drawing')
+            // console.log('starting drawing')
             this.isDrawing = true
             this.addDrawline()
           }
@@ -68,7 +70,7 @@
 
         stopDrawing: function() {
           if (this.isDrawing) {
-            console.log('stopping drawing')
+            // console.log('stopping drawing')
             this.isDrawing = false
             this.removeDrawline()
           }
@@ -101,40 +103,6 @@
 
       })
 
-      AFRAME.registerComponent('wanderer', {
-        
-        init: function() {
-
-          /*
-            This probably isn't the right way of doing this. 
-            
-            The html equivilent would be:
-            
-            <a-sphere position="0 0 -0.5" color="black" radius="0.005"></a-sphere>
-
-            But until I know better...
-          */
-
-          var sphereEnt = document.createElement('a-entity');
-          sphereEnt.setAttribute('geometry', {primitive: 'sphere', radius: 0.002})
-          sphereEnt.setAttribute('material', {color: 'black'})
-          sphereEnt.setAttribute('position', '0 0 0')
-          this.el.setAttribute('position', '0 0 -0.5')
-          this.el.appendChild(sphereEnt)
-
-        },
-        
-        tick: function() {
-          var pos = this.el.getAttribute('position')
-          this.el.setAttribute('position', {
-            x: pos.x + ((Math.random() - 0.5)*0.01),
-            y: pos.y + ((Math.random() - 0.5)*0.01),
-            z: pos.z + ((Math.random() - 0.5)*0.01)
-          })
-        }
-
-      })
-
       AFRAME.registerComponent('drawline', {
 
         init: function() {
@@ -142,7 +110,6 @@
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
           this.animComp = document.querySelector('#anim').components.anim
           this.currentFrame = this.animComp.currentFrame
-          console.log('currentFrame: ', this.currentFrame)
           this.MAX_POINTS = 100000
           this.drawCount = 2
           this.linePoints = []
@@ -359,9 +326,10 @@
       </a-camera>
       <a-sky color="#eee"></a-sky>
       <a-entity id="norman" norman position="0 0 0"></a-entity>
-      <a-entity oculus-touch-controls="hand: left"></a-entity>
-      <a-entity oculus-touch-controls="hand: right"></a-entity>
+      <a-entity oculus-touch-controls="hand: left; model:false"></a-entity>
+      <a-entity oculus-touch-controls="hand: right; model:false"></a-entity>
       <a-ring color="tomato" radius-inner="1" radius-outer="1.001" rotation="-90 0 0"></a-ring>
+      <a-sphere id="pensphere" color="black" radius="0.0005"></a-sphere>
     </a-scene>
 
     <!-- 
