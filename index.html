@@ -136,8 +136,10 @@
         remove: function() {
           this.animEnt.removeEventListener('FRAME_CHANGED', this.boundFrameChangeListener)
           this.animComp.addLineData(this.linePoints, this.currentFrame)
-          if (this.animComp.autoAdvance) {
+          if (this.animComp.autoNext) {
             this.animComp.gotoNextFrame()
+          } else if (this.animComp.autoPrev) {
+            this.animComp.gotoPrevFrame()
           }
         }
 
@@ -146,14 +148,15 @@
       AFRAME.registerComponent('anim', {
 
         init: function () {
-          // this.frameInterval = 1000 / 30
-          this.timeScrub = false
-          this.timeScaler = 0
-          this.frameIntervalMax = 100
+          this.isAnimPlaying = false // 'isPlaying' conflicts with Entity internal
+          this.fps = 30
+          this.maxFPS = 120
+          this.firstAxisFired = false
+          this.frameInterval = 1000 / this.fps
           this.frameInterval = 0
           this.frameChangeTime = null
-          this.autoAdvance = false
-          this.isAnimPlaying = true // isPlaying conflicts with internal
+          this.autoNext = false
+          this.autoPrev = false
           this.counter = 0
           this.currentFrame = 0
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
@@ -161,33 +164,22 @@
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
 
           this.controllers[0].addEventListener('axismove', function(e) {
-
-            this.timeScaler = e.detail.axis[0]
-
-            var clamp = 0.9
-
-            if (this.timeScaler > clamp) {
-              this.timeScaler = clamp
-            } else if (this.timeScaler < -clamp) {
-              this.timeScaler = -clamp
+            if (!this.firstAxisFired) {
+              this.firstAxisFired = true
+            } else {
+              this.isAnimPlaying = true
             }
 
-            this.timeScaler *= 1 / clamp
+            this.fps += e.detail.axis[0] 
+            this.frameInterval = 1000 / this.fps
+            if (this.fps > this.maxFPS) {
+              this.fps = this.maxFPS
+            } else if (this.fps < - this.maxFPS) {
+              this.fps = -this.maxFPS
+            }
 
-            this.frameInterval = this.frameIntervalMax - Math.abs(this.timeScaler * this.frameIntervalMax)
+            // console.log('frameInterval: ', this.frameInterval, e.detail.axis[0], this.fps)
 
-            // console.log('frameInterval: ', this.frameInterval, this.timeScaler )
-
-          }.bind(this))
-
-          this.controllers[0].addEventListener('thumbsticktouchstart', function(e) {
-            this.isAnimPlaying = true
-            this.timeScrub = true
-          }.bind(this))
-          this.controllers[0].addEventListener('thumbsticktouchend', function(e) {
-            this.frameInterval = 1000 / 30
-            this.isAnimPlaying = false
-            this.timeScrub = false
           }.bind(this))
 
           this.controllers[1].addEventListener('Bdown', function(e) {
@@ -196,15 +188,21 @@
 
           this.controllers[0].addEventListener('Ydown', function(e) {
             this.gotoNextFrame()
-            this.autoAdvance = true
+            this.autoNext = true
           }.bind(this))
 
           this.controllers[0].addEventListener('Yup', function(e) {
-            this.autoAdvance = false
+            this.autoNext = false
           }.bind(this))
 
           this.controllers[0].addEventListener('Xdown', function(e) {
             this.gotoPrevFrame()
+            this.autoPrev = true
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Xup', function(e) {
+            this.gotoPrevFrame()
+            this.autoPrev = false
           }.bind(this))
 
           document.addEventListener('keydown', function(e) {
@@ -232,15 +230,14 @@
             if (diff >= Math.abs(this.frameInterval)) {
               this.frameChangeTime = time
               this.el.emit('FRAME_CHANGED', {frame: this.currentFrame})
-              if (this.timeScaler > 0 || !this.timeScrub) {
+              if (this.frameInterval >= 0) {
                 this.gotoNextFrame()
-              } else if (this.timeScaler < 0) {
+              } else {
                 this.gotoPrevFrame()
               }
             }
             this.showOnlyCurrentFrame()
 
-            
           }
         },
 
@@ -344,7 +341,7 @@
 
     </script>
 
-    <a-scene fog="color: #eee; near: 0; far: 2">
+    <a-scene fog="color: #eee; near: 0; far: 1">
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10w; easing: 10; fly: false"
@@ -354,13 +351,23 @@
       </a-camera>
       <a-sky color="#eee"></a-sky>
       <a-entity id="norman" norman position="0 0 0"></a-entity>
-      <a-entity oculus-touch-controls="hand: left; model:false"></a-entity>
-      <a-entity oculus-touch-controls="hand: right; model:false"></a-entity>
+      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
+      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
       <a-ring color="tomato" radius-inner="1" radius-outer="1.001" rotation="-90 0 0"></a-ring>
-      <a-sphere id="pensphere" color="black" radius="0.0005"></a-sphere>
+      <a-cone 
+        id="pensphere"
+        height="0.01"
+        rotation="-90 0 0"
+        position="0 0 0.005"
+        color="black" 
+        radius-bottom="0.002" 
+        radius-top="0.0001" 
+        material="opacity: 0.5"
+        ></a-cone>
     </a-scene>
 
     <!-- 
+      <a-sphere id="pensphere" color="black" radius="0.001" material="opacity: 0.5"></a-sphere>
 fog="color: #777; near: 0; far: 1"
     -->
 
