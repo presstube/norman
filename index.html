@@ -107,8 +107,8 @@
           this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
           this.currentFrame = this.animComp.currentFrame
-          this.boundFrameChangeListener = this.onFrameChanged.bind(this)
-          this.animEnt.addEventListener('FRAME_CHANGED', this.boundFrameChangeListener)
+          this.boundFrameChangeListener = this.onExitFrame.bind(this)
+          this.animEnt.addEventListener('EXIT_FRAME', this.boundFrameChangeListener)
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
           this.MAX_POINTS = 100000
           this.drawCount = 2
@@ -146,14 +146,14 @@
           }
         },
 
-        onFrameChanged: function(e) {
+        onExitFrame: function(e) {
           // console.log('drawline heard frame change: ', e.detail, this)
           this.animComp.addLineData(this.linePoints, e.detail.frame)
           this.linePoints = []
         },
 
         remove: function() {
-          this.animEnt.removeEventListener('FRAME_CHANGED', this.boundFrameChangeListener)
+          this.animEnt.removeEventListener('EXIT_FRAME', this.boundFrameChangeListener)
           this.animComp.addLineData(this.linePoints, this.currentFrame)
           if (this.animComp.autoNext) {
             if (this.animComp.addingFrames) this.animComp.addFrame('after')
@@ -234,7 +234,7 @@
           }.bind(this))
 
           document.addEventListener('keydown', function(e) {
-            console.log('keydown: ', e)
+            // console.log('keydown: ', e)
             if (e.code == 'Enter') {
               this.isAnimPlaying = !this.isAnimPlaying
             } else if (e.code == 'Comma') {
@@ -254,14 +254,13 @@
         },
 
         tick: function(time, timeDelta) {
-
           if (this.isAnimPlaying) {
             if (!this.frameChangeTime) this.frameChangeTime = time
             this.counter++
             var diff = time - this.frameChangeTime
             if (diff >= Math.abs(this.frameInterval)) {
               this.frameChangeTime = time
-              this.el.emit('FRAME_CHANGED', {frame: this.currentFrame})
+              
               if (this.frameInterval >= 0) {
                 this.gotoNextFrame()
               } else {
@@ -269,7 +268,6 @@
               }
             }
             this.showOnlyCurrentFrame()
-
           }
         },
 
@@ -308,6 +306,7 @@
         },
 
         gotoNextFrame: function() {
+          this.el.emit('EXIT_FRAME', {frame: this.currentFrame})
           if (this.currentFrame + 1 == this.animData.length) {
             this.currentFrame = 0
           } else {
@@ -317,6 +316,7 @@
         },
 
         gotoPrevFrame: function() {
+          this.el.emit('EXIT_FRAME', {frame: this.currentFrame})
           if (this.currentFrame - 1 < 0) {
             this.currentFrame = this.animData.length - 1
           } else {
@@ -358,12 +358,12 @@
 
       
       AFRAME.registerComponent('onionskin', {
-
-
-
         init: function() {
           this.frameEntities = []
-
+          this.animEnt = document.querySelector('#anim')
+          this.animComp = document.querySelector('#anim').components.anim
+          this.boundFrameChangeListener = this.onExitFrame.bind(this)
+          this.animEnt.addEventListener('EXIT_FRAME', this.boundFrameChangeListener)
           console.log('onion skin here')
         },
 
@@ -380,6 +380,11 @@
           // this.showOnlyCurrentFrame()
         },
 
+        onExitFrame: function(e) {
+          console.log('onion heard change')
+          this.showActiveFrames()
+        },
+
         makeFrameEntity: function(frameData) {
           var frameEntity = document.createElement('a-entity')
           this.el.appendChild(frameEntity)
@@ -390,6 +395,14 @@
           })
           return frameEntity
         },
+
+        showActiveFrames: function() {
+          
+        },
+
+        remove: function() {
+          this.animEnt.addEventListener('EXIT_FRAME', this.boundFrameChangeListener)
+        }
 
       })
 
