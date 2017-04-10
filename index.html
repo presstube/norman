@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Norman: Onionskin Spike</title>
+    <title>Norman: Onion Skin Spike</title>
     <meta name="description" content="Norman: Onionskin Spike">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -74,7 +74,7 @@
           this.animEnt = document.createElement('a-entity')
           this.animEnt.setAttribute('anim', {})
           this.animEnt.setAttribute('id', 'anim')
-          this.animEnt.components.anim.setAnimData(_.times(20, function() {return []}))
+          this.animEnt.components.anim.setAnimData(_.times(1, function() {return []}))
           this.el.appendChild(this.animEnt)
         },
 
@@ -136,8 +136,10 @@
           this.animEnt.removeEventListener('FRAME_CHANGED', this.boundFrameChangeListener)
           this.animComp.addLineData(this.linePoints, this.currentFrame)
           if (this.animComp.autoNext) {
+            if (this.animComp.addingFrames) this.animComp.addFrame('after')
             this.animComp.gotoNextFrame()
           } else if (this.animComp.autoPrev) {
+            if (this.animComp.addingFrames) this.animComp.addFrame('before')
             this.animComp.gotoPrevFrame()
           }
         }
@@ -150,6 +152,7 @@
           this.isAnimPlaying = false // 'isPlaying' conflicts with Entity internal
           this.fps = 30
           this.maxFPS = 120
+          this.addingFrames = false
           this.firstAxisFired = false
           this.frameInterval = 1000 / this.fps
           this.frameInterval = 0
@@ -168,7 +171,6 @@
             } else {
               this.isAnimPlaying = true
             }
-
             this.fps += e.detail.axis[0] 
             this.frameInterval = 1000 / this.fps
             if (this.fps > this.maxFPS) {
@@ -176,18 +178,21 @@
             } else if (this.fps < - this.maxFPS) {
               this.fps = -this.maxFPS
             }
-
             // console.log('frameInterval: ', this.frameInterval, e.detail.axis[0], this.fps)
-
           }.bind(this))
 
-          this.controllers[1].addEventListener('Bdown', function(e) {
-            this.isAnimPlaying = !this.isAnimPlaying
+          this.controllers[0].addEventListener('triggerdown', function(e) {
+            this.addingFrames = true
+          }.bind(this))
+
+          this.controllers[0].addEventListener('triggerup', function(e) {
+            this.addingFrames = false
           }.bind(this))
 
           this.controllers[0].addEventListener('Ydown', function(e) {
-            this.gotoNextFrame()
             this.autoNext = true
+            if (this.addingFrames) this.addFrame('after')
+            this.gotoNextFrame()
           }.bind(this))
 
           this.controllers[0].addEventListener('Yup', function(e) {
@@ -195,13 +200,17 @@
           }.bind(this))
 
           this.controllers[0].addEventListener('Xdown', function(e) {
-            this.gotoPrevFrame()
             this.autoPrev = true
+            if (this.addingFrames) this.addFrame('before')
+            this.gotoPrevFrame()
           }.bind(this))
 
           this.controllers[0].addEventListener('Xup', function(e) {
-            this.gotoPrevFrame()
             this.autoPrev = false
+          }.bind(this))
+
+          this.controllers[1].addEventListener('Bdown', function(e) {
+            this.isAnimPlaying = !this.isAnimPlaying
           }.bind(this))
 
           document.addEventListener('keydown', function(e) {
@@ -294,9 +303,21 @@
           // this double-accounting is smelly, but for now...
           this.animData[this.currentFrame].push(lineData)
           this.frameEntities[frameIndex].components.frame.makeLineEntity(lineData)
-          // this.rebuild()
         },
 
+        addFrame: function(position) {
+          var insertIndex
+          if (position === 'after') {
+            // console.log('adding a frame after')
+            insertIndex = this.currentFrame + 1
+          } else if (position === 'before') {
+            // console.log('adding a frame before')
+            insertIndex = this.currentFrame
+          }
+          // this double-accounting is smelly, but for now...
+          this.animData.splice(insertIndex, 0, [])
+          this.frameEntities.splice(insertIndex, 0, this.makeFrameEntity([]))
+        }
 
       })
 
