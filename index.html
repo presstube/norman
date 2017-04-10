@@ -19,8 +19,19 @@
           this.isDrawing = false
           // needs this in order to pickup the controllers?
           _.delay(this.setupControllers.bind(this), 1) 
-          this.addAnim()
+
+          $.getJSON('webvr-exports/test.json', function(json) {
+            this.animData = json.data
+            this.addAnim()
+            this.addOnionSkin()
+          }.bind(this))
+
+            // this.animData = [[]]
+            // this.addAnim()
+            // this.addOnionSkin()
+
         },
+
 
         setupControllers: function() {
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
@@ -74,8 +85,17 @@
           this.animEnt = document.createElement('a-entity')
           this.animEnt.setAttribute('anim', {})
           this.animEnt.setAttribute('id', 'anim')
-          this.animEnt.components.anim.setAnimData(_.times(1, function() {return []}))
+          // this.animEnt.components.anim.setAnimData(_.times(1, function() {return []}))
+          this.animEnt.components.anim.setAnimData(this.animData)
           this.el.appendChild(this.animEnt)
+        },
+
+        addOnionSkin: function() {
+          this.onionSkinEnt = document.createElement('a-entity')
+          this.onionSkinEnt.setAttribute('onionskin', {})
+          this.onionSkinEnt.setAttribute('id', 'onionskin')
+          this.onionSkinEnt.components.onionskin.setAnimData(this.animData)
+          this.el.appendChild(this.onionSkinEnt)
         },
 
       })
@@ -214,12 +234,16 @@
           }.bind(this))
 
           document.addEventListener('keydown', function(e) {
+            console.log('keydown: ', e)
             if (e.code == 'Enter') {
               this.isAnimPlaying = !this.isAnimPlaying
             } else if (e.code == 'Comma') {
               this.gotoPrevFrame()
             } else if (e.code == 'Period') {
               this.gotoNextFrame()
+            } else if (e.key == 's') {
+              // this.logAnimData()
+              this.saveAnimDataFile()
             }
           }.bind(this))                   
 
@@ -270,10 +294,8 @@
           _.map(this.frameEntities, function(frameEnt, index) {
             this.el.removeChild(frameEnt)
           }.bind(this))
-          
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           this.showOnlyCurrentFrame()
-
         },
 
         setAnimData: function(animData) {
@@ -317,10 +339,39 @@
           // this double-accounting is smelly, but for now...
           this.animData.splice(insertIndex, 0, [])
           this.frameEntities.splice(insertIndex, 0, this.makeFrameEntity([]))
+        },
+
+        saveAnimDataFile: function() {
+          var dataToSave = {data: this.animData}
+          var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave));
+          var dlAnchorElem = document.getElementById('downloadAnchorElem');
+          dlAnchorElem.setAttribute("href",     dataStr     );
+          dlAnchorElem.setAttribute("download", "test.json");
+          dlAnchorElem.click();
         }
 
       })
 
+      
+      AFRAME.registerComponent('onionskin', {
+        init: function() {
+          console.log('onion skin here')
+        },
+
+        setAnimData: function(animData) {
+          this.animData = animData
+          this.rebuild()
+        },
+
+        rebuild() {
+          // _.map(this.frameEntities, function(frameEnt, index) {
+          //   this.el.removeChild(frameEnt)
+          // }.bind(this))
+          // this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+          // this.showOnlyCurrentFrame()
+        },
+
+      })
 
       AFRAME.registerComponent('frame', {
 
@@ -361,7 +412,7 @@
 
     </script>
 
-    <a-scene fog="color: #eee; near: 0; far: 1">
+    <a-scene>
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10w; easing: 10; fly: false"
@@ -386,7 +437,11 @@
         ></a-cone>
     </a-scene>
 
+
+    <a id="downloadAnchorElem" style="display:none"></a>
     <!-- 
+ fog="color: #eee; near: 0; far: 1"
+
       <a-sphere id="pensphere" color="black" radius="0.001" material="opacity: 0.5"></a-sphere>
 fog="color: #777; near: 0; far: 1"
     -->
