@@ -22,8 +22,8 @@
 
           $.getJSON('webvr-exports/test.json', function(json) {
             this.animData = json.data
-            this.addAnim()
             this.addOnionSkin()
+            this.addAnim()
           }.bind(this))
 
             // this.animData = [[]]
@@ -286,7 +286,11 @@
         makeFrameEntity: function(frameData) {
           var frameEntity = document.createElement('a-entity')
           this.el.appendChild(frameEntity)
-          frameEntity.setAttribute('frame', {frameData: frameData})
+          frameEntity.setAttribute('frame', {
+            frameData: frameData,
+            color: '#222',
+            style: 'solid'
+          })
           return frameEntity
         },
 
@@ -354,7 +358,12 @@
 
       
       AFRAME.registerComponent('onionskin', {
+
+
+
         init: function() {
+          this.frameEntities = []
+
           console.log('onion skin here')
         },
 
@@ -364,11 +373,22 @@
         },
 
         rebuild() {
-          // _.map(this.frameEntities, function(frameEnt, index) {
-          //   this.el.removeChild(frameEnt)
-          // }.bind(this))
-          // this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+          _.map(this.frameEntities, function(frameEnt, index) {
+            this.el.removeChild(frameEnt)
+          }.bind(this))
+          this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           // this.showOnlyCurrentFrame()
+        },
+
+        makeFrameEntity: function(frameData) {
+          var frameEntity = document.createElement('a-entity')
+          this.el.appendChild(frameEntity)
+          frameEntity.setAttribute('frame', {
+            frameData: frameData,
+            color: 'pink',
+            style: 'dashed'
+          })
+          return frameEntity
         },
 
       })
@@ -376,7 +396,9 @@
       AFRAME.registerComponent('frame', {
 
         schema: {
-          frameData: {type: 'array'}
+          frameData: {type: 'array'},
+          color: {type: 'string', default: 'black'},
+          style: {type: 'string', defualt: 'solid'}
         },
 
         init: function () {
@@ -386,7 +408,11 @@
         makeLineEntity: function(lineData) {
           var lineEntity = document.createElement('a-entity');
           this.el.appendChild(lineEntity);
-          lineEntity.setAttribute('line', {lineData: lineData});
+          lineEntity.setAttribute('line', {
+            lineData: lineData,
+            color: this.data.color,
+            style: this.data.style
+          });
           return lineEntity
         },
 
@@ -395,16 +421,31 @@
       AFRAME.registerComponent('line', {
 
         schema: {
-          lineData: {type: 'array'}
+          lineData: {type: 'array'},
+          color: {type: 'string', default: 'black'},
+          style: {type: 'string', default: 'solid'}
         },
 
         init: function () {
-          var material = new THREE.LineBasicMaterial({ 
-            color: '#222'
-          });
-          var geometry = new THREE.Geometry();
+          var material
+          var lineMesh
+          var geometry = new THREE.Geometry()
           geometry.vertices = this.data.lineData
-          var lineMesh = new THREE.Line(geometry, material);
+          if (this.data.style == 'solid') {
+            material = new THREE.LineBasicMaterial({ 
+              color: this.data.color
+            })
+            lineMesh = new THREE.Line(geometry, material)
+          } else if (this.data.style == 'dashed') {
+            material = new THREE.LineDashedMaterial({ 
+              color: this.data.color,
+              linewidth: 1,
+              scale: 1,
+              dashSize: 3,
+              gapSize: 1,
+            })
+            lineMesh = new THREE.LineSegments(geometry, material)
+          }
           this.el.setObject3D('line', lineMesh)
         },
 
