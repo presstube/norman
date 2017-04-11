@@ -16,6 +16,7 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
+          this.isAnimPlaying = false
           this.isDrawing = false
           // needs this in order to pickup the controllers?
           _.delay(this.setupControllers.bind(this), 1) 
@@ -23,7 +24,7 @@
           $.getJSON('webvr-exports/test.json', function(json) {
             this.animData = json.data
             this.addAnim()
-            
+
             this.addOnionSkin({
               animData: this.animData,
               framesToSkin: [-2],
@@ -63,6 +64,7 @@
 
 
         setupControllers: function() {
+
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
 
           var pensphereEnt = document.querySelector("#pensphere")
@@ -75,11 +77,19 @@
           this.controllers[1].addEventListener('triggerup', function() {
             this.stopDrawing()
           }.bind(this))
+
+          this.controllers[1].addEventListener('Bdown', function(e) {
+            if (this.isAnimPlaying) {
+              this.stopPlaying()
+            } else {
+              this.startPlaying()
+            }
+          }.bind(this))
+
         },
 
         startDrawing: function() {
           if (!this.isDrawing) {
-            // console.log('starting drawing')
             this.isDrawing = true
             this.addDrawline()
           }
@@ -87,10 +97,19 @@
 
         stopDrawing: function() {
           if (this.isDrawing) {
-            // console.log('stopping drawing')
             this.isDrawing = false
             this.removeDrawline()
           }
+        },
+
+        startPlaying: function() {
+          this.isAnimPlaying = true
+          this.el.emit('STARTED_PLAYING')
+        },
+
+        stopPlaying: function() {
+          this.isAnimPlaying = false
+          this.el.emit('STOPPED_PLAYING')
         },
 
         addWanderer: function() {
@@ -286,17 +305,21 @@
 
           this.controllers[0].addEventListener('Xdown', function(e) {
             this.autoPrev = true
-            if (this.addingFrames) this.addFrame('before')
-            this.gotoPrevFrame()
+            if (this.addingFrames) {
+              this.normanComp.addFrame('before', this.currentFrame)
+              this.showOnlyCurrentFrame()
+            } else {
+              this.gotoPrevFrame()
+            }
           }.bind(this))
 
           this.controllers[0].addEventListener('Xup', function(e) {
             this.autoPrev = false
           }.bind(this))
 
-          this.controllers[1].addEventListener('Bdown', function(e) {
-            this.isAnimPlaying = !this.isAnimPlaying
-          }.bind(this))
+          // this.controllers[1].addEventListener('Bdown', function(e) {
+          //   this.isAnimPlaying = !this.isAnimPlaying
+          // }.bind(this))
 
           document.addEventListener('keydown', function(e) {
             // console.log('keydown: ', e)
@@ -319,7 +342,7 @@
         },
 
         tick: function(time, timeDelta) {
-          if (this.isAnimPlaying) {
+          if (this.normanComp.isAnimPlaying) {
             if (!this.frameChangeTime) this.frameChangeTime = time
             this.counter++
             var diff = time - this.frameChangeTime
@@ -393,34 +416,16 @@
         },
 
         onLineAdded: function(e) {
-          console.log('anim heard line added: ', e)
           this.addLineData(e.detail.lineData, e.detail.frameIndex)
         },
 
         addLineData(lineData, frameIndex) {
-          // this double-accounting is smelly, but for now...
-          this.animData[frameIndex].push(lineData)
           this.frameEntities[frameIndex].components.frame.makeLineEntity(lineData)
         },
 
         onFrameAdded: function(e) {
-          console.log('insertIndex: ', e.detail.insertIndex)
           this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]))
         },
-
-        // addFrame: function(position) {
-        //   var insertIndex
-        //   if (position === 'after') {
-        //     // console.log('adding a frame after')
-        //     insertIndex = this.currentFrame + 1
-        //   } else if (position === 'before') {
-        //     // console.log('adding a frame before')
-        //     insertIndex = this.currentFrame
-        //   }
-        //   // this double-accounting is smelly, but for now...
-        //   this.animData.splice(insertIndex, 0, [])
-        //   this.frameEntities.splice(insertIndex, 0, this.makeFrameEntity([]))
-        // },
 
         saveAnimDataFile: function() {
           var dataToSave = {data: this.animData}
@@ -435,7 +440,6 @@
           this.data.norman.removeEventListener('LINE_ADDED', this.boundOnLineAdded)
           this.data.norman.removeEventListener('FRAME_ADDED', this.boundOnFrameAdded)
         }
-
 
       })
 
@@ -457,6 +461,11 @@
           this.boundFrameChangeListener = this.onEnterFrame.bind(this)
           this.animEnt.addEventListener('ENTER_FRAME', this.boundFrameChangeListener)
           this.el.setAttribute('opacity', this.data.opacity)
+          
+          this.boundStartedPlayingListener = this.onStartedPlaying.bind(this)
+          this.boundStoppedPlayingListener = this.onStoppedPlaying.bind(this)
+          this.data.norman.addEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
+          this.data.norman.addEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
 
           this.rebuild()
 
@@ -465,7 +474,6 @@
           this.boundOnFrameAdded = this.onFrameAdded.bind(this)
           this.data.norman.addEventListener('LINE_ADDED', this.boundOnLineAdded)
           this.data.norman.addEventListener('FRAME_ADDED', this.boundOnFrameAdded)
-
 
         },
 
@@ -526,6 +534,14 @@
 
         onFrameAdded: function(e) {
           this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]))
+        },
+
+        onStartedPlaying: function() {
+          this.el.setAttribute('visible', false)
+        },
+
+        onStoppedPlaying: function() {
+          this.el.setAttribute('visible', true)
         },
 
         remove: function() {
