@@ -23,7 +23,34 @@
           $.getJSON('webvr-exports/test.json', function(json) {
             this.animData = json.data
             this.addAnim()
-            this.addOnionSkin()
+            this.addOnionSkin({
+              animData: this.animData,
+              framesToSkin: [-2],
+              color: 'orange',
+              style: 'dashed',
+              opacity: 0.2
+            })
+            this.addOnionSkin({
+              animData: this.animData,
+              framesToSkin: [-1],
+              color: 'orange',
+              style: 'solid',
+              opacity: 0.4
+            })
+            this.addOnionSkin({
+              animData: this.animData,
+              framesToSkin: [1],
+              color: 'blue',
+              style: 'solid',
+              opacity: 0.4
+            })
+            this.addOnionSkin({
+              animData: this.animData,
+              framesToSkin: [2],
+              color: 'blue',
+              style: 'dashed',
+              opacity: 0.2
+            })
           }.bind(this))
 
             // this.animData = [[]]
@@ -90,13 +117,11 @@
           this.el.appendChild(this.animEnt)
         },
 
-        addOnionSkin: function() {
+        addOnionSkin: function(props) {
           this.onionSkinEnt = document.createElement('a-entity')
-          this.onionSkinEnt.setAttribute('onionskin', {
-            framesToSkin: [-1, 1]
-          })
+          this.onionSkinEnt.setAttribute('onionskin', props)
           this.onionSkinEnt.setAttribute('id', 'onionskin')
-          this.onionSkinEnt.components.onionskin.setAnimData(this.animData)
+          // this.onionSkinEnt.components.onionskin.setAnimData(this.animData)
           this.el.appendChild(this.onionSkinEnt)
         },
 
@@ -364,7 +389,11 @@
       AFRAME.registerComponent('onionskin', {
 
         schema: {
-          framesToSkin: {type: 'array'}
+          animData: {type: 'array'},
+          framesToSkin: {type: 'array'},
+          color: {type: 'string', default: 'black'},
+          style: {type: 'string', default: 'solid'},
+          opacity: {type: 'number', default: 1}
         },
 
         init: function() {
@@ -372,19 +401,20 @@
           this.animComp = document.querySelector('#anim').components.anim
           this.boundFrameChangeListener = this.onEnterFrame.bind(this)
           this.animEnt.addEventListener('ENTER_FRAME', this.boundFrameChangeListener)
-        },
-
-        setAnimData: function(animData) {
-          this.animData = animData
+          this.el.setAttribute('opacity', this.data.opacity)
           this.rebuild()
         },
+
+        // setAnimData: function(animData) {
+        //   this.animData = animData
+        //   this.rebuild()
+        // },
 
         rebuild() {
           _.map(this.frameEntities, function(frameEnt, index) {
             this.el.removeChild(frameEnt)
           }.bind(this))
-          this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
-          // console.log('onion rebuilding')
+          this.frameEntities = _.map(this.data.animData, this.makeFrameEntity.bind(this))
           // this.showActiveFrames()
         },
 
@@ -398,8 +428,9 @@
           this.el.appendChild(frameEntity)
           frameEntity.setAttribute('frame', {
             frameData: frameData,
-            color: 'pink',
-            style: 'dashed'
+            color: this.data.color,
+            style: this.data.style,
+            opacity: this.data.opacity
           })
           frameEntity.setAttribute('visible', false)
           return frameEntity
@@ -432,7 +463,8 @@
         schema: {
           frameData: {type: 'array'},
           color: {type: 'string', default: 'black'},
-          style: {type: 'string', defualt: 'solid'}
+          style: {type: 'string', default: 'solid'},
+          opacity: {type: 'number', default: 1}
         },
 
         init: function () {
@@ -445,7 +477,8 @@
           lineEntity.setAttribute('line', {
             lineData: lineData,
             color: this.data.color,
-            style: this.data.style
+            style: this.data.style,
+            opacity: this.data.opacity
           });
           return lineEntity
         },
@@ -457,7 +490,8 @@
         schema: {
           lineData: {type: 'array'},
           color: {type: 'string', default: 'black'},
-          style: {type: 'string', default: 'solid'}
+          style: {type: 'string', default: 'solid'},
+          opacity: {type: 'number', default: 1}
         },
 
         init: function () {
@@ -467,7 +501,9 @@
           geometry.vertices = this.data.lineData
           if (this.data.style == 'solid') {
             material = new THREE.LineBasicMaterial({ 
-              color: this.data.color
+              color: this.data.color,
+              transparent: this.data.opacity != 1 ? true : false,
+              opacity: this.data.opacity
             })
             lineMesh = new THREE.Line(geometry, material)
           } else if (this.data.style == 'dashed') {
@@ -477,6 +513,8 @@
               scale: 1,
               dashSize: 3,
               gapSize: 1,
+              transparent: this.data.opacity != 1 ? true : false,
+              opacity: this.data.opacity
             })
             lineMesh = new THREE.LineSegments(geometry, material)
           }
