@@ -18,11 +18,13 @@
         init: function () {
           this.isAnimPlaying = false
           this.isDrawing = false
+          this.animData = [[]]
           // needs this in order to pickup the controllers?
           _.delay(this.setupControllers.bind(this), 1) 
 
           $.getJSON('webvr-exports/test.json', function(json) {
-            this.animData = json.data
+            // this.animData = json.data
+            
             this.addAnim()
 
             this.addOnionSkin({
@@ -30,28 +32,28 @@
               framesToSkin: [-2],
               color: 'orange',
               style: 'dashed',
-              opacity: 0.2
+              opacity: 0.4
             })
             this.addOnionSkin({
               animData: this.animData,
               framesToSkin: [-1],
               color: 'orange',
               style: 'solid',
-              opacity: 0.4
+              opacity: 0.6
             })
             this.addOnionSkin({
               animData: this.animData,
               framesToSkin: [1],
               color: 'blue',
               style: 'solid',
-              opacity: 0.4
+              opacity: 0.6
             })
             this.addOnionSkin({
               animData: this.animData,
               framesToSkin: [2],
               color: 'blue',
               style: 'dashed',
-              opacity: 0.2
+              opacity: 0.4
             })
 
           }.bind(this))
@@ -110,13 +112,6 @@
         stopPlaying: function() {
           this.isAnimPlaying = false
           this.el.emit('STOPPED_PLAYING')
-        },
-
-        addWanderer: function() {
-          var wandererEnt = document.createElement('a-entity')
-          wandererEnt.setAttribute('wanderer', {})
-          wandererEnt.setAttribute('id', 'wanderer')
-          this.el.appendChild(wandererEnt)
         },
 
         addDrawline: function() {
@@ -268,21 +263,21 @@
           this.data.norman.addEventListener('FRAME_ADDED', this.boundOnFrameAdded)
 
 
-          this.controllers[0].addEventListener('axismove', function(e) {
-            if (!this.firstAxisFired) {
-              this.firstAxisFired = true
-            } else {
-              this.isAnimPlaying = true
-            }
-            this.fps += e.detail.axis[0] 
-            this.frameInterval = 1000 / this.fps
-            if (this.fps > this.maxFPS) {
-              this.fps = this.maxFPS
-            } else if (this.fps < - this.maxFPS) {
-              this.fps = -this.maxFPS
-            }
-            // console.log('frameInterval: ', this.frameInterval, e.detail.axis[0], this.fps)
-          }.bind(this))
+          // this.controllers[0].addEventListener('axismove', function(e) {
+          //   if (!this.firstAxisFired) {
+          //     this.firstAxisFired = true
+          //   } else {
+          //     this.isAnimPlaying = true
+          //   }
+          //   this.fps += e.detail.axis[0] 
+          //   this.frameInterval = 1000 / this.fps
+          //   if (this.fps > this.maxFPS) {
+          //     this.fps = this.maxFPS
+          //   } else if (this.fps < - this.maxFPS) {
+          //     this.fps = -this.maxFPS
+          //   }
+          //   // console.log('frameInterval: ', this.frameInterval, e.detail.axis[0], this.fps)
+          // }.bind(this))
 
           this.controllers[0].addEventListener('triggerdown', function(e) {
             this.addingFrames = true
@@ -307,7 +302,7 @@
             this.autoPrev = true
             if (this.addingFrames) {
               this.normanComp.addFrame('before', this.currentFrame)
-              this.showOnlyCurrentFrame()
+              this.renderFrame()
             } else {
               this.gotoPrevFrame()
             }
@@ -400,8 +395,7 @@
           } else {
             this.currentFrame++
           }
-          this.showOnlyCurrentFrame()
-          this.el.emit('ENTER_FRAME', {frame: this.currentFrame})
+          this.renderFrame()
         },
 
         gotoPrevFrame: function() {
@@ -411,6 +405,10 @@
           } else {
             this.currentFrame--
           }
+          this.renderFrame()
+        },
+
+        renderFrame: function() {
           this.showOnlyCurrentFrame()
           this.el.emit('ENTER_FRAME', {frame: this.currentFrame})
         },
