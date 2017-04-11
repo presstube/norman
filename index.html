@@ -19,14 +19,17 @@
           this.isAnimPlaying = false
           this.isDrawing = false
           this.animData = [[]]
+          this.homeFrameIndex = 0
           // needs this in order to pickup the controllers?
           this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
 
-          $.getJSON('webvr-exports/test-2.json', function(json) {
+          $.getJSON('webvr-exports/hfg-face-1.json', function(json) {
             this.animData = json.data
             
             this.addAnim()
+
+            this.addHomeFrameGhost()
 
             this.addOnionSkin({
               animData: this.animData,
@@ -158,9 +161,25 @@
           this.el.appendChild(this.onionSkinEnt)
         },
 
+        addHomeFrameGhost: function() {
+          this.homeFrameGhostEnt = document.createElement('a-entity')
+          this.el.appendChild(this.homeFrameGhostEnt)
+          this.homeFrameGhostEnt.setAttribute('id', 'homeframeghost')
+          this.homeFrameGhostEnt.setAttribute('homeframeghost', {
+            norman: '#norman',
+            frameData: this.animData[0],
+            color: 'green',
+            style: 'dashed',
+            opacity: 0.2
+          })
+        },
+
         addLineData: function(lineData, frameIndex) {
           this.animData[frameIndex].push(lineData)
           this.el.emit('LINE_ADDED', {lineData: lineData, frameIndex: frameIndex})
+          if (frameIndex === this.homeFrameIndex) {
+            this.el.emit('HOME_FRAME_LINE_ADDED', {lineData: lineData})
+          }
         },
 
         addFrame: function(position, frameIndex) {
@@ -173,6 +192,7 @@
             insertIndex = frameIndex
           }
           // this double-accounting is smelly, but for now...
+          if (insertIndex <= this.homeFrameIndex) this.homeFrameIndex++
           this.animData.splice(insertIndex, 0, [])
           this.el.emit('FRAME_ADDED', {insertIndex: insertIndex})
           // this.frameEntities.splice(insertIndex, 0, this.makeFrameEntity([]))
@@ -267,7 +287,7 @@
 
         init: function () {
           this.isAnimPlaying = false // 'isPlaying' conflicts with Entity internal
-          this.fps = 30
+          this.fps = 24
           this.maxFPS = 120
           this.addingFrames = false
           this.firstAxisFired = false
@@ -338,10 +358,6 @@
           this.controllers[0].addEventListener('Xup', function(e) {
             this.autoPrev = false
           }.bind(this))
-
-          // this.controllers[1].addEventListener('Bdown', function(e) {
-          //   this.isAnimPlaying = !this.isAnimPlaying
-          // }.bind(this))
 
           document.addEventListener('keydown', function(e) {
             // console.log('keydown: ', e)
@@ -473,6 +489,7 @@
           this.animEnt.addEventListener('ENTER_FRAME', this.boundFrameChangeListener)
           this.el.setAttribute('opacity', this.data.opacity)
           
+          // code duplicated between onionskin and homeframeghost
           this.boundStartedPlayingListener = this.onStartedPlaying.bind(this)
           this.boundStoppedPlayingListener = this.onStoppedPlaying.bind(this)
           this.data.norman.addEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
@@ -561,6 +578,66 @@
         }
 
       })
+
+      
+      AFRAME.registerComponent('homeframeghost', {
+
+        schema: {
+          norman: {type: 'selector'},
+          frameData: {type: 'array'},
+          color: {type: 'string', default: 'black'},
+          style: {type: 'string', default: 'solid'},
+          opacity: {type: 'number', default: 1},
+        },
+
+        init: function() {
+          // console.log('home frame ghost here!', this.data)
+          this.homeFrame = this.makeFrameEntity(this.data.frameData)
+          this.boundLineAddedListener = this.onLineAdded.bind(this)
+          this.data.norman.addEventListener('HOME_FRAME_LINE_ADDED', this.boundLineAddedListener)
+
+                    // code duplicated between onionskin and homeframeghost
+          this.boundStartedPlayingListener = this.onStartedPlaying.bind(this)
+          this.boundStoppedPlayingListener = this.onStoppedPlaying.bind(this)
+          this.data.norman.addEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
+          this.data.norman.addEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
+        },
+
+        makeFrameEntity: function(frameData) {
+          var frameEntity = document.createElement('a-entity')
+          this.el.appendChild(frameEntity)
+          frameEntity.setAttribute('frame', {
+            frameData: frameData,
+            color: this.data.color,
+            style: this.data.style,
+            opacity: this.data.opacity
+          })
+          // frameEntity.setAttribute('visible', false)
+          return frameEntity
+        },
+
+        onLineAdded: function(e) {
+          // console.log('HFG heard line added: ', e)
+          this.homeFrame.components.frame.makeLineEntity(e.detail.lineData)
+        },
+
+        onStartedPlaying: function() {
+          this.el.setAttribute('visible', false)
+        },
+
+        onStoppedPlaying: function() {
+          this.el.setAttribute('visible', true)
+        },
+
+        remove: function() {
+          this.data.norman.removeEventListener('HOME_FRAME_LINE_ADDED', this.boundLineAddedListener)
+          this.data.norman.removeEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
+          this.data.norman.removeEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
+        }
+
+
+      })
+
 
       AFRAME.registerComponent('frame', {
 
