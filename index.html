@@ -313,6 +313,7 @@
             this.currentFrame++
           }
           this.showOnlyCurrentFrame()
+          this.el.emit('ENTER_FRAME', {frame: this.currentFrame})
         },
 
         gotoPrevFrame: function() {
@@ -323,6 +324,7 @@
             this.currentFrame--
           }
           this.showOnlyCurrentFrame()
+          this.el.emit('ENTER_FRAME', {frame: this.currentFrame})
         },
 
         addLineData(lineData, frameIndex) {
@@ -359,12 +361,10 @@
       
       AFRAME.registerComponent('onionskin', {
         init: function() {
-          this.frameEntities = []
           this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
-          this.boundFrameChangeListener = this.onExitFrame.bind(this)
-          this.animEnt.addEventListener('EXIT_FRAME', this.boundFrameChangeListener)
-          console.log('onion skin here')
+          this.boundFrameChangeListener = this.onEnterFrame.bind(this)
+          this.animEnt.addEventListener('ENTER_FRAME', this.boundFrameChangeListener)
         },
 
         setAnimData: function(animData) {
@@ -377,11 +377,11 @@
             this.el.removeChild(frameEnt)
           }.bind(this))
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
-          // this.showOnlyCurrentFrame()
+          // this.showActiveFrames()
         },
 
-        onExitFrame: function(e) {
-          console.log('onion heard change')
+        onEnterFrame: function(e) {
+          // console.log('onion heard change: ', this)
           this.showActiveFrames()
         },
 
@@ -397,7 +397,14 @@
         },
 
         showActiveFrames: function() {
-          
+          var cf = this.animComp.currentFrame
+          _.map(this.frameEntities, function(frameEnt, index) {
+            if (index ==cf - 1 || index == cf + 1) {
+              frameEnt.setAttribute('visible', true)
+            } else {
+              frameEnt.setAttribute('visible', false)
+            }
+          }.bind(this))
         },
 
         remove: function() {
