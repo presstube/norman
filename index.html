@@ -20,10 +20,11 @@
           this.isDrawing = false
           this.animData = [[]]
           // needs this in order to pickup the controllers?
+          this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
 
-          $.getJSON('webvr-exports/test.json', function(json) {
-            // this.animData = json.data
+          $.getJSON('webvr-exports/test-2.json', function(json) {
+            this.animData = json.data
             
             this.addAnim()
 
@@ -64,6 +65,18 @@
 
         },
 
+        setupKeyboard: function() {
+          document.addEventListener('keydown', function(e) {
+            // console.log('keydown: ', e)
+            if (e.code == 'Enter') {
+              this.togglePlay()
+            } else if (e.key == 's') {
+              // this.logAnimData()
+              console.log('SAVE')
+              this.saveAnimDataFile()
+            }
+          }.bind(this))   
+        },
 
         setupControllers: function() {
 
@@ -81,11 +94,7 @@
           }.bind(this))
 
           this.controllers[1].addEventListener('Bdown', function(e) {
-            if (this.isAnimPlaying) {
-              this.stopPlaying()
-            } else {
-              this.startPlaying()
-            }
+            this.togglePlay()
           }.bind(this))
 
         },
@@ -101,6 +110,14 @@
           if (this.isDrawing) {
             this.isDrawing = false
             this.removeDrawline()
+          }
+        },
+
+        togglePlay: function() {
+          if (this.isAnimPlaying) {
+            this.stopPlaying()
+          } else {
+            this.startPlaying()
           }
         },
 
@@ -160,6 +177,16 @@
           this.el.emit('FRAME_ADDED', {insertIndex: insertIndex})
           // this.frameEntities.splice(insertIndex, 0, this.makeFrameEntity([]))
         },
+
+        saveAnimDataFile: function() {
+          var dataToSave = {data: this.animData}
+          var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dataToSave))
+          var dlAnchorElem = document.getElementById('downloadAnchorElem')
+          dlAnchorElem.setAttribute('href', dataStr)
+          dlAnchorElem.setAttribute('download', 'test.json')
+          dlAnchorElem.click()
+        },
+
       })
 
       AFRAME.registerComponent('drawline', {
@@ -318,15 +345,10 @@
 
           document.addEventListener('keydown', function(e) {
             // console.log('keydown: ', e)
-            if (e.code == 'Enter') {
-              this.isAnimPlaying = !this.isAnimPlaying
-            } else if (e.code == 'Comma') {
+            if (e.code == 'Comma') {
               this.gotoPrevFrame()
             } else if (e.code == 'Period') {
               this.gotoNextFrame()
-            } else if (e.key == 's') {
-              // this.logAnimData()
-              this.saveAnimDataFile()
             }
           }.bind(this))                   
 
@@ -423,15 +445,6 @@
 
         onFrameAdded: function(e) {
           this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]))
-        },
-
-        saveAnimDataFile: function() {
-          var dataToSave = {data: this.animData}
-          var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToSave));
-          var dlAnchorElem = document.getElementById('downloadAnchorElem');
-          dlAnchorElem.setAttribute("href",     dataStr     );
-          dlAnchorElem.setAttribute("download", "test.json");
-          dlAnchorElem.click();
         },
 
         remove: function() {
