@@ -22,8 +22,8 @@
 
           $.getJSON('webvr-exports/test.json', function(json) {
             this.animData = json.data
-            this.addOnionSkin()
             this.addAnim()
+            this.addOnionSkin()
           }.bind(this))
 
             // this.animData = [[]]
@@ -92,7 +92,9 @@
 
         addOnionSkin: function() {
           this.onionSkinEnt = document.createElement('a-entity')
-          this.onionSkinEnt.setAttribute('onionskin', {})
+          this.onionSkinEnt.setAttribute('onionskin', {
+            framesToSkin: [-1, 1]
+          })
           this.onionSkinEnt.setAttribute('id', 'onionskin')
           this.onionSkinEnt.components.onionskin.setAnimData(this.animData)
           this.el.appendChild(this.onionSkinEnt)
@@ -250,7 +252,7 @@
         },
 
         update: function(oldData) {
-          console.log('anim updated: ', oldData, this.data)
+          // console.log('anim updated: ', oldData, this.data)
         },
 
         tick: function(time, timeDelta) {
@@ -360,6 +362,11 @@
 
       
       AFRAME.registerComponent('onionskin', {
+
+        schema: {
+          framesToSkin: {type: 'array'}
+        },
+
         init: function() {
           this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
@@ -377,6 +384,7 @@
             this.el.removeChild(frameEnt)
           }.bind(this))
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+          // console.log('onion rebuilding')
           // this.showActiveFrames()
         },
 
@@ -393,17 +401,23 @@
             color: 'pink',
             style: 'dashed'
           })
+          frameEntity.setAttribute('visible', false)
           return frameEntity
         },
 
         showActiveFrames: function() {
           var cf = this.animComp.currentFrame
-          _.map(this.frameEntities, function(frameEnt, index) {
-            if (index ==cf - 1 || index == cf + 1) {
-              frameEnt.setAttribute('visible', true)
-            } else {
-              frameEnt.setAttribute('visible', false)
-            }
+          var totalFrames = this.frameEntities.length
+          _.each(this.showingFrames, function(frameEnt, index) {
+            frameEnt.setAttribute('visible', false)
+          })
+          this.showingFrames = _.map(this.data.framesToSkin, function(frameToSkin) {
+            var frameNumToSkin = cf + frameToSkin
+            if (frameNumToSkin < 0) frameNumToSkin = (totalFrames) + frameNumToSkin
+            if (frameNumToSkin >= totalFrames) frameNumToSkin = frameNumToSkin - totalFrames
+            var frameEnt = this.frameEntities[frameNumToSkin]
+            frameEnt.setAttribute('visible', true)
+            return frameEnt
           }.bind(this))
         },
 
