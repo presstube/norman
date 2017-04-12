@@ -16,6 +16,7 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
+          this.animData = [[]]
           this.fps = 30
           this.maxFPS = 120
           this.frameInterval = 1000 / this.fps
@@ -24,7 +25,6 @@
           this.addingFrames = false
           this.autoNext = false
           this.autoPrev = false
-          this.animData = [[]]
           this.homeFrameIndex = 0
           this.firstAxisFired = false
           this.onionVisible = false
@@ -32,7 +32,7 @@
           this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
 
-          $.getJSON('webvr-exports/test.json', function(json) {
+          $.getJSON('webvr-exports/creepy-face-1.json', function(json) {
             this.animData = json.data
             
             this.addAnim()
@@ -683,8 +683,8 @@
 
           this.boundOnionOnListener = this.onOnionOn.bind(this)
           this.boundOnionOffListener = this.onOnionOff.bind(this)
-          this.data.norman.addEventListener('ONION_ON', this.boundOnionOnListener)
-          this.data.norman.addEventListener('ONION_OFF', this.boundOnionOffListener)
+          // this.data.norman.addEventListener('ONION_ON', this.boundOnionOnListener)
+          // this.data.norman.addEventListener('ONION_OFF', this.boundOnionOffListener)
         },
 
         makeFrameEntity: function(frameData) {
@@ -710,9 +710,9 @@
         },
 
         onStoppedPlaying: function() {
-          if (this.normanComp.onionVisible) {
-            this.el.setAttribute('visible', true)
-          }
+          // if (this.normanComp.onionVisible) {
+          // }
+          this.el.setAttribute('visible', true)
         },
 
         onOnionOn: function() {
