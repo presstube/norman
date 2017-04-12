@@ -27,6 +27,7 @@
           this.animData = [[]]
           this.homeFrameIndex = 0
           this.firstAxisFired = false
+          this.onionVisible = false
           // needs this in order to pickup the controllers?
           this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
@@ -69,25 +70,6 @@
 
           }.bind(this))
 
-            // this.animData = [[]]
-            // this.addAnim()
-            // this.addOnionSkin()
-
-        },
-
-        tick: function() {
-          // if (this.grabbed) {
-          //   var hand = this.controllers[0].object3D
-          //   var handWorld = new THREE.Vector3().setFromMatrixPosition(hand.matrixWorld)
-          //   var norm = this.el.object3D
-          //   norm.parent.worldToLocal(handWorld)
-          //   norm.position.x = handWorld.x
-          //   norm.position.y = handWorld.y
-          //   norm.position.z = handWorld.z
-
-          //   console.log('assad: ', norm.parent)
-          //   // this.
-          // }
         },
 
         setupKeyboard: function() {
@@ -116,6 +98,10 @@
 
           this.controllers[1].addEventListener('triggerup', function() {
             this.stopDrawing()
+          }.bind(this))
+
+          this.controllers[1].addEventListener('Adown', function(e) {
+            this.toggleOnion()
           }.bind(this))
 
           this.controllers[1].addEventListener('Bdown', function(e) {
@@ -156,17 +142,10 @@
             if (!this.firstAxisFired) {
               this.firstAxisFired = true
             } else if (!this.isAnimPlaying) {
-              // this.isAnimPlaying = true
               this.fps = 0
               this.startPlaying()
             }
-            this.fps += e.detail.axis[0] 
-            this.frameInterval = 1000 / this.fps
-            if (this.fps > this.maxFPS) {
-              this.fps = this.maxFPS
-            } else if (this.fps < - this.maxFPS) {
-              this.fps = -this.maxFPS
-            }
+            this.changeFPS(e.detail.axis[0])
           }.bind(this))
 
           this.controllers[0].addEventListener('gripdown', function(e) {
@@ -177,6 +156,27 @@
             this.drop()
           }.bind(this))
 
+        },
+
+        toggleOnion: function() {
+
+          if (this.onionVisible) {
+            this.onionVisible = false
+            this.el.emit('ONION_OFF')
+          } else {
+            this.onionVisible = true
+            this.el.emit('ONION_ON')
+          }
+        },
+
+        changeFPS: function(amount) {
+          this.fps += amount
+          this.frameInterval = 1000 / this.fps
+          if (this.fps > this.maxFPS) {
+            this.fps = this.maxFPS
+          } else if (this.fps < - this.maxFPS) {
+            this.fps = -this.maxFPS
+          }
         },
 
         grab: function() {
@@ -545,6 +545,7 @@
         },
 
         init: function() {
+          this.normanComp = norman.components.norman
           this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
           this.boundFrameChangeListener = this.onEnterFrame.bind(this)
@@ -564,6 +565,11 @@
           this.boundOnFrameAdded = this.onFrameAdded.bind(this)
           this.data.norman.addEventListener('LINE_ADDED', this.boundOnLineAdded)
           this.data.norman.addEventListener('FRAME_ADDED', this.boundOnFrameAdded)
+
+          this.boundOnionOnListener = this.onOnionOn.bind(this)
+          this.boundOnionOffListener = this.onOnionOff.bind(this)
+          this.data.norman.addEventListener('ONION_ON', this.boundOnionOnListener)
+          this.data.norman.addEventListener('ONION_OFF', this.boundOnionOffListener)
 
         },
 
@@ -626,12 +632,27 @@
         },
 
         onStoppedPlaying: function() {
-          this.el.setAttribute('visible', true)
+          if (this.normanComp.onionVisible) {
+            this.el.setAttribute('visible', true)
+          }
+        },
+
+        onOnionOn: function() {
+          if (!this.normanComp.isAnimPlaying) {
+            this.el.setAttribute('visible', true)
+          }
+        },
+
+        onOnionOff: function() {
+          this.el.setAttribute('visible', false)
         },
 
         remove: function() {
           this.animEnt.removeEventListener('EXIT_FRAME', this.boundFrameChangeListener)
           this.data.norman.removeEventListener('LINE_ADDED', this.boundOnLineAdded)
+
+          this.data.norman.removeEventListener('ONION_ON', this.boundOnionOnListener)
+          this.data.norman.removeEventListener('ONION_OFF', this.boundOnionOffListener)
         }
 
       })
@@ -649,6 +670,7 @@
 
         init: function() {
           // console.log('home frame ghost here!', this.data)
+          this.normanComp = norman.components.norman
           this.homeFrame = this.makeFrameEntity(this.data.frameData)
           this.boundLineAddedListener = this.onLineAdded.bind(this)
           this.data.norman.addEventListener('HOME_FRAME_LINE_ADDED', this.boundLineAddedListener)
@@ -658,6 +680,11 @@
           this.boundStoppedPlayingListener = this.onStoppedPlaying.bind(this)
           this.data.norman.addEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
           this.data.norman.addEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
+
+          this.boundOnionOnListener = this.onOnionOn.bind(this)
+          this.boundOnionOffListener = this.onOnionOff.bind(this)
+          this.data.norman.addEventListener('ONION_ON', this.boundOnionOnListener)
+          this.data.norman.addEventListener('ONION_OFF', this.boundOnionOffListener)
         },
 
         makeFrameEntity: function(frameData) {
@@ -683,13 +710,27 @@
         },
 
         onStoppedPlaying: function() {
-          this.el.setAttribute('visible', true)
+          if (this.normanComp.onionVisible) {
+            this.el.setAttribute('visible', true)
+          }
+        },
+
+        onOnionOn: function() {
+          if (!this.normanComp.isAnimPlaying) {
+            this.el.setAttribute('visible', true)
+          }
+        },
+
+        onOnionOff: function() {
+          this.el.setAttribute('visible', false)
         },
 
         remove: function() {
           this.data.norman.removeEventListener('HOME_FRAME_LINE_ADDED', this.boundLineAddedListener)
           this.data.norman.removeEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
           this.data.norman.removeEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
+          this.data.norman.removeEventListener('ONION_ON', this.boundOnionOnListener)
+          this.data.norman.removeEventListener('ONION_OFF', this.boundOnionOffListener)
         }
 
 
