@@ -1,17 +1,23 @@
 {
-  "name": "aframe-hello-world-boilerplate",
-  "description": "Boilerplate with A-Frame's 'Hello, World!' of WebVR.",
+  "name": "Norman",
+  "description": "Minimalist hand-drawn animations in WebVR.",
   "version": "0.3.0",
   "license": "MIT",
   "scripts": {
-    "start": "budo --live --verbose --port 3000 --open",
-    "deploy": "ghpages",
-    "ghpages": "ghpages",
-    "stage": "surge . normanvr.surge.sh"
+    "start": "budo js/index.js:build/main.js --live --verbose --port 3000 --open"
+  },
+  "dependencies": {
+    "aframe": "^0.5.0",
+    "jquery": "^3.2.1",
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
     "budo": "^7.0.0",
-    "ghpages": "0.0.3"
+    "ghpages": "0.0.3",
+    "browserify": "^14.0.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-stage-2": "^6.22.0",
+    "babelify": "^7.3.0"
   },
   "keywords": [
     "aframe",
@@ -21,5 +27,16 @@
     "webvr",
     "vr"
   ],
-  "dependencies": {}
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
+    ]
+  }
 }
