@@ -16,6 +16,9 @@
       AFRAME.registerComponent('norman', {
 
         init: function () {
+          this.fps = 30
+          this.maxFPS = 120
+          this.frameInterval = 1000 / this.fps
           this.isAnimPlaying = false
           this.isDrawing = false
           this.addingFrames = false
@@ -23,6 +26,7 @@
           this.autoPrev = false
           this.animData = [[]]
           this.homeFrameIndex = 0
+          this.firstAxisFired = false
           // needs this in order to pickup the controllers?
           this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
@@ -131,6 +135,23 @@
 
           this.controllers[0].addEventListener('Xup', function(e) {
             this.autoPrev = false
+          }.bind(this))
+
+          this.controllers[0].addEventListener('axismove', function(e) {
+            if (!this.firstAxisFired) {
+              this.firstAxisFired = true
+            } else if (!this.isAnimPlaying) {
+              // this.isAnimPlaying = true
+              this.fps = 0
+              this.startPlaying()
+            }
+            this.fps += e.detail.axis[0] 
+            this.frameInterval = 1000 / this.fps
+            if (this.fps > this.maxFPS) {
+              this.fps = this.maxFPS
+            } else if (this.fps < - this.maxFPS) {
+              this.fps = -this.maxFPS
+            }
           }.bind(this))
 
 
@@ -263,10 +284,11 @@
           this.normanComp = this.data.norman.components.norman
           this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
-          this.currentFrame = this.animComp.currentFrame
+          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
           this.boundFrameChangeListener = this.onExitFrame.bind(this)
           this.animEnt.addEventListener('EXIT_FRAME', this.boundFrameChangeListener)
-          this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
+
+          // line blah
           this.MAX_POINTS = 100000
           this.drawCount = 2
           this.linePoints = []
@@ -274,19 +296,18 @@
           this.positions = new Float32Array(this.MAX_POINTS * 3)
           this.geometry.addAttribute('position', new THREE.BufferAttribute(this.positions, 3))
           this.geometry.setDrawRange(0, this.drawCount)
-          this.material = new THREE.LineBasicMaterial({color: "black"})
+          this.material = new THREE.LineBasicMaterial({color: 'black'})
           this.line = new THREE.Line(this.geometry, this.material)
           this.el.setObject3D('line', this.line)
         },
         
         tick: function() {
-          // var wanderPos = this.target.getAttribute('position')
-          var wanderPos = this.controllers[1].getAttribute('position')
+          var pos = this.controllers[1].getAttribute('position')
 
           this.linePoints.push(new THREE.Vector3(
-            wanderPos.x, 
-            wanderPos.y, 
-            wanderPos.z));
+            pos.x, 
+            pos.y, 
+            pos.z));
 
           this.line.geometry.setDrawRange(0, this.linePoints.length)
           this.updatePositions()
@@ -336,17 +357,9 @@
         },
 
         init: function () {
-          this.isAnimPlaying = false // 'isPlaying' conflicts with Entity internal
-          this.fps = 4
-          this.maxFPS = 120
-          this.addingFrames = false
-          this.firstAxisFired = false
-          this.frameInterval = 1000 / this.fps
-          this.frameChangeTime = null
-          // this.autoNext = false
-          // this.autoPrev = false
-          // this.counter = 0
+          
           this.currentFrame = 0
+          this.frameChangeTime = null
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           this.showOnlyCurrentFrame()
           this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
@@ -357,27 +370,6 @@
           this.boundOnFrameAdded = this.onFrameAdded.bind(this)
           this.data.norman.addEventListener('LINE_ADDED', this.boundOnLineAdded)
           this.data.norman.addEventListener('FRAME_ADDED', this.boundOnFrameAdded)
-
-
-          // this.controllers[0].addEventListener('axismove', function(e) {
-          //   if (!this.firstAxisFired) {
-          //     this.firstAxisFired = true
-          //   } else {
-          //     this.isAnimPlaying = true
-          //   }
-          //   this.fps += e.detail.axis[0] 
-          //   this.frameInterval = 1000 / this.fps
-          //   if (this.fps > this.maxFPS) {
-          //     this.fps = this.maxFPS
-          //   } else if (this.fps < - this.maxFPS) {
-          //     this.fps = -this.maxFPS
-          //   }
-          //   // console.log('frameInterval: ', this.frameInterval, e.detail.axis[0], this.fps)
-          // }.bind(this))
-
-
-
-
 
           document.addEventListener('keydown', function(e) {
             // console.log('keydown: ', e)
@@ -398,9 +390,9 @@
           if (this.normanComp.isAnimPlaying) {
             if (!this.frameChangeTime) this.frameChangeTime = time
             var diff = time - this.frameChangeTime
-            if (diff >= Math.abs(this.frameInterval)) {
+            if (diff >= Math.abs(this.normanComp.frameInterval)) {
               this.frameChangeTime = time
-              if (this.frameInterval >= 0) {
+              if (this.normanComp.frameInterval >= 0) {
                 this.gotoNextFrame()
               } else {
                 this.gotoPrevFrame()
