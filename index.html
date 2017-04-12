@@ -32,8 +32,8 @@
           this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
 
-          $.getJSON('webvr-exports/creepy-face-1.json', function(json) {
-            // this.animData = json.data
+          $.getJSON('webvr-exports/cone-1.json', function(json) {
+            this.animData = json.data
             
             this.addAnim()
 
@@ -68,6 +68,9 @@
               opacity: 0.4
             })
 
+            this.startPlaying.bind(this)
+            // _.delay(, 0)
+            this.startPlaying()
           }.bind(this))
 
         },
@@ -570,6 +573,8 @@
           this.boundOnionOffListener = this.onOnionOff.bind(this)
           this.data.norman.addEventListener('ONION_ON', this.boundOnionOnListener)
           this.data.norman.addEventListener('ONION_OFF', this.boundOnionOffListener)
+
+          this.el.setAttribute('visible', false)
 
         },
 
