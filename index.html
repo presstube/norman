@@ -18,6 +18,9 @@
         init: function () {
           this.isAnimPlaying = false
           this.isDrawing = false
+          this.addingFrames = false
+          this.autoNext = false
+          this.autoPrev = false
           this.animData = [[]]
           this.homeFrameIndex = 0
           // needs this in order to pickup the controllers?
@@ -25,7 +28,7 @@
           _.delay(this.setupControllers.bind(this), 1) 
 
           $.getJSON('webvr-exports/hfg-face-1.json', function(json) {
-            this.animData = json.data
+            // this.animData = json.data
             
             this.addAnim()
 
@@ -100,6 +103,37 @@
             this.togglePlay()
           }.bind(this))
 
+          this.controllers[0].addEventListener('triggerdown', function(e) {
+            this.addingFrames = true
+          }.bind(this))
+
+          this.controllers[0].addEventListener('triggerup', function(e) {
+            this.addingFrames = false
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Ydown', function(e) {
+            this.autoNext = true
+            this.insertFrameAfter()
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Yup', function(e) {
+            this.autoNext = false
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Xdown', function(e) {
+            this.autoPrev = true
+            if (this.addingFrames) {
+              this.insertFrameBefore() 
+            } else {
+              this.animComp.gotoPrevFrame()
+            }
+          }.bind(this))
+
+          this.controllers[0].addEventListener('Xup', function(e) {
+            this.autoPrev = false
+          }.bind(this))
+
+
         },
 
         startDrawing: function() {
@@ -136,7 +170,7 @@
 
         addDrawline: function() {
           this.drawlineEnt = document.createElement('a-entity')
-          this.drawlineEnt.setAttribute('drawline', {})
+          this.drawlineEnt.setAttribute('drawline', {norman: '#norman'})
           this.el.appendChild(this.drawlineEnt)
         },
 
@@ -148,8 +182,8 @@
           this.animEnt = document.createElement('a-entity')
           this.animEnt.setAttribute('anim', {norman: '#norman'})
           this.animEnt.setAttribute('id', 'anim')
-          // this.animEnt.components.anim.setAnimData(_.times(1, function() {return []}))
-          this.animEnt.components.anim.setAnimData(this.animData)
+          this.animComp = this.animEnt.components.anim
+          this.animComp.setAnimData(this.animData)
           this.el.appendChild(this.animEnt)
         },
 
@@ -157,7 +191,6 @@
           this.onionSkinEnt = document.createElement('a-entity')
           this.onionSkinEnt.setAttribute('onionskin', _.assign(props, {norman: '#norman'}))
           this.onionSkinEnt.setAttribute('id', 'onionskin')
-          // this.onionSkinEnt.components.onionskin.setAnimData(this.animData)
           this.el.appendChild(this.onionSkinEnt)
         },
 
@@ -198,6 +231,16 @@
           // this.frameEntities.splice(insertIndex, 0, this.makeFrameEntity([]))
         },
 
+        insertFrameAfter: function() {
+          if (this.addingFrames) this.addFrame('after', this.animComp.currentFrame)
+          this.animComp.gotoNextFrame()
+        },
+
+        insertFrameBefore: function() {
+          this.addFrame('before', this.animComp.currentFrame)
+          this.animComp.renderFrame()
+        },
+
         saveAnimDataFile: function() {
           var dataToSave = {data: this.animData}
           var dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dataToSave))
@@ -211,9 +254,13 @@
 
       AFRAME.registerComponent('drawline', {
 
+        schema: {
+          norman: {type: 'selector'}
+        },
+
         init: function() {
           // this.target = document.querySelector('#wanderer')
-          this.normanComp = document.querySelector('#norman').components.norman
+          this.normanComp = this.data.norman.components.norman
           this.animEnt = document.querySelector('#anim')
           this.animComp = document.querySelector('#anim').components.anim
           this.currentFrame = this.animComp.currentFrame
@@ -257,24 +304,27 @@
         },
 
         onExitFrame: function(e) {
-
-          // console.log('drawline heard frame change: ', e.detail, this)
-          // this.normanComp.addLineData(this.linePoints, e.detail.frame)
-          // this.animComp.addLineData(this.linePoints, e.detail.frame)
-          // this.linePoints = []
+          this.normanComp.addLineData(this.linePoints, e.detail.frame)
+          this.linePoints = []
         },
 
         remove: function() {
           this.animEnt.removeEventListener('EXIT_FRAME', this.boundFrameChangeListener)
-          // this.animComp.addLineData(this.linePoints, this.currentFrame)
-          this.normanComp.addLineData(this.linePoints, this.currentFrame)
-          // if (this.animComp.autoNext) {
-          //   if (this.animComp.addingFrames) this.animComp.addFrame('after')
-          //   this.animComp.gotoNextFrame()
-          // } else if (this.animComp.autoPrev) {
-          //   if (this.animComp.addingFrames) this.animComp.addFrame('before')
-          //   this.animComp.gotoPrevFrame()
-          // }
+          this.normanComp.addLineData(this.linePoints, this.animComp.currentFrame)
+          if (this.normanComp.autoNext) {
+            if (this.normanComp.addingFrames) {
+              this.normanComp.insertFrameAfter()
+            } else {
+              this.animComp.gotoNextFrame()
+            }
+          } else if (this.normanComp.autoPrev) {
+            if (this.normanComp.addingFrames) {
+              this.normanComp.insertFrameAfter()
+            } else {
+              this.animComp.gotoPrevFrame()
+              
+            }
+          }
         }
 
       })
@@ -287,16 +337,15 @@
 
         init: function () {
           this.isAnimPlaying = false // 'isPlaying' conflicts with Entity internal
-          this.fps = 24
+          this.fps = 4
           this.maxFPS = 120
           this.addingFrames = false
           this.firstAxisFired = false
           this.frameInterval = 1000 / this.fps
-          this.frameInterval = 0
           this.frameChangeTime = null
-          this.autoNext = false
-          this.autoPrev = false
-          this.counter = 0
+          // this.autoNext = false
+          // this.autoPrev = false
+          // this.counter = 0
           this.currentFrame = 0
           this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
           this.showOnlyCurrentFrame()
@@ -326,38 +375,9 @@
           //   // console.log('frameInterval: ', this.frameInterval, e.detail.axis[0], this.fps)
           // }.bind(this))
 
-          this.controllers[0].addEventListener('triggerdown', function(e) {
-            this.addingFrames = true
-          }.bind(this))
 
-          this.controllers[0].addEventListener('triggerup', function(e) {
-            this.addingFrames = false
-          }.bind(this))
 
-          this.controllers[0].addEventListener('Ydown', function(e) {
-            this.autoNext = true
-            // if (this.addingFrames) this.addFrame('after')
-            if (this.addingFrames) this.normanComp.addFrame('after', this.currentFrame)
-            this.gotoNextFrame()
-          }.bind(this))
 
-          this.controllers[0].addEventListener('Yup', function(e) {
-            this.autoNext = false
-          }.bind(this))
-
-          this.controllers[0].addEventListener('Xdown', function(e) {
-            this.autoPrev = true
-            if (this.addingFrames) {
-              this.normanComp.addFrame('before', this.currentFrame)
-              this.renderFrame()
-            } else {
-              this.gotoPrevFrame()
-            }
-          }.bind(this))
-
-          this.controllers[0].addEventListener('Xup', function(e) {
-            this.autoPrev = false
-          }.bind(this))
 
           document.addEventListener('keydown', function(e) {
             // console.log('keydown: ', e)
@@ -377,11 +397,9 @@
         tick: function(time, timeDelta) {
           if (this.normanComp.isAnimPlaying) {
             if (!this.frameChangeTime) this.frameChangeTime = time
-            this.counter++
             var diff = time - this.frameChangeTime
             if (diff >= Math.abs(this.frameInterval)) {
               this.frameChangeTime = time
-              
               if (this.frameInterval >= 0) {
                 this.gotoNextFrame()
               } else {
@@ -504,11 +522,6 @@
           this.data.norman.addEventListener('FRAME_ADDED', this.boundOnFrameAdded)
 
         },
-
-        // setAnimData: function(animData) {
-        //   this.animData = animData
-        //   this.rebuild()
-        // },
 
         rebuild() {
           _.map(this.frameEntities, function(frameEnt, index) {
