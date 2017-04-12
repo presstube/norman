@@ -186,7 +186,7 @@
           hand.updateMatrixWorld()
           var worldToLocal = new THREE.Matrix4().getInverse(hand.matrixWorld)
           hand.add(norm)
-          norm.applyMatrix(worldToLocal);
+          norm.applyMatrix(worldToLocal)
         },
 
         drop: function() {
@@ -349,7 +349,12 @@
         },
         
         tick: function() {
-          var pos = this.controllers[1].getAttribute('position')
+          
+          var pen = this.controllers[1].object3D
+          var norm = this.normanComp.el.object3D
+          var pos = new THREE.Vector3()
+          pen.localToWorld(pos)
+          norm.worldToLocal(pos)
 
           this.linePoints.push(new THREE.Vector3(
             pos.x, 
