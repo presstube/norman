@@ -68,7 +68,7 @@
               opacity: 0.4
             })
 
-            this.startPlaying.bind(this)
+            // this.startPlaying.bind(this)
             // _.delay(, 0)
             this.startPlaying()
           }.bind(this))
@@ -80,7 +80,7 @@
             // console.log('keydown: ', e)
             if (e.code == 'Enter') {
               this.togglePlay()
-            } else if (e.key == 's') {
+            } else if (e.key == 'S') {
               // this.logAnimData()
               console.log('SAVE')
               this.saveAnimDataFile()
@@ -812,9 +812,9 @@
     <a-scene>
       <a-camera 
         id="camera" 
-        wasd-controls="acceleration: 10w; easing: 10; fly: false"
+        wasd-controls="acceleration: 10w; easing: 10; fly: true"
         position="0 0 0"
-        camera="userHeight: 0"
+        camera="userHeight: 1.2"
         >
       </a-camera>
       <a-sky color="#eee"></a-sky>
