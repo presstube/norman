@@ -31,8 +31,8 @@
           this.setupKeyboard()
           _.delay(this.setupControllers.bind(this), 1) 
 
-          $.getJSON('webvr-exports/hfg-face-1.json', function(json) {
-            // this.animData = json.data
+          $.getJSON('webvr-exports/test.json', function(json) {
+            this.animData = json.data
             
             this.addAnim()
 
@@ -73,6 +73,21 @@
             // this.addAnim()
             // this.addOnionSkin()
 
+        },
+
+        tick: function() {
+          // if (this.grabbed) {
+          //   var hand = this.controllers[0].object3D
+          //   var handWorld = new THREE.Vector3().setFromMatrixPosition(hand.matrixWorld)
+          //   var norm = this.el.object3D
+          //   norm.parent.worldToLocal(handWorld)
+          //   norm.position.x = handWorld.x
+          //   norm.position.y = handWorld.y
+          //   norm.position.z = handWorld.z
+
+          //   console.log('assad: ', norm.parent)
+          //   // this.
+          // }
         },
 
         setupKeyboard: function() {
@@ -154,7 +169,39 @@
             }
           }.bind(this))
 
+          this.controllers[0].addEventListener('gripdown', function(e) {
+            this.grab()
+          }.bind(this))
 
+          this.controllers[0].addEventListener('gripup', function(e) {
+            this.drop()
+          }.bind(this))
+
+        },
+
+        grab: function() {
+          this.grabbed = true
+          var norm = this.el.object3D
+          var hand = this.controllers[0].object3D
+          hand.updateMatrixWorld()
+          var worldToLocal = new THREE.Matrix4().getInverse(hand.matrixWorld)
+          hand.add(norm)
+          norm.applyMatrix(worldToLocal);
+        },
+
+        drop: function() {
+          this.grabbed = false
+          var norm = this.el.object3D
+          var hand = this.controllers[0].object3D
+          var pos = norm.getWorldPosition()
+          var rot = norm.getWorldRotation()
+          this.el.sceneEl.object3D.add(norm)
+          this.el.setAttribute('position', pos);
+          this.el.setAttribute('rotation', {
+            x: THREE.Math.radToDeg(rot.x),
+            y: THREE.Math.radToDeg(rot.y),
+            z: THREE.Math.radToDeg(rot.z)
+          });
         },
 
         startDrawing: function() {
