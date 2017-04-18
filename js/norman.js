@@ -2,7 +2,7 @@ import 'aframe'
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {uploadAnimData} from './firebasesavespike'
+import {uploadAnimData} from './firebasestore'
 
 import './anim'
 import './drawline'
@@ -32,15 +32,22 @@ AFRAME.registerComponent('norman', {
     this.setupKeyboard()
     _.delay(this.setupControllers.bind(this), 1) 
     // $.getJSON('webvr-exports/snap-connect-1.json', json => {
-    const downloadURL = 'https://firebasestorage.googleapis.com/v0/b/cloudstoragespike.appspot.com/o/animData%2FtestAnimData.json?alt=media&token=2fe8120e-76ad-4ce3-a2cc-2647435a60dc'
+    // const downloadURL = 'webvr-exports/snap-connect-1.json'
+    // const downloadURL = 'https://firebasestorage.googleapis.com/v0/b/cloudstoragespike.appspot.com/o/animData%2FtestAnimData.json?alt=media&token=d6a5fade-2fd8-4e33-8eb5-37a7fc50bca6'
 
-    $.getJSON(downloadURL, json => {
-      this.animData = json.data
-      this.addAnim()
-      this.addHomeFrameGhost()
-      this.startPlaying()
-      this.setupOnionSkin()
-    })
+    // $.getJSON(downloadURL, json => {
+    //   // this.animData = json.data
+    //   this.addAnim()
+    //   this.addHomeFrameGhost()
+    //   // this.startPlaying()
+    //   this.setupOnionSkin()
+    // })
+
+    this.addAnim()
+    this.addHomeFrameGhost()
+    // this.startPlaying()
+    this.setupOnionSkin()
+
   },
 
   setupKeyboard() {
@@ -49,7 +56,7 @@ AFRAME.registerComponent('norman', {
       if (e.code == 'Enter') {this.togglePlay()} 
       else if (e.key == 'S') {
         // console.log('saving: ')
-        uploadAnimData('testAnimData.json', {data: this.animData})
+        uploadAnimData(null, {data: this.animData})
       }
       else if (e.key == 'o') {this.toggleOnion()}
       else if (e.key == ',') {this.changeFPS(-1)}
