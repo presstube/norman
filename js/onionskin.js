@@ -12,7 +12,7 @@ AFRAME.registerComponent('onionskin', {
     norman: {type: 'selector'}
   },
 
-  init: function() {
+  init() {
     this.normanComp = norman.components.norman
     this.animEnt = document.querySelector('#anim')
     this.animComp = document.querySelector('#anim').components.anim
@@ -51,12 +51,12 @@ AFRAME.registerComponent('onionskin', {
     // this.showActiveFrames()
   },
 
-  onEnterFrame: function(e) {
+  onEnterFrame(e) {
     // console.log('onion heard change: ', this)
     this.showActiveFrames()
   },
 
-  makeFrameEntity: function(frameData) {
+  makeFrameEntity(frameData) {
     var frameEntity = document.createElement('a-entity')
     this.el.appendChild(frameEntity)
     frameEntity.setAttribute('frame', {
@@ -69,7 +69,7 @@ AFRAME.registerComponent('onionskin', {
     return frameEntity
   },
 
-  showActiveFrames: function() {
+  showActiveFrames() {
     var cf = this.animComp.currentFrame
     var totalFrames = this.frameEntities.length
     _.each(this.showingFrames, function(frameEnt, index) {
@@ -85,7 +85,7 @@ AFRAME.registerComponent('onionskin', {
     }.bind(this))
   },
 
-  onLineAdded: function(e) {
+  onLineAdded(e) {
     this.addLineData(e.detail.lineData, e.detail.frameIndex)
   },
 
@@ -93,31 +93,31 @@ AFRAME.registerComponent('onionskin', {
     this.frameEntities[frameIndex].components.frame.makeLineEntity(lineData)
   },
 
-  onFrameAdded: function(e) {
+  onFrameAdded(e) {
     this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]))
   },
 
-  onStartedPlaying: function() {
+  onStartedPlaying() {
     this.el.setAttribute('visible', false)
   },
 
-  onStoppedPlaying: function() {
+  onStoppedPlaying() {
     if (this.normanComp.onionVisible) {
       this.el.setAttribute('visible', true)
     }
   },
 
-  onOnionOn: function() {
+  onOnionOn() {
     if (!this.normanComp.isAnimPlaying) {
       this.el.setAttribute('visible', true)
     }
   },
 
-  onOnionOff: function() {
+  onOnionOff() {
     this.el.setAttribute('visible', false)
   },
 
-  remove: function() {
+  remove() {
     this.animEnt.removeEventListener('EXIT_FRAME', this.boundFrameChangeListener)
     this.data.norman.removeEventListener('LINE_ADDED', this.boundOnLineAdded)
 

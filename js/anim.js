@@ -4,46 +4,36 @@ import _ from 'lodash'
 AFRAME.registerComponent('anim', {
 
   schema: {
-    norman: {type: 'selector'}
+    norman: {type: 'selector'},
+    animData: {type: 'array'}
   },
 
-  init: function () {
-    
-    this.currentFrame = 0
-    this.frameChangeTime = null
-    this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
+  init() {
+    const {norman, animData} = this.data
+    Object.assign(this, {
+      currentFrame: 0,
+      frameChangeTime: null,
+      frameEntities: animData.map(frameData => this.makeFrameEntity(frameData)),
+      normanComp: norman.components.norman,
+      boundOnLineAdded: this.onLineAdded.bind(this),
+      boundOnFrameAdded: this.onFrameAdded.bind(this)
+    })
+    const {boundOnLineAdded, boundOnFrameAdded} = this
+    norman.addEventListener('LINE_ADDED', boundOnLineAdded)    
+    norman.addEventListener('FRAME_ADDED', boundOnFrameAdded)    
     this.showOnlyCurrentFrame()
-    this.controllers = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))
-    this.normanComp = this.data.norman.components.norman
-
-    // code duplicated between anim and onionskin
-    this.boundOnLineAdded = this.onLineAdded.bind(this)
-    this.boundOnFrameAdded = this.onFrameAdded.bind(this)
-    this.data.norman.addEventListener('LINE_ADDED', this.boundOnLineAdded)
-    this.data.norman.addEventListener('FRAME_ADDED', this.boundOnFrameAdded)
-
-    document.addEventListener('keydown', function(e) {
-      // console.log('keydown: ', e)
-      if (e.code == 'Comma') {
-        this.gotoPrevFrame()
-      } else if (e.code == 'Period') {
-        this.gotoNextFrame()
-      }
-    }.bind(this))                   
-
   },
 
-  update: function(oldData) {
-    // console.log('anim updated: ', oldData, this.data)
-  },
-
-  tick: function(time, timeDelta) {
-    if (this.normanComp.isAnimPlaying) {
+  tick(time, timeDelta) {
+    const {normanComp} = this,
+          {isAnimPlaying, frameInterval} = normanComp
+    if (isAnimPlaying) {
       if (!this.frameChangeTime) this.frameChangeTime = time
-      var diff = time - this.frameChangeTime
-      if (diff >= Math.abs(this.normanComp.frameInterval)) {
+      const {frameChangeTime} = this,
+            diff = time - frameChangeTime
+      if (diff >= Math.abs(frameInterval)) {
         this.frameChangeTime = time
-        if (this.normanComp.frameInterval >= 0) {
+        if (frameInterval >= 0) {
           this.gotoNextFrame()
         } else {
           this.gotoPrevFrame()
@@ -53,19 +43,21 @@ AFRAME.registerComponent('anim', {
     }
   },
 
-  showOnlyCurrentFrame: function() {
-    _.map(this.frameEntities, function(frameEnt, index) {
-      if (index == this.currentFrame) {
+  showOnlyCurrentFrame() {
+    const {frameEntities, currentFrame} = this
+    frameEntities.map((frameEnt, index) => {
+      if (index == currentFrame) {
         frameEnt.setAttribute('visible', true)
       } else {
         frameEnt.setAttribute('visible', false)
       }
-    }.bind(this))
+    })
   },
 
-  makeFrameEntity: function(frameData) {
-    var frameEntity = document.createElement('a-entity')
-    this.el.appendChild(frameEntity)
+  makeFrameEntity(frameData) {
+    const frameEntity = document.createElement('a-entity'),
+          {el} = this
+    el.appendChild(frameEntity)
     frameEntity.setAttribute('frame', {
       frameData: frameData,
       color: '#222',
@@ -74,22 +66,11 @@ AFRAME.registerComponent('anim', {
     return frameEntity
   },
 
-  rebuild() {
-    _.map(this.frameEntities, function(frameEnt, index) {
-      this.el.removeChild(frameEnt)
-    }.bind(this))
-    this.frameEntities = _.map(this.animData, this.makeFrameEntity.bind(this))
-    this.showOnlyCurrentFrame()
-  },
-
-  setAnimData: function(animData) {
-    this.animData = animData
-    this.rebuild()
-  },
-
-  gotoNextFrame: function() {
-    this.el.emit('EXIT_FRAME', {frame: this.currentFrame})
-    if (this.currentFrame + 1 == this.animData.length) {
+  gotoNextFrame() {
+    const {el, data, currentFrame} = this,
+          {animData} = data
+    el.emit('EXIT_FRAME', {frame: currentFrame})
+    if (currentFrame + 1 == animData.length) {
       this.currentFrame = 0
     } else {
       this.currentFrame++
@@ -97,36 +78,41 @@ AFRAME.registerComponent('anim', {
     this.renderFrame()
   },
 
-  gotoPrevFrame: function() {
-    this.el.emit('EXIT_FRAME', {frame: this.currentFrame})
-    if (this.currentFrame - 1 < 0) {
-      this.currentFrame = this.animData.length - 1
+  gotoPrevFrame() {
+    const {el, data, currentFrame} = this,
+          {animData} = data
+    el.emit('EXIT_FRAME', {frame: currentFrame})
+    if (currentFrame - 1 < 0) {
+      this.currentFrame = animData.length - 1
     } else {
       this.currentFrame--
     }
     this.renderFrame()
   },
 
-  renderFrame: function() {
+  renderFrame() {
+    const {el, currentFrame} = this
     this.showOnlyCurrentFrame()
-    this.el.emit('ENTER_FRAME', {frame: this.currentFrame})
+    el.emit('ENTER_FRAME', {frame: currentFrame})
   },
 
-  onLineAdded: function(e) {
-    this.addLineData(e.detail.lineData, e.detail.frameIndex)
+  onLineAdded({detail}) {
+    this.addLineData(detail)
   },
 
-  addLineData(lineData, frameIndex) {
+  addLineData({lineData, frameIndex}) {
     this.frameEntities[frameIndex].components.frame.makeLineEntity(lineData)
   },
 
-  onFrameAdded: function(e) {
+  onFrameAdded(e) {
     this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]))
   },
 
-  remove: function() {
-    this.data.norman.removeEventListener('LINE_ADDED', this.boundOnLineAdded)
-    this.data.norman.removeEventListener('FRAME_ADDED', this.boundOnFrameAdded)
+  remove() {
+    const {norman} = this.data,
+          {boundOnLineAdded, boundOnFrameAdded} = this
+    norman.removeEventListener('LINE_ADDED', boundOnLineAdded)
+    norman.removeEventListener('FRAME_ADDED', boundOnFrameAdded)
   }
 
 })

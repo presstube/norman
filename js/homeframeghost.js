@@ -11,7 +11,7 @@ AFRAME.registerComponent('homeframeghost', {
     opacity: {type: 'number', default: 1},
   },
 
-  init: function() {
+  init() {
     // console.log('home frame ghost here!', this.data)
     this.normanComp = norman.components.norman
     this.homeFrame = this.makeFrameEntity(this.data.frameData)
@@ -30,7 +30,7 @@ AFRAME.registerComponent('homeframeghost', {
     // this.data.norman.addEventListener('ONION_OFF', this.boundOnionOffListener)
   },
 
-  makeFrameEntity: function(frameData) {
+  makeFrameEntity(frameData) {
     var frameEntity = document.createElement('a-entity')
     this.el.appendChild(frameEntity)
     frameEntity.setAttribute('frame', {
@@ -43,37 +43,38 @@ AFRAME.registerComponent('homeframeghost', {
     return frameEntity
   },
 
-  onLineAdded: function(e) {
+  onLineAdded(e) {
     // console.log('HFG heard line added: ', e)
     this.homeFrame.components.frame.makeLineEntity(e.detail.lineData)
   },
 
-  onStartedPlaying: function() {
+  onStartedPlaying() {
     this.el.setAttribute('visible', false)
   },
 
-  onStoppedPlaying: function() {
+  onStoppedPlaying() {
     // if (this.normanComp.onionVisible) {
     // }
     this.el.setAttribute('visible', true)
   },
 
-  onOnionOn: function() {
+  onOnionOn() {
     if (!this.normanComp.isAnimPlaying) {
       this.el.setAttribute('visible', true)
     }
   },
 
-  onOnionOff: function() {
+  onOnionOff() {
     this.el.setAttribute('visible', false)
   },
 
-  remove: function() {
-    this.data.norman.removeEventListener('HOME_FRAME_LINE_ADDED', this.boundLineAddedListener)
-    this.data.norman.removeEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
-    this.data.norman.removeEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
-    this.data.norman.removeEventListener('ONION_ON', this.boundOnionOnListener)
-    this.data.norman.removeEventListener('ONION_OFF', this.boundOnionOffListener)
+  remove() {
+    let {norman} = this.data
+    norman.removeEventListener('HOME_FRAME_LINE_ADDED', this.boundLineAddedListener)
+    norman.removeEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
+    norman.removeEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
+    norman.removeEventListener('ONION_ON', this.boundOnionOnListener)
+    norman.removeEventListener('ONION_OFF', this.boundOnionOffListener)
   }
 
 

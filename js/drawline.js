@@ -6,7 +6,7 @@ AFRAME.registerComponent('drawline', {
     norman: {type: 'selector'}
   },
 
-  init: function() {
+  init() {
     // this.target = document.querySelector('#wanderer')
     this.normanComp = this.data.norman.components.norman
     this.animEnt = document.querySelector('#anim')
@@ -28,9 +28,8 @@ AFRAME.registerComponent('drawline', {
     this.el.setObject3D('line', this.line)
   },
   
-  tick: function() {
-    
-    var pen = this.controllers[1].object3D
+  tick() {
+    var pen = this.normanComp.primaryHand.object3D
     var norm = this.normanComp.el.object3D
     var pos = new THREE.Vector3()
     pen.localToWorld(pos)
@@ -46,7 +45,7 @@ AFRAME.registerComponent('drawline', {
     this.line.geometry.attributes.position.needsUpdate = true
   },
 
-  updatePositions: function() {
+  updatePositions() {
     var positions = this.line.geometry.attributes.position.array
     var index = 0
     for (var i = 0; i < this.linePoints.length; i++) {
@@ -56,27 +55,18 @@ AFRAME.registerComponent('drawline', {
     }
   },
 
-  onExitFrame: function(e) {
+  onExitFrame(e) {
     this.normanComp.addLineData(this.linePoints, e.detail.frame)
     this.linePoints = []
   },
 
-  remove: function() {
+  remove() {
     this.animEnt.removeEventListener('EXIT_FRAME', this.boundFrameChangeListener)
     this.normanComp.addLineData(this.linePoints, this.animComp.currentFrame)
     if (this.normanComp.autoNext) {
-      if (this.normanComp.addingFrames) {
-        this.normanComp.insertFrameAfter()
-      } else {
-        this.animComp.gotoNextFrame()
-      }
+      this.normanComp.handleNext()
     } else if (this.normanComp.autoPrev) {
-      if (this.normanComp.addingFrames) {
-        this.normanComp.insertFrameAfter()
-      } else {
-        this.animComp.gotoPrevFrame()
-        
-      }
+      this.normanComp.handlePrev()
     }
   }
 

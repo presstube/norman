@@ -7,15 +7,14 @@
     <script src="build/main.js"></script>
   </head>
   <body>
-    <a-scene>
-      <a-sky color="#eee"></a-sky>
+    <a-scene fog="color: #ccc; near: .1; far:3">
+      <a-sky color="#ccc"></a-sky>
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10w; easing: 10; fly: true"
         position="0 0 0"
         camera="userHeight: 1.2"
-        >
-      </a-camera>
+        ></a-camera>
       <a-entity id="norman" norman position="0 0 0"></a-entity>
       <a-ring color="tomato" radius-inner="1" radius-outer="1.001" rotation="-90 0 0"></a-ring>
       <a-cone 

@@ -9,7 +9,7 @@ AFRAME.registerComponent('line', {
     opacity: {type: 'number', default: 1}
   },
 
-  init: function () {
+  init() {
     var material
     var lineMesh
     var geometry = new THREE.Geometry()

@@ -10,11 +10,11 @@ AFRAME.registerComponent('frame', {
     opacity: {type: 'number', default: 1}
   },
 
-  init: function () {
+  init() {
     var lineEntities = _.map(this.data.frameData, this.makeLineEntity.bind(this))
   },
 
-  makeLineEntity: function(lineData) {
+  makeLineEntity(lineData) {
     var lineEntity = document.createElement('a-entity');
     this.el.appendChild(lineEntity);
     lineEntity.setAttribute('line', {
