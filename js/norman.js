@@ -33,20 +33,19 @@ AFRAME.registerComponent('norman', {
     _.delay(this.setupControllers.bind(this), 1) 
     // $.getJSON('webvr-exports/snap-connect-1.json', json => {
     // const downloadURL = 'webvr-exports/snap-connect-1.json'
-    // const downloadURL = 'https://firebasestorage.googleapis.com/v0/b/cloudstoragespike.appspot.com/o/animData%2FtestAnimData.json?alt=media&token=d6a5fade-2fd8-4e33-8eb5-37a7fc50bca6'
 
-    // $.getJSON(downloadURL, json => {
-    //   // this.animData = json.data
-    //   this.addAnim()
-    //   this.addHomeFrameGhost()
-    //   // this.startPlaying()
-    //   this.setupOnionSkin()
-    // })
+    const downloadURL = 'https://firebasestorage.googleapis.com/v0/b/cloudstoragespike.appspot.com/o/animData%2Fshingled-dank-donks.json?alt=media&token=4c4db1b5-c18a-4edd-b4e4-98e1c8a67f8e'
+    $.getJSON(downloadURL, json => {
+      this.animData = json.data
+      this.addAnim()
+      this.addHomeFrameGhost()
+      this.startPlaying()
+      this.setupOnionSkin()
+    })
 
-    this.addAnim()
-    this.addHomeFrameGhost()
-    // this.startPlaying()
-    this.setupOnionSkin()
+    // this.addAnim()
+    // this.addHomeFrameGhost()
+    // this.setupOnionSkin()
 
   },
 
@@ -80,17 +79,25 @@ AFRAME.registerComponent('norman', {
     primaryHand.addEventListener('Bdown', e => this.togglePlay())
     secondaryHand.addEventListener('triggerdown', e => this.addingFrames = true)
     secondaryHand.addEventListener('triggerup', e => this.addingFrames = false)
-    secondaryHand.addEventListener('Ydown', e => {
+    // secondaryHand.addEventListener('Ydown', e => {
+    // })
+    // secondaryHand.addEventListener('Yup', e => this.autoNext = false)
+    // secondaryHand.addEventListener('Xdown', e => {
+    // })
+    // secondaryHand.addEventListener('Xup', e => this.autoPrev = false)
+    this.setupThumbStickDirectionEvents(primaryHand, 0.5)
+    this.setupThumbStickDirectionEvents(secondaryHand, 0.01)
+    secondaryHand.addEventListener('RIGHT_ON', () => {
       this.autoNext = true
       this.handleNext()
     })
-    secondaryHand.addEventListener('Yup', e => this.autoNext = false)
-    secondaryHand.addEventListener('Xdown', e => {
+    secondaryHand.addEventListener('LEFT_ON', () => {
       this.autoPrev = true
       this.handlePrev()
     })
-    secondaryHand.addEventListener('Xup', e => this.autoPrev = false)
-    secondaryHand.addEventListener('axismove', e => {
+    secondaryHand.addEventListener('RIGHT_OFF', e => this.autoNext = false)
+    secondaryHand.addEventListener('LEFT_OFF', e => this.autoPrev = false)
+    primaryHand.addEventListener('axismove', e => {
       if (!this.firstAxisFired) {
         this.firstAxisFired = true
       } else if (!this.isAnimPlaying) {
@@ -101,6 +108,42 @@ AFRAME.registerComponent('norman', {
     })
     secondaryHand.addEventListener('gripdown', e => this.grab())
     secondaryHand.addEventListener('gripup', e => this.drop())
+  },
+
+  setupThumbStickDirectionEvents(controller, thresh = 0.5) {
+    let left = false,
+        right = false,
+        up = false,
+        down = false,
+        c = controller
+    c.addEventListener('axismove', e => {
+      const [xAxis, yAxis] = e.detail.axis
+      if (xAxis > thresh && !right) {
+        c.emit('RIGHT_ON')
+        right = true
+      } else if (xAxis < thresh && right) {
+        c.emit('RIGHT_OFF')
+        right = false
+      } else if (xAxis < -thresh && !left) {
+        c.emit('LEFT_ON')
+        left = true
+      } else if (xAxis > -thresh && left) {
+        c.emit('LEFT_OFF')
+        left = false
+      } else if (yAxis > thresh && !down) {
+        c.emit('DOWN_ON')
+        down = true
+      } else if (yAxis < thresh && down) {
+        c.emit('DOWN_OFF')
+        down = false
+      } else if (yAxis < -thresh && !up) {
+        c.emit('UP_ON')
+        up = true
+      } else if (yAxis > -thresh && up) {
+        c.emit('UP_OFF')
+        up = false
+      }
+    })
   },
 
   handleNext() {
