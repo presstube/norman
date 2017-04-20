@@ -4,7 +4,8 @@
   "version": "0.3.0",
   "license": "MIT",
   "scripts": {
-    "start": "budo js/index.js:build/main.js --live --verbose --port 3000 --open"
+    "start": "budo --live --verbose --port 3000 --open",
+    "build": "browserify js/index.js > build/main.js"
   },
   "dependencies": {
     "aframe": "^0.5.0",
