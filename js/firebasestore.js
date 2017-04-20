@@ -2,6 +2,7 @@
 import * as firebase from 'firebase'
 import * as firebaseui from 'firebaseui'
 import _ from 'lodash'
+import $ from 'jquery'
 
 firebase.initializeApp({
   apiKey: "AIzaSyBxE0HZfnB7uF2J57oTmjFX-0mLeBfJI-0",
@@ -12,29 +13,28 @@ firebase.initializeApp({
   messagingSenderId: "10638532760"
 })
 
-const uploadAnimData = (filename, animData) => {
+// let currentFileInfo = null
+
+const save = (animData, fileInfo) => {
 
   const upload = (filename) => {
-
     const uploadRef = firebase.storage().ref().child('animData/' + filename + '.json'),
           file = new Blob([JSON.stringify(animData)], {type: 'application/json'})
-
     return uploadRef.put(file).then(function(snapshot) {
+      console.log(filename + ' succesfully uploaded!')
       const animationsRef = firebase.database().ref('animations/' + filename)
       animationsRef.set({
         filename,
-        downloadURL: snapshot.downloadURL
+        downloadURL: snapshot.downloadURL,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
       })
     })
-
   }
 
-  if (!filename) {
-    getRandomUniqueName().then(name => {
-      upload(name)
-    })
+  if (!fileInfo) {
+    getRandomUniqueName().then(upload)
   } else {
-    upload(filename)
+    upload(fileInfo.filename)
   }
 
 }
@@ -43,14 +43,7 @@ const getRandomName = () => {
   const first = ['mulgy', 'trulmy', 'gildered', 'marbled', 'troubling', 'lorgussy', 'shingled', 'brumpled', 'clumbied', 'fropley'],
         second = ['frump', 'dank', 'prunt', 'limp', 'groft', 'plex', 'bung', 'tap', 'ront', 'clam', 'brine', 'shift', 'crank'],
         third = ['shanks', 'lumps', 'glops', 'hinges', 'hunguses', 'hops', 'squeefs', 'clamps', 'clumps','donks', 'flops']
-
-  // if (Math.random() < 0.5) {
-  //   return 'troubling-tap-clamps'
-  // } else {
-  //   return `${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
-  // }
-    return `${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
-
+  return `${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
 }
 
 const getRandomUniqueName = () => {
@@ -74,8 +67,55 @@ const getRandomUniqueName = () => {
   })
 }
 
+const loadPrev = (currentFileInfo) => {
+  return new Promise((resolve, reject) => {
+    firebase.database().ref('animations').once('value', snapshot => {
+      const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['desc'])
+      if (!currentFileInfo) {
+        currentFileInfo = _.first(fileInfos)
+      } else {
+        const currentIndex = _.findIndex(fileInfos, fi => fi.filename === currentFileInfo.filename)
+        if (currentIndex === fileInfos.length - 1) {
+          currentFileInfo = _.first(fileInfos)
+        } else { 
+          currentFileInfo = _.nth(fileInfos, currentIndex + 1)
+        }
+      }
+      loadFile(currentFileInfo).then(animData => {
+        resolve({animData, currentFileInfo})
+      })
+    })
+  })
+}
 
+const loadNext = (currentFileInfo) => {
+  return new Promise((resolve, reject) => {
+    firebase.database().ref('animations').once('value', snapshot => {
+      const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['asc'])
+      if (!currentFileInfo) {
+        currentFileInfo = _.first(fileInfos)
+      } else {
+        const currentIndex = _.findIndex(fileInfos, fi => fi.filename === currentFileInfo.filename)
+        if (currentIndex === fileInfos.length - 1) {
+          currentFileInfo = _.first(fileInfos)
+        } else { 
+          currentFileInfo = _.nth(fileInfos, currentIndex + 1)
+        }
+      }
+      loadFile(currentFileInfo).then(animData => {
+        resolve({animData, currentFileInfo})
+      })
+    })
+  })
+}
 
+const loadFile = (fileInfo) => {
+  return new Promise((resolve, reject) => {
+    $.getJSON(fileInfo.downloadURL, json => {
+      resolve(json.data)
+    })
+  })
+}
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -100,4 +140,8 @@ firebase.auth().onAuthStateChanged(user => {
 
 
 
-export {uploadAnimData}
+export {
+  save,
+  loadPrev,
+  loadNext
+}

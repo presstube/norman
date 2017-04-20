@@ -75,14 +75,16 @@ AFRAME.registerComponent('onionskin', {
     _.each(this.showingFrames, function(frameEnt, index) {
       frameEnt.setAttribute('visible', false)
     })
-    this.showingFrames = _.map(this.data.framesToSkin, function(frameToSkin) {
-      var frameNumToSkin = cf + frameToSkin
-      if (frameNumToSkin < 0) frameNumToSkin = (totalFrames) + frameNumToSkin
-      if (frameNumToSkin >= totalFrames) frameNumToSkin = frameNumToSkin - totalFrames
-      var frameEnt = this.frameEntities[frameNumToSkin]
-      frameEnt.setAttribute('visible', true)
-      return frameEnt
-    }.bind(this))
+    if (totalFrames > 1) {
+      this.showingFrames = _.map(this.data.framesToSkin, function(frameToSkin) {
+        var frameNumToSkin = cf + frameToSkin
+        if (frameNumToSkin < 0) frameNumToSkin = (totalFrames) + frameNumToSkin
+        if (frameNumToSkin >= totalFrames) frameNumToSkin = frameNumToSkin - totalFrames
+        var frameEnt = this.frameEntities[frameNumToSkin]
+        frameEnt.setAttribute('visible', true)
+        return frameEnt
+      }.bind(this))
+    }
   },
 
   onLineAdded(e) {
@@ -118,11 +120,18 @@ AFRAME.registerComponent('onionskin', {
   },
 
   remove() {
-    this.animEnt.removeEventListener('EXIT_FRAME', this.boundFrameChangeListener)
+
+    // console.log('removing onion')
+
+    this.animEnt.removeEventListener('ENTER_FRAME', this.boundFrameChangeListener)
     this.data.norman.removeEventListener('LINE_ADDED', this.boundOnLineAdded)
 
     this.data.norman.removeEventListener('ONION_ON', this.boundOnionOnListener)
     this.data.norman.removeEventListener('ONION_OFF', this.boundOnionOffListener)
+
+    this.data.norman.removeEventListener('STARTED_PLAYING', this.boundStartedPlayingListener)
+    this.data.norman.removeEventListener('STOPPED_PLAYING', this.boundStoppedPlayingListener)
+
   }
 
 })

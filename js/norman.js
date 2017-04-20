@@ -2,7 +2,7 @@ import 'aframe'
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {uploadAnimData} from './firebasestore'
+import {save, loadPrev, loadNext} from './firebasestore'
 
 import './anim'
 import './drawline'
@@ -15,6 +15,7 @@ AFRAME.registerComponent('norman', {
 
   init() {
     Object.assign(this, {
+      currentFileInfo: null,
       animData: [[]],
       fps: 30,
       maxFPS: 120,
@@ -25,8 +26,10 @@ AFRAME.registerComponent('norman', {
       autoPrev: false,
       homeFrameIndex: 0,
       firstAxisFired: false,
+      onionSkins: [],
       onionVisible: false,
       isRightHanded: true,
+      fileSystemMode: false
     })
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
@@ -36,16 +39,19 @@ AFRAME.registerComponent('norman', {
 
     const downloadURL = 'https://firebasestorage.googleapis.com/v0/b/cloudstoragespike.appspot.com/o/animData%2Fshingled-dank-donks.json?alt=media&token=4c4db1b5-c18a-4edd-b4e4-98e1c8a67f8e'
     $.getJSON(downloadURL, json => {
-      this.animData = json.data
-      this.addAnim()
-      this.addHomeFrameGhost()
-      this.startPlaying()
-      this.setupOnionSkin()
+      // this.setup(json.data)
+      // this.animData = json.data
+      // this.addAnim()
+      // this.addHomeFrameGhost()
+      // this.setupOnionSkin()
+      // this.startPlaying()
     })
 
     // this.addAnim()
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
+
+    this.setup()
 
   },
 
@@ -53,10 +59,10 @@ AFRAME.registerComponent('norman', {
     document.addEventListener('keydown', e => {
       // console.log('keydown: ', e.key)
       if (e.code == 'Enter') {this.togglePlay()} 
-      else if (e.key == 'S') {
-        // console.log('saving: ')
-        uploadAnimData(null, {data: this.animData})
-      }
+      // else if (e.key == 'S') {
+      //   // console.log('saving: ')
+      //   uploadAnimData(null, {data: this.animData})
+      // }
       else if (e.key == 'o') {this.toggleOnion()}
       else if (e.key == ',') {this.changeFPS(-1)}
       else if (e.key == '.') {this.changeFPS(1)}
@@ -69,9 +75,28 @@ AFRAME.registerComponent('norman', {
           [leftHand, rightHand] = controllers,
           primaryHand = this.isRightHanded ? rightHand : leftHand,
           secondaryHand = this.isRightHanded ? leftHand : rightHand,
-          pensphereEnt = document.querySelector("#pensphere")
+          pensphereEnt = document.querySelector("#pensphere"),
+          boundFileNew = this.fileNew.bind(this),
+          boundFileSave = this.fileSave.bind(this),
+          boundFileLoadPrev = this.fileLoadPrev.bind(this),
+          boundFileLoadNext = this.fileLoadNext.bind(this),
+          addFilesystemListeners = () => {
+            this.fileSystemMode = true // smelly.. do this with adding and removing listeners
+            primaryHand.addEventListener('UP_ON', boundFileNew)
+            primaryHand.addEventListener('DOWN_ON', boundFileSave)
+            primaryHand.addEventListener('LEFT_ON', boundFileLoadPrev)
+            primaryHand.addEventListener('RIGHT_ON', boundFileLoadNext)
+          },
+          removeFilesystemListeners = () => {
+            this.fileSystemMode = false // smelly.. do this with adding and removing listeners
+            primaryHand.removeEventListener('UP_ON', boundFileNew)
+            primaryHand.removeEventListener('DOWN_ON', boundFileSave)
+            primaryHand.removeEventListener('LEFT_ON', boundFileLoadPrev)
+            primaryHand.removeEventListener('RIGHT_ON', boundFileLoadNext)
+          }
 
     Object.assign(this, {secondaryHand, primaryHand})
+
     primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
     primaryHand.addEventListener('triggerdown', () => this.startDrawing())
     primaryHand.addEventListener('triggerup', () => this.stopDrawing())
@@ -79,12 +104,10 @@ AFRAME.registerComponent('norman', {
     primaryHand.addEventListener('Bdown', e => this.togglePlay())
     secondaryHand.addEventListener('triggerdown', e => this.addingFrames = true)
     secondaryHand.addEventListener('triggerup', e => this.addingFrames = false)
-    // secondaryHand.addEventListener('Ydown', e => {
-    // })
-    // secondaryHand.addEventListener('Yup', e => this.autoNext = false)
-    // secondaryHand.addEventListener('Xdown', e => {
-    // })
-    // secondaryHand.addEventListener('Xup', e => this.autoPrev = false)
+    // secondaryHand.addEventListener('Ydown', addFilesystemListeners)
+    // secondaryHand.addEventListener('Yup', removeFilesystemListeners)
+    secondaryHand.addEventListener('Xdown', addFilesystemListeners)
+    secondaryHand.addEventListener('Xup', removeFilesystemListeners)
     this.setupThumbStickDirectionEvents(primaryHand, 0.5)
     this.setupThumbStickDirectionEvents(secondaryHand, 0.01)
     secondaryHand.addEventListener('RIGHT_ON', () => {
@@ -98,16 +121,20 @@ AFRAME.registerComponent('norman', {
     secondaryHand.addEventListener('RIGHT_OFF', e => this.autoNext = false)
     secondaryHand.addEventListener('LEFT_OFF', e => this.autoPrev = false)
     primaryHand.addEventListener('axismove', e => {
-      if (!this.firstAxisFired) {
-        this.firstAxisFired = true
-      } else if (!this.isAnimPlaying) {
-        this.fps = 0
-        this.startPlaying()
+      if (!this.fileSystemMode) { // smelly.. do this with adding and removing listeners
+        if (!this.firstAxisFired) {
+          this.firstAxisFired = true
+        } else if (!this.isAnimPlaying) {
+          this.fps = 0
+          this.startPlaying()
+        }
+        this.changeFPS(e.detail.axis[0])
       }
-      this.changeFPS(e.detail.axis[0])
     })
     secondaryHand.addEventListener('gripdown', e => this.grab())
     secondaryHand.addEventListener('gripup', e => this.drop())
+
+
   },
 
   setupThumbStickDirectionEvents(controller, thresh = 0.5) {
@@ -146,6 +173,53 @@ AFRAME.registerComponent('norman', {
     })
   },
 
+  setup(animData = [[]]) {
+    this.animData = animData
+    this.addAnim()
+    this.addHomeFrameGhost()
+    this.setupOnionSkin()
+  },
+
+  teardown() {
+    this.stopPlaying()
+    this.removeHomeFrameGhost()
+    this.removeOnionSkin()
+    this.removeAnim()
+    this.animData = []
+    this.currentFileInfo = null
+  },
+
+  fileNew() {
+    // console.log('NEW')
+    this.teardown()
+    this.setup()
+  },
+
+  fileSave() {
+    // console.log('SAVE')
+    save({data: this.animData}, this.currentFileInfo)
+  },
+
+  fileLoadPrev() {
+    // console.log('LOAD PREV')
+    loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
+      this.teardown()
+      // console.log('animData: ', animData, currentFileInfo)
+      this.currentFileInfo = currentFileInfo
+      this.setup(animData)
+    })
+  },
+
+  fileLoadNext() {
+    // console.log('LOAD NEXT')
+    loadNext(this.currentFileInfo).then(({animData, currentFileInfo}) => {
+      this.teardown()
+      // console.log('animData: ', animData, currentFileInfo)
+      this.currentFileInfo = currentFileInfo
+      this.setup(animData)
+    })
+  },
+
   handleNext() {
     if (this.addingFrames) {
       this.insertFrameAfter()
@@ -164,34 +238,43 @@ AFRAME.registerComponent('norman', {
 
   setupOnionSkin() {
     const {animData} = this
-    this.addOnionSkin({
-      animData,
-      framesToSkin: [-2],
-      color: 'orange',
-      style: 'dashed',
-      opacity: 0.4
+    this.onionSkins = [
+      this.addOnionSkin({
+        animData,
+        framesToSkin: [-2],
+        color: 'orange',
+        style: 'dashed',
+        opacity: 0.4
+      }),
+      this.addOnionSkin({
+        animData,
+        framesToSkin: [-1],
+        color: 'orange',
+        style: 'solid',
+        opacity: 0.6
+      }),
+      this.addOnionSkin({
+        animData,
+        framesToSkin: [1],
+        color: 'blue',
+        style: 'solid',
+        opacity: 0.6
+      }),
+      this.addOnionSkin({
+        animData,
+        framesToSkin: [2],
+        color: 'blue',
+        style: 'dashed',
+        opacity: 0.4
+      })    
+    ]
+  },
+
+  removeOnionSkin() {
+    this.onionSkins.map(onionSkinEnt => {
+      this.el.removeChild(onionSkinEnt)
     })
-    this.addOnionSkin({
-      animData,
-      framesToSkin: [-1],
-      color: 'orange',
-      style: 'solid',
-      opacity: 0.6
-    })
-    this.addOnionSkin({
-      animData,
-      framesToSkin: [1],
-      color: 'blue',
-      style: 'solid',
-      opacity: 0.6
-    })
-    this.addOnionSkin({
-      animData,
-      framesToSkin: [2],
-      color: 'blue',
-      style: 'dashed',
-      opacity: 0.4
-    })    
+    this.onionSkins = []
   },
 
   toggleOnion() {
@@ -292,8 +375,13 @@ AFRAME.registerComponent('norman', {
     animEnt.setAttribute('anim', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
     this.animComp = animEnt.components.anim
-    // this.animComp.setAnimData(animData)
     el.appendChild(animEnt)
+  },
+
+  removeAnim() {
+    const {el, animEnt} = this
+    el.removeChild(animEnt)
+    this.animEnt = null
   },
 
   addOnionSkin(props) {
@@ -302,11 +390,12 @@ AFRAME.registerComponent('norman', {
     onionSkinEnt.setAttribute('onionskin', _.assign(props, {norman: '#norman'}))
     onionSkinEnt.setAttribute('id', 'onionskin')
     el.appendChild(onionSkinEnt)
+    return onionSkinEnt
   },
 
   addHomeFrameGhost() {
-    const hfg = document.createElement('a-entity'),
-          {el, animData} = this
+    this.hfg = document.createElement('a-entity')
+    const {el, animData, hfg} = this
     el.appendChild(hfg)
     hfg.setAttribute('id', 'homeframeghost')
     hfg.setAttribute('homeframeghost', {
@@ -316,6 +405,11 @@ AFRAME.registerComponent('norman', {
       style: 'dashed',
       opacity: 0.2
     })
+  },
+
+  removeHomeFrameGhost() {
+    this.el.removeChild(this.hfg)
+    this.hfg = null
   },
 
   addLineData(lineData, frameIndex) {
@@ -352,14 +446,14 @@ AFRAME.registerComponent('norman', {
     animComp.renderFrame()
   },
 
-  saveAnimDataFile() {
-    const {animData: data} = this,
-          dataToSave = {data},
-          dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dataToSave)),
-          dlAnchorElem = document.getElementById('downloadAnchorElem')
-    dlAnchorElem.setAttribute('href', dataStr)
-    dlAnchorElem.setAttribute('download', 'test.json')
-    dlAnchorElem.click()
-  },
+  // saveAnimDataFile() {
+  //   const {animData: data} = this,
+  //         dataToSave = {data},
+  //         dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dataToSave)),
+  //         dlAnchorElem = document.getElementById('downloadAnchorElem')
+  //   dlAnchorElem.setAttribute('href', dataStr)
+  //   dlAnchorElem.setAttribute('download', 'test.json')
+  //   dlAnchorElem.click()
+  // },
 
 })

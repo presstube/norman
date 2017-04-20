@@ -24,6 +24,13 @@ AFRAME.registerComponent('anim', {
     this.showOnlyCurrentFrame()
   },
 
+  remove() {
+    const {norman} = this.data,
+          {boundOnLineAdded, boundOnFrameAdded} = this
+    norman.removeEventListener('LINE_ADDED', boundOnLineAdded)
+    norman.removeEventListener('FRAME_ADDED', boundOnFrameAdded)
+  },
+
   tick(time, timeDelta) {
     const {normanComp} = this,
           {isAnimPlaying, frameInterval} = normanComp
@@ -107,12 +114,5 @@ AFRAME.registerComponent('anim', {
   onFrameAdded(e) {
     this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]))
   },
-
-  remove() {
-    const {norman} = this.data,
-          {boundOnLineAdded, boundOnFrameAdded} = this
-    norman.removeEventListener('LINE_ADDED', boundOnLineAdded)
-    norman.removeEventListener('FRAME_ADDED', boundOnFrameAdded)
-  }
 
 })
