@@ -2,7 +2,7 @@ import 'aframe'
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, loadPrev, loadNext} from './firebasestore'
+import {save, deleteAnim, loadPrev, loadNext} from './firebasestore'
 
 import './anim'
 import './drawline'
@@ -14,6 +14,7 @@ import './line'
 AFRAME.registerComponent('norman', {
 
   init() {
+    console.log('WHA???')
     Object.assign(this, {
       currentFileInfo: null,
       animData: [[]],
@@ -33,7 +34,7 @@ AFRAME.registerComponent('norman', {
     })
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
-    _.delay(this.setupControllers.bind(this), 1) 
+    _.delay(this.setupControllers.bind(this), 1) // SMELLY
     // $.getJSON('webvr-exports/snap-connect-1.json', json => {
     // const downloadURL = 'webvr-exports/snap-connect-1.json'
 
@@ -57,12 +58,15 @@ AFRAME.registerComponent('norman', {
 
   setupKeyboard() {
     document.addEventListener('keydown', e => {
-      // console.log('keydown: ', e.key)
+      // console.log('keydown: ', e)
       if (e.code == 'Enter') {this.togglePlay()} 
       // else if (e.key == 'S') {
       //   // console.log('saving: ')
       //   uploadAnimData(null, {data: this.animData})
       // }
+      else if (e.key == 'ArrowLeft' && e.metaKey && e.shiftKey) {this.fileLoadPrev()}
+      else if (e.key == 'ArrowRight' && e.metaKey && e.shiftKey) {this.fileLoadNext()}
+      else if (e.key == 'X' && e.metaKey && e.shiftKey) {this.fileDelete()}
       else if (e.key == 'o') {this.toggleOnion()}
       else if (e.key == ',') {this.changeFPS(-1)}
       else if (e.key == '.') {this.changeFPS(1)}
@@ -198,6 +202,10 @@ AFRAME.registerComponent('norman', {
   fileSave() {
     // console.log('SAVE')
     save({data: this.animData}, this.currentFileInfo)
+  },
+
+  fileDelete() {
+    deleteAnim(this.currentFileInfo)
   },
 
   fileLoadPrev() {

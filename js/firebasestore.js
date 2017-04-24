@@ -67,6 +67,8 @@ const getRandomUniqueName = () => {
   })
 }
 
+// TODO: DRY up loadPrev & loadNext
+
 const loadPrev = (currentFileInfo) => {
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
@@ -138,10 +140,57 @@ firebase.auth().onAuthStateChanged(user => {
 })
 
 
+const deleteAnim = ({
+    filename,
+    downloadURL,
+    createdAt
+  }) => {
+    console.log('DELETING: ', filename, downloadURL, createdAt)
+    const storageRef = firebase.storage().ref().child('animData/' + filename + '.json')
+    storageRef.delete().then(()=> {
+      console.log('removed json from storage: ', filename)
+      const animationsRef = firebase.database().ref('animations/' + filename)
+      animationsRef.remove().then(() => {
+        console.log('removed ref: ', filename)
+      })
+    })
+
+}
 
 
 export {
   save,
   loadPrev,
-  loadNext
+  loadNext,
+  deleteAnim
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
