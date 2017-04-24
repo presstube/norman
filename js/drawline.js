@@ -26,6 +26,7 @@ AFRAME.registerComponent('drawline', {
     this.material = new THREE.LineBasicMaterial({color: 'black'})
     this.line = new THREE.Line(this.geometry, this.material)
     this.el.setObject3D('line', this.line)
+    this.lastPointDrawn = new THREE.Vector3(0, 0, 0)
   },
   
   tick() {
@@ -35,14 +36,19 @@ AFRAME.registerComponent('drawline', {
     pen.localToWorld(pos)
     norm.worldToLocal(pos)
 
-    this.linePoints.push(new THREE.Vector3(
-      pos.x, 
-      pos.y, 
-      pos.z));
+    const distToLastPointDrawn = pos.distanceTo(this.lastPointDrawn),
+          thresh = 0.001
 
-    this.line.geometry.setDrawRange(0, this.linePoints.length)
-    this.updatePositions()
-    this.line.geometry.attributes.position.needsUpdate = true
+    if (distToLastPointDrawn > thresh || this.linePoints.length === 0) {
+      this.linePoints.push(pos);
+      this.lastPointDrawn = pos
+      this.line.geometry.setDrawRange(0, this.linePoints.length)
+      this.updatePositions()
+      this.line.geometry.attributes.position.needsUpdate = true
+    } else {
+      // do nothing!
+    }
+
   },
 
   updatePositions() {
@@ -69,5 +75,6 @@ AFRAME.registerComponent('drawline', {
       this.normanComp.handlePrev()
     }
   }
+
 
 })
