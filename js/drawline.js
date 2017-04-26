@@ -27,6 +27,7 @@ AFRAME.registerComponent('drawline', {
     this.line = new THREE.Line(this.geometry, this.material)
     this.el.setObject3D('line', this.line)
     this.lastPointDrawn = new THREE.Vector3(0, 0, 0)
+    this.distanceThreshold = 0.001
   },
   
   tick() {
@@ -36,10 +37,9 @@ AFRAME.registerComponent('drawline', {
     pen.localToWorld(pos)
     norm.worldToLocal(pos)
 
-    const distToLastPointDrawn = pos.distanceTo(this.lastPointDrawn),
-          thresh = 0.001
+    const distToLastPointDrawn = pos.distanceTo(this.lastPointDrawn)
 
-    if (distToLastPointDrawn > thresh || this.linePoints.length === 0) {
+    if (distToLastPointDrawn > this.distanceThreshold || this.linePoints.length === 0) {
       this.linePoints.push(pos);
       this.lastPointDrawn = pos
       this.line.geometry.setDrawRange(0, this.linePoints.length)

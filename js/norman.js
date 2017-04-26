@@ -14,7 +14,7 @@ import './line'
 AFRAME.registerComponent('norman', {
 
   init() {
-    console.log('WHA???')
+    // console.log('WHATTT???')
     Object.assign(this, {
       currentFileInfo: null,
       animData: [[]],
@@ -64,9 +64,9 @@ AFRAME.registerComponent('norman', {
       //   // console.log('saving: ')
       //   uploadAnimData(null, {data: this.animData})
       // }
-      else if (e.key == 'ArrowLeft' && e.metaKey && e.shiftKey) {this.fileLoadPrev()}
-      else if (e.key == 'ArrowRight' && e.metaKey && e.shiftKey) {this.fileLoadNext()}
-      else if (e.key == 'X' && e.metaKey && e.shiftKey) {this.fileDelete()}
+      else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev()}
+      else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNext()}
+      else if (e.key == 'X' && e.altKey && e.shiftKey) {this.fileDelete()}
       else if (e.key == 'o') {this.toggleOnion()}
       else if (e.key == ',') {this.changeFPS(-1)}
       else if (e.key == '.') {this.changeFPS(1)}
@@ -185,7 +185,7 @@ AFRAME.registerComponent('norman', {
   },
 
   teardown() {
-    this.stopPlaying()
+    // this.stopPlaying()
     this.removeHomeFrameGhost()
     this.removeOnionSkin()
     this.removeAnim()
@@ -209,7 +209,7 @@ AFRAME.registerComponent('norman', {
   },
 
   fileLoadPrev() {
-    // console.log('LOAD PREV')
+    console.log('LOAD PREV')
     loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
       this.teardown()
       // console.log('animData: ', animData, currentFileInfo)
@@ -219,9 +219,9 @@ AFRAME.registerComponent('norman', {
   },
 
   fileLoadNext() {
-    // console.log('LOAD NEXT')
+    console.log('LOAD NEXT')
     loadNext(this.currentFileInfo).then(({animData, currentFileInfo}) => {
-      this.teardown()
+      this.teardown( )
       // console.log('animData: ', animData, currentFileInfo)
       this.currentFileInfo = currentFileInfo
       this.setup(animData)

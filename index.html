@@ -3,21 +3,21 @@
   <head>
     <meta charset="utf-8">
     <title>Norman</title>
-    <meta name="description" content="Minimalist hand-drawn animaiton in WebVR.">
+    <meta name="description" content="Minimalist animation sketchbook for WebVR.">
     <script src="build/main.js"></script>
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene fog="color: #ccc; near: .1; far:3">
-      <a-sky color="#ccc"></a-sky>
+    <a-scene fog="color: #eee; near: 0; far:0.5">
+      <a-sky color="#eee"></a-sky>
       <a-camera 
         id="camera" 
-        wasd-controls="acceleration: 10w; easing: 10; fly: true"
+        wasd-controls="acceleration: 10; fly:true"
         position="0 0 0"
         camera="userHeight: 1.2"
         ></a-camera>
       <a-entity id="norman" norman position="0 0 0"></a-entity>
-      <a-ring color="tomato" radius-inner="1" radius-outer="1.001" rotation="-90 0 0"></a-ring>
+      <a-ring color="tomato" radius-inner="0" radius-outer="0.8" rotation="-90 0 0"></a-ring>
       <a-cone 
         id="pensphere"
         height="0.01"
@@ -34,3 +34,9 @@
     <a id="downloadAnchorElem" style="display:none"></a>
   </body>
 </html>
+
+<!-- 
+
+        wasd-controls="acceleration: 10; easing: 40; fly: false"
+
+-->
