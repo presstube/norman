@@ -1,4 +1,4 @@
-import 'aframe'
+// import 'aframe'
 import _ from 'lodash'
 import $ from 'jquery'
 
@@ -32,41 +32,43 @@ AFRAME.registerComponent('norman', {
       isRightHanded: true,
       fileSystemMode: false
     })
+
+    const cam = document.querySelector('#camera')
+
+    console.log('cam: ', cam)
+    // cam.setAttribute('camera', {userHeight: 1.6})
+
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
     _.delay(this.setupControllers.bind(this), 1) // SMELLY
-    // $.getJSON('webvr-exports/snap-connect-1.json', json => {
-    // const downloadURL = 'webvr-exports/snap-connect-1.json'
 
-    const downloadURL = 'https://firebasestorage.googleapis.com/v0/b/cloudstoragespike.appspot.com/o/animData%2Fshingled-dank-donks.json?alt=media&token=4c4db1b5-c18a-4edd-b4e4-98e1c8a67f8e'
-    $.getJSON(downloadURL, json => {
-      // this.setup(json.data)
-      // this.animData = json.data
-      // this.addAnim()
-      // this.addHomeFrameGhost()
-      // this.setupOnionSkin()
-      // this.startPlaying()
-    })
+    const scene = document.querySelector('#scene')
+    console.log('asdasd: ', scene)
 
-    // this.addAnim()
-    // this.addHomeFrameGhost()
-    // this.setupOnionSkin()
+    // scene.addEventListener('enter-vr', () => {
+    //   console.log('entering vr')
+    //   cam.setAttribute('camera', {userHeight: 0})
+    // })
 
     this.setup()
+
+
 
   },
 
   setupKeyboard() {
     document.addEventListener('keydown', e => {
-      // console.log('keydown: ', e)
+      console.log('keydown: ', e)
       if (e.code == 'Enter') {this.togglePlay()} 
       // else if (e.key == 'S') {
       //   // console.log('saving: ')
       //   uploadAnimData(null, {data: this.animData})
       // }
-      else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev()}
-      else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNext()}
-      else if (e.key == 'X' && e.altKey && e.shiftKey) {this.fileDelete()}
+      else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
+      else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNext(!e.ctrlKey)}
+      else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {this.fileSave()}
+      else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {this.fileSave(false)}
+      else if (e.key == '≈' && e.altKey) {this.fileDelete()}
       else if (e.key == 'o') {this.toggleOnion()}
       else if (e.key == ',') {this.changeFPS(-1)}
       else if (e.key == '.') {this.changeFPS(1)}
@@ -84,12 +86,14 @@ AFRAME.registerComponent('norman', {
           boundFileSave = this.fileSave.bind(this),
           boundFileLoadPrev = this.fileLoadPrev.bind(this),
           boundFileLoadNext = this.fileLoadNext.bind(this),
+          boundFileDelete = this.fileDelete.bind(this),
           addFilesystemListeners = () => {
             this.fileSystemMode = true // smelly.. do this with adding and removing listeners
             primaryHand.addEventListener('UP_ON', boundFileNew)
             primaryHand.addEventListener('DOWN_ON', boundFileSave)
             primaryHand.addEventListener('LEFT_ON', boundFileLoadPrev)
             primaryHand.addEventListener('RIGHT_ON', boundFileLoadNext)
+            primaryHand.addEventListener('thumbstickdown', boundFileDelete)
           },
           removeFilesystemListeners = () => {
             this.fileSystemMode = false // smelly.. do this with adding and removing listeners
@@ -97,21 +101,26 @@ AFRAME.registerComponent('norman', {
             primaryHand.removeEventListener('DOWN_ON', boundFileSave)
             primaryHand.removeEventListener('LEFT_ON', boundFileLoadPrev)
             primaryHand.removeEventListener('RIGHT_ON', boundFileLoadNext)
+            primaryHand.removeEventListener('thumbstickdown', boundFileDelete)
           }
 
+
+
     Object.assign(this, {secondaryHand, primaryHand})
+
+    console.log('secondaryHand: ', secondaryHand)
 
     primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
     primaryHand.addEventListener('triggerdown', () => this.startDrawing())
     primaryHand.addEventListener('triggerup', () => this.stopDrawing())
-    primaryHand.addEventListener('Adown', e => this.toggleOnion())
-    primaryHand.addEventListener('Bdown', e => this.togglePlay())
+    primaryHand.addEventListener('abuttondown', e => this.toggleOnion())
+    primaryHand.addEventListener('bbuttondown', e => this.togglePlay())
     secondaryHand.addEventListener('triggerdown', e => this.addingFrames = true)
     secondaryHand.addEventListener('triggerup', e => this.addingFrames = false)
     // secondaryHand.addEventListener('Ydown', addFilesystemListeners)
     // secondaryHand.addEventListener('Yup', removeFilesystemListeners)
-    secondaryHand.addEventListener('Xdown', addFilesystemListeners)
-    secondaryHand.addEventListener('Xup', removeFilesystemListeners)
+    secondaryHand.addEventListener('xbuttondown', addFilesystemListeners)
+    secondaryHand.addEventListener('xbuttonup', removeFilesystemListeners)
     this.setupThumbStickDirectionEvents(primaryHand, 0.5)
     this.setupThumbStickDirectionEvents(secondaryHand, 0.01)
     secondaryHand.addEventListener('RIGHT_ON', () => {
@@ -196,32 +205,42 @@ AFRAME.registerComponent('norman', {
   fileNew() {
     // console.log('NEW')
     this.teardown()
+    this.el.setAttribute('position', '0 0 0')
+    this.el.setAttribute('rotation', '0 0 0')
     this.setup()
   },
 
-  fileSave() {
+  fileSave(overwrite = true) {
     // console.log('SAVE')
-    save({data: this.animData}, this.currentFileInfo)
+    if (overwrite) {
+      console.log('overwrite')
+      save({data: this.animData}, this.currentFileInfo)
+    } else {
+      console.log('save duplicate')
+      save({data: this.animData})
+    }
   },
 
   fileDelete() {
+    console.log('deleting')
     deleteAnim(this.currentFileInfo)
+    this.fileNew()
   },
 
-  fileLoadPrev() {
-    console.log('LOAD PREV')
+  fileLoadPrev(doTeardown = true) {
+    console.log('LOAD PREV', doTeardown)
     loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
-      this.teardown()
+      if (doTeardown) this.teardown()
       // console.log('animData: ', animData, currentFileInfo)
       this.currentFileInfo = currentFileInfo
       this.setup(animData)
     })
   },
 
-  fileLoadNext() {
-    console.log('LOAD NEXT')
+  fileLoadNext(doTeardown = true) {
+    console.log('LOAD NEXT', doTeardown)
     loadNext(this.currentFileInfo).then(({animData, currentFileInfo}) => {
-      this.teardown( )
+      if (doTeardown) this.teardown()
       // console.log('animData: ', animData, currentFileInfo)
       this.currentFileInfo = currentFileInfo
       this.setup(animData)
@@ -349,6 +368,9 @@ AFRAME.registerComponent('norman', {
   },
 
   togglePlay() {
+
+    console.log('asdasdasd PLAY TOGGLE')
+
     if (this.isAnimPlaying) {
       this.stopPlaying()
     } else {

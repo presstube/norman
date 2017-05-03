@@ -1,4 +1,4 @@
-import 'aframe'
+// import 'aframe'
 import _ from 'lodash'
 
 AFRAME.registerComponent('frame', {

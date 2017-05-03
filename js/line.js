@@ -1,4 +1,4 @@
-import 'aframe'
+// import 'aframe'
 
 AFRAME.registerComponent('line', {
 
