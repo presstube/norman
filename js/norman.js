@@ -68,7 +68,7 @@ AFRAME.registerComponent('norman', {
       else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNext(!e.ctrlKey)}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {this.fileSave()}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {this.fileSave(false)}
-      else if (e.key == '≈' && e.altKey) {this.fileDelete()}
+      else if (e.code == 'KeyX' && e.altKey) {this.fileDelete()}
       else if (e.key == 'o') {this.toggleOnion()}
       else if (e.key == ',') {this.changeFPS(-1)}
       else if (e.key == '.') {this.changeFPS(1)}
@@ -228,6 +228,7 @@ AFRAME.registerComponent('norman', {
   },
 
   fileLoadPrev(doTeardown = true) {
+    if (this.addingFrames) doTeardown = false
     console.log('LOAD PREV', doTeardown)
     loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
       if (doTeardown) this.teardown()
@@ -238,6 +239,7 @@ AFRAME.registerComponent('norman', {
   },
 
   fileLoadNext(doTeardown = true) {
+    if (this.addingFrames) doTeardown = false
     console.log('LOAD NEXT', doTeardown)
     loadNext(this.currentFileInfo).then(({animData, currentFileInfo}) => {
       if (doTeardown) this.teardown()
