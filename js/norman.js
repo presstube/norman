@@ -35,7 +35,6 @@ AFRAME.registerComponent('norman', {
 
     const cam = document.querySelector('#camera')
 
-    console.log('cam: ', cam)
     // cam.setAttribute('camera', {userHeight: 1.6})
 
     this.frameInterval = 1000 / this.fps
@@ -43,16 +42,8 @@ AFRAME.registerComponent('norman', {
     _.delay(this.setupControllers.bind(this), 1) // SMELLY
 
     const scene = document.querySelector('#scene')
-    console.log('asdasd: ', scene)
-
-    // scene.addEventListener('enter-vr', () => {
-    //   console.log('entering vr')
-    //   cam.setAttribute('camera', {userHeight: 0})
-    // })
 
     this.setup()
-
-
 
   },
 
@@ -64,6 +55,18 @@ AFRAME.registerComponent('norman', {
       //   // console.log('saving: ')
       //   uploadAnimData(null, {data: this.animData})
       // }
+      else if (e.code == 'Space') {
+        const cone = document.querySelector("#yellow-cone").object3D
+        const {el} = this
+        const norm = el.object3D
+        cone.updateMatrixWorld()
+        const worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld)
+        cone.add(norm)
+        norm.applyMatrix(worldToLocal)
+        const animDataNewReg = this.setReg(this.animData, norm.matrix)
+        this.animData = converted
+        this.fileSave()
+      }
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
       else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNext(!e.ctrlKey)}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {this.fileSave()}
@@ -74,6 +77,19 @@ AFRAME.registerComponent('norman', {
       else if (e.key == '.') {this.changeFPS(1)}
       else if (e.key == 't') {this.addLineData([{x:0, y:1, z:2},{x:0, y:1, z:2}], 2)}
     })   
+  },
+
+  setReg(animData, matrixToApply) {
+    return _.map(animData, (frame) => {
+      return _.map(frame, (line) => {
+        return _.map(line, (point) => {
+          const {x, y, z} = point
+          const p = new THREE.Vector3(x, y, z)
+          p.applyMatrix4(matrixToApply)
+          return p
+        })
+      })
+    })
   },
 
   setupControllers() {
@@ -205,7 +221,7 @@ AFRAME.registerComponent('norman', {
   fileNew() {
     // console.log('NEW')
     this.teardown()
-    this.el.setAttribute('position', '0 0 0')
+    this.el.setAttribute('position', '0 1.6 -0.5') // TODO: don't hard code this, other place right now is in the index.html
     this.el.setAttribute('rotation', '0 0 0')
     this.setup()
   },
