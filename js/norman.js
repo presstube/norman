@@ -64,7 +64,7 @@ AFRAME.registerComponent('norman', {
         cone.add(norm)
         norm.applyMatrix(worldToLocal)
         const animDataNewReg = this.setReg(this.animData, norm.matrix)
-        this.animData = converted
+        this.animData = animDataNewReg
         this.fileSave()
       }
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}

@@ -12,7 +12,8 @@
     "firebase": "^3.7.8",
     "firebaseui": "^1.0.1",
     "jquery": "^3.2.1",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "webvr-ui": "^0.9.4"
   },
   "devDependencies": {
     "budo": "^7.0.0",
