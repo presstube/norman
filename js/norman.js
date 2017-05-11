@@ -18,6 +18,10 @@ AFRAME.registerComponent('norman', {
     Object.assign(this, {
       currentFileInfo: null,
       animData: [[]],
+      animsLoaded: [],
+      fileInfoToDelete: null,
+      slideshowPlaying: null,
+      lastDaydreamAxis: 0,
       fps: 30,
       maxFPS: 120,
       isAnimPlaying: false,
@@ -39,12 +43,35 @@ AFRAME.registerComponent('norman', {
 
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
+    // this.setupDaydreamController()
     _.delay(this.setupControllers.bind(this), 1) // SMELLY
 
     const scene = document.querySelector('#scene')
 
     this.setup()
+    this.fileLoadPrev()
+    this.startPlaying()
+    // this.startSlideshow()
 
+  },
+
+  setupDaydreamController() {
+    const remote = document.querySelector("#remote")
+    console.log('remote: ', remote.components)
+    remote.addEventListener('buttondown', () => {
+      this.fileLoadPrev()
+    });
+    remote.addEventListener('axismove', (e) => {
+      // if (this.lastDaydreamAxis === null) {
+      //   this.lastDaydreamAxis = e.detail.axis[0]
+      // }
+      const diff = this.lastDaydreamAxis - e.detail.axis[0]
+      const oldRot = this.el.getAttribute('rotation')
+      const newY = oldRot.y + (diff*100)
+      const rot = "0 " + newY + " 0"
+      this.el.setAttribute('rotation', rot)
+      this.lastDaydreamAxis = e.detail.axis[0]
+    });
   },
 
   setupKeyboard() {
@@ -55,6 +82,7 @@ AFRAME.registerComponent('norman', {
       //   // console.log('saving: ')
       //   uploadAnimData(null, {data: this.animData})
       // }
+
       else if (e.code == 'Space') {
         const cone = document.querySelector("#yellow-cone").object3D
         const {el} = this
@@ -63,12 +91,26 @@ AFRAME.registerComponent('norman', {
         const worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld)
         cone.add(norm)
         norm.applyMatrix(worldToLocal)
-        const animDataNewReg = this.setReg(this.animData, norm.matrix)
-        this.animData = animDataNewReg
-        this.fileSave()
+        // this.animData = animDataNewReg
+
+
+        const animsToTransform = _.cloneDeep(this.animsLoaded)
+        animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
+        console.log('animsToTransform: ', animsToTransform)
+
+        _.each(animsToTransform, (animToSave) => {
+          const animDataNewReg = this.setReg(animToSave.animData, norm.matrix)
+          animToSave.animData = animDataNewReg
+          this.fileSave(true, animToSave)
+        })
+
+
+        // this.fileSave() // make this operate on input rather that reaching out itself
       }
-      else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
-      else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNext(!e.ctrlKey)}
+      
+      else if (e.code == 'KeyA' && e.altKey) {this.startSlideshow()}
+      else if (e.code == 'Comma') {this.fileLoadPrev(!e.shiftKey)}
+      else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {this.fileSave()}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {this.fileSave(false)}
       else if (e.code == 'KeyX' && e.altKey) {this.fileDelete()}
@@ -90,6 +132,17 @@ AFRAME.registerComponent('norman', {
         })
       })
     })
+  },
+
+  startSlideshow() {
+    this.fileLoadPrev()
+    this.startPlaying()
+    this.slideshowPlaying = setInterval(this.fileLoadPrev.bind(this), 5000)
+  },
+
+  stopSlideshow() {
+    this.stopPlaying()
+    this.slideshowPlaying = clearInterval(this.slideshowPlaying)
   },
 
   setupControllers() {
@@ -205,14 +258,14 @@ AFRAME.registerComponent('norman', {
   setup(animData = [[]]) {
     this.animData = animData
     this.addAnim()
-    this.addHomeFrameGhost()
-    this.setupOnionSkin()
+    // this.addHomeFrameGhost()
+    // this.setupOnionSkin()
   },
 
   teardown() {
     // this.stopPlaying()
-    this.removeHomeFrameGhost()
-    this.removeOnionSkin()
+    // this.removeHomeFrameGhost()
+    // this.removeOnionSkin()
     this.removeAnim()
     this.animData = []
     this.currentFileInfo = null
@@ -226,11 +279,16 @@ AFRAME.registerComponent('norman', {
     this.setup()
   },
 
-  fileSave(overwrite = true) {
-    // console.log('SAVE')
+  // TODO: clean this up!
+  fileSave(overwrite = true, animToSave) {
+    console.log('SAVE: overwrite: ', overwrite, 'animToSave: ', animToSave)
     if (overwrite) {
       console.log('overwrite')
-      save({data: this.animData}, this.currentFileInfo)
+      if (animToSave) {
+        save({data: animToSave.animData}, animToSave.fileInfo)
+      } else {
+        save({data: this.animData}, this.currentFileInfo)
+      }
     } else {
       console.log('save duplicate')
       save({data: this.animData})
@@ -238,17 +296,34 @@ AFRAME.registerComponent('norman', {
   },
 
   fileDelete() {
+
     console.log('deleting')
-    deleteAnim(this.currentFileInfo)
-    this.fileNew()
+    this.fileInfoToDelete = this.currentFileInfo
+    this.fileLoadPrev()
+    deleteAnim(this.fileInfoToDelete)
+    // this.fileNew()
   },
 
   fileLoadPrev(doTeardown = true) {
-    if (this.addingFrames) doTeardown = false
-    console.log('LOAD PREV', doTeardown)
+    // addingFrame flag should be abstracted to 'leftTrigger' or something like that
+    // finding a name that works for both keyboard and controller would be good
+    // secondaryHandTriggerDown or something
+    if (this.addingFrames) doTeardown = false  
+    console.log('LOAD PREV', doTeardown, this.currentFileInfo )
     loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
-      if (doTeardown) this.teardown()
-      // console.log('animData: ', animData, currentFileInfo)
+      if (doTeardown) {
+        this.teardown()
+      } else {
+        // stash that last animation
+        this.removeOnionSkin()
+        this.animsLoaded.push({
+          fileInfo: this.currentFileInfo,
+          animData: this.animData
+        })
+      }
+
+      // console.log('animData: ', animData, fileInfo)
+
       this.currentFileInfo = currentFileInfo
       this.setup(animData)
     })

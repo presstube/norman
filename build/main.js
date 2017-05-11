@@ -86,8 +86,8 @@ AFRAME.registerComponent('anim', {
     el.appendChild(frameEntity);
     frameEntity.setAttribute('frame', {
       frameData: frameData,
+      color: '#ddd',
       // color: '#222',
-      color: 'black',
       style: 'solid'
     });
     return frameEntity;
@@ -311,6 +311,7 @@ var getRandomUniqueName = function getRandomUniqueName() {
 // TODO: DRY up loadPrev & loadNext
 
 var loadPrev = function loadPrev(currentFileInfo) {
+  console.log('loading prev from fileInfo: ', currentFileInfo);
   return new Promise(function (resolve, reject) {
     firebase.database().ref('animations').once('value', function (snapshot) {
       var fileInfos = _lodash2.default.orderBy(snapshot.val(), ['createdAt'], ['desc']);
@@ -610,6 +611,10 @@ AFRAME.registerComponent('norman', {
     Object.assign(this, {
       currentFileInfo: null,
       animData: [[]],
+      animsLoaded: [],
+      fileInfoToDelete: null,
+      slideshowPlaying: null,
+      lastDaydreamAxis: 0,
       fps: 30,
       maxFPS: 120,
       isAnimPlaying: false,
@@ -631,54 +636,92 @@ AFRAME.registerComponent('norman', {
 
     this.frameInterval = 1000 / this.fps;
     this.setupKeyboard();
+    // this.setupDaydreamController()
     _lodash2.default.delay(this.setupControllers.bind(this), 1); // SMELLY
 
     var scene = document.querySelector('#scene');
 
     this.setup();
+    this.fileLoadPrev();
+    this.startPlaying();
+    // this.startSlideshow()
+  },
+  setupDaydreamController: function setupDaydreamController() {
+    var _this = this;
+
+    var remote = document.querySelector("#remote");
+    console.log('remote: ', remote.components);
+    remote.addEventListener('buttondown', function () {
+      _this.fileLoadPrev();
+    });
+    remote.addEventListener('axismove', function (e) {
+      // if (this.lastDaydreamAxis === null) {
+      //   this.lastDaydreamAxis = e.detail.axis[0]
+      // }
+      var diff = _this.lastDaydreamAxis - e.detail.axis[0];
+      var oldRot = _this.el.getAttribute('rotation');
+      var newY = oldRot.y + diff * 100;
+      var rot = "0 " + newY + " 0";
+      _this.el.setAttribute('rotation', rot);
+      _this.lastDaydreamAxis = e.detail.axis[0];
+    });
   },
   setupKeyboard: function setupKeyboard() {
-    var _this = this;
+    var _this2 = this;
 
     document.addEventListener('keydown', function (e) {
       console.log('keydown: ', e);
       if (e.code == 'Enter') {
-        _this.togglePlay();
+        _this2.togglePlay();
       }
       // else if (e.key == 'S') {
       //   // console.log('saving: ')
       //   uploadAnimData(null, {data: this.animData})
       // }
+
       else if (e.code == 'Space') {
           var cone = document.querySelector("#yellow-cone").object3D;
-          var el = _this.el;
+          var el = _this2.el;
 
           var norm = el.object3D;
           cone.updateMatrixWorld();
           var worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld);
           cone.add(norm);
           norm.applyMatrix(worldToLocal);
-          var animDataNewReg = _this.setReg(_this.animData, norm.matrix);
-          _this.animData = converted;
-          _this.fileSave();
-        } else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {
-          _this.fileLoadPrev(!e.ctrlKey);
-        } else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {
-          _this.fileLoadNext(!e.ctrlKey);
+          // this.animData = animDataNewReg
+
+
+          var animsToTransform = _lodash2.default.cloneDeep(_this2.animsLoaded);
+          animsToTransform.push({ fileInfo: _this2.currentFileInfo, animData: _this2.animData });
+          console.log('animsToTransform: ', animsToTransform);
+
+          _lodash2.default.each(animsToTransform, function (animToSave) {
+            var animDataNewReg = _this2.setReg(animToSave.animData, norm.matrix);
+            animToSave.animData = animDataNewReg;
+            _this2.fileSave(true, animToSave);
+          });
+
+          // this.fileSave() // make this operate on input rather that reaching out itself
+        } else if (e.code == 'KeyA' && e.altKey) {
+          _this2.startSlideshow();
+        } else if (e.code == 'Comma') {
+          _this2.fileLoadPrev(!e.shiftKey);
+        } else if (e.code == 'Period') {
+          _this2.fileLoadNext(!e.shiftKey);
         } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {
-          _this.fileSave();
+          _this2.fileSave();
         } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {
-          _this.fileSave(false);
+          _this2.fileSave(false);
         } else if (e.code == 'KeyX' && e.altKey) {
-          _this.fileDelete();
+          _this2.fileDelete();
         } else if (e.key == 'o') {
-          _this.toggleOnion();
+          _this2.toggleOnion();
         } else if (e.key == ',') {
-          _this.changeFPS(-1);
+          _this2.changeFPS(-1);
         } else if (e.key == '.') {
-          _this.changeFPS(1);
+          _this2.changeFPS(1);
         } else if (e.key == 't') {
-          _this.addLineData([{ x: 0, y: 1, z: 2 }, { x: 0, y: 1, z: 2 }], 2);
+          _this2.addLineData([{ x: 0, y: 1, z: 2 }, { x: 0, y: 1, z: 2 }], 2);
         }
     });
   },
@@ -697,8 +740,17 @@ AFRAME.registerComponent('norman', {
       });
     });
   },
+  startSlideshow: function startSlideshow() {
+    this.fileLoadPrev();
+    this.startPlaying();
+    this.slideshowPlaying = setInterval(this.fileLoadPrev.bind(this), 5000);
+  },
+  stopSlideshow: function stopSlideshow() {
+    this.stopPlaying();
+    this.slideshowPlaying = clearInterval(this.slideshowPlaying);
+  },
   setupControllers: function setupControllers() {
-    var _this2 = this;
+    var _this3 = this;
 
     var controllers = document.querySelectorAll('a-entity[oculus-touch-controls]'),
         _controllers = _slicedToArray(controllers, 2),
@@ -713,7 +765,7 @@ AFRAME.registerComponent('norman', {
         boundFileLoadNext = this.fileLoadNext.bind(this),
         boundFileDelete = this.fileDelete.bind(this),
         addFilesystemListeners = function addFilesystemListeners() {
-      _this2.fileSystemMode = true; // smelly.. do this with adding and removing listeners
+      _this3.fileSystemMode = true; // smelly.. do this with adding and removing listeners
       primaryHand.addEventListener('UP_ON', boundFileNew);
       primaryHand.addEventListener('DOWN_ON', boundFileSave);
       primaryHand.addEventListener('LEFT_ON', boundFileLoadPrev);
@@ -721,7 +773,7 @@ AFRAME.registerComponent('norman', {
       primaryHand.addEventListener('thumbstickdown', boundFileDelete);
     },
         removeFilesystemListeners = function removeFilesystemListeners() {
-      _this2.fileSystemMode = false; // smelly.. do this with adding and removing listeners
+      _this3.fileSystemMode = false; // smelly.. do this with adding and removing listeners
       primaryHand.removeEventListener('UP_ON', boundFileNew);
       primaryHand.removeEventListener('DOWN_ON', boundFileSave);
       primaryHand.removeEventListener('LEFT_ON', boundFileLoadPrev);
@@ -736,22 +788,22 @@ AFRAME.registerComponent('norman', {
 
     primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D);
     primaryHand.addEventListener('triggerdown', function () {
-      return _this2.startDrawing();
+      return _this3.startDrawing();
     });
     primaryHand.addEventListener('triggerup', function () {
-      return _this2.stopDrawing();
+      return _this3.stopDrawing();
     });
     primaryHand.addEventListener('abuttondown', function (e) {
-      return _this2.toggleOnion();
+      return _this3.toggleOnion();
     });
     primaryHand.addEventListener('bbuttondown', function (e) {
-      return _this2.togglePlay();
+      return _this3.togglePlay();
     });
     secondaryHand.addEventListener('triggerdown', function (e) {
-      return _this2.addingFrames = true;
+      return _this3.addingFrames = true;
     });
     secondaryHand.addEventListener('triggerup', function (e) {
-      return _this2.addingFrames = false;
+      return _this3.addingFrames = false;
     });
     // secondaryHand.addEventListener('Ydown', addFilesystemListeners)
     // secondaryHand.addEventListener('Yup', removeFilesystemListeners)
@@ -760,36 +812,36 @@ AFRAME.registerComponent('norman', {
     this.setupThumbStickDirectionEvents(primaryHand, 0.5);
     this.setupThumbStickDirectionEvents(secondaryHand, 0.01);
     secondaryHand.addEventListener('RIGHT_ON', function () {
-      _this2.autoNext = true;
-      _this2.handleNext();
+      _this3.autoNext = true;
+      _this3.handleNext();
     });
     secondaryHand.addEventListener('LEFT_ON', function () {
-      _this2.autoPrev = true;
-      _this2.handlePrev();
+      _this3.autoPrev = true;
+      _this3.handlePrev();
     });
     secondaryHand.addEventListener('RIGHT_OFF', function (e) {
-      return _this2.autoNext = false;
+      return _this3.autoNext = false;
     });
     secondaryHand.addEventListener('LEFT_OFF', function (e) {
-      return _this2.autoPrev = false;
+      return _this3.autoPrev = false;
     });
     primaryHand.addEventListener('axismove', function (e) {
-      if (!_this2.fileSystemMode) {
+      if (!_this3.fileSystemMode) {
         // smelly.. do this with adding and removing listeners
-        if (!_this2.firstAxisFired) {
-          _this2.firstAxisFired = true;
-        } else if (!_this2.isAnimPlaying) {
-          _this2.fps = 0;
-          _this2.startPlaying();
+        if (!_this3.firstAxisFired) {
+          _this3.firstAxisFired = true;
+        } else if (!_this3.isAnimPlaying) {
+          _this3.fps = 0;
+          _this3.startPlaying();
         }
-        _this2.changeFPS(e.detail.axis[0]);
+        _this3.changeFPS(e.detail.axis[0]);
       }
     });
     secondaryHand.addEventListener('gripdown', function (e) {
-      return _this2.grab();
+      return _this3.grab();
     });
     secondaryHand.addEventListener('gripup', function (e) {
-      return _this2.drop();
+      return _this3.drop();
     });
   },
   setupThumbStickDirectionEvents: function setupThumbStickDirectionEvents(controller) {
@@ -837,13 +889,13 @@ AFRAME.registerComponent('norman', {
 
     this.animData = animData;
     this.addAnim();
-    this.addHomeFrameGhost();
-    this.setupOnionSkin();
+    // this.addHomeFrameGhost()
+    // this.setupOnionSkin()
   },
   teardown: function teardown() {
     // this.stopPlaying()
-    this.removeHomeFrameGhost();
-    this.removeOnionSkin();
+    // this.removeHomeFrameGhost()
+    // this.removeOnionSkin()
     this.removeAnim();
     this.animData = [];
     this.currentFileInfo = null;
@@ -855,42 +907,67 @@ AFRAME.registerComponent('norman', {
     this.el.setAttribute('rotation', '0 0 0');
     this.setup();
   },
+
+
+  // TODO: clean this up!
   fileSave: function fileSave() {
     var overwrite = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+    var animToSave = arguments[1];
 
-    // console.log('SAVE')
+    console.log('SAVE: overwrite: ', overwrite, 'animToSave: ', animToSave);
     if (overwrite) {
       console.log('overwrite');
-      (0, _firebasestore.save)({ data: this.animData }, this.currentFileInfo);
+      if (animToSave) {
+        (0, _firebasestore.save)({ data: animToSave.animData }, animToSave.fileInfo);
+      } else {
+        (0, _firebasestore.save)({ data: this.animData }, this.currentFileInfo);
+      }
     } else {
       console.log('save duplicate');
       (0, _firebasestore.save)({ data: this.animData });
     }
   },
   fileDelete: function fileDelete() {
+
     console.log('deleting');
-    (0, _firebasestore.deleteAnim)(this.currentFileInfo);
-    this.fileNew();
+    this.fileInfoToDelete = this.currentFileInfo;
+    this.fileLoadPrev();
+    (0, _firebasestore.deleteAnim)(this.fileInfoToDelete);
+    // this.fileNew()
   },
   fileLoadPrev: function fileLoadPrev() {
-    var _this3 = this;
+    var _this4 = this;
 
     var doTeardown = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
+    // addingFrame flag should be abstracted to 'leftTrigger' or something like that
+    // finding a name that works for both keyboard and controller would be good
+    // secondaryHandTriggerDown or something
     if (this.addingFrames) doTeardown = false;
-    console.log('LOAD PREV', doTeardown);
+    console.log('LOAD PREV', doTeardown, this.currentFileInfo);
     (0, _firebasestore.loadPrev)(this.currentFileInfo).then(function (_ref) {
       var animData = _ref.animData,
           currentFileInfo = _ref.currentFileInfo;
 
-      if (doTeardown) _this3.teardown();
-      // console.log('animData: ', animData, currentFileInfo)
-      _this3.currentFileInfo = currentFileInfo;
-      _this3.setup(animData);
+      if (doTeardown) {
+        _this4.teardown();
+      } else {
+        // stash that last animation
+        _this4.removeOnionSkin();
+        _this4.animsLoaded.push({
+          fileInfo: _this4.currentFileInfo,
+          animData: _this4.animData
+        });
+      }
+
+      // console.log('animData: ', animData, fileInfo)
+
+      _this4.currentFileInfo = currentFileInfo;
+      _this4.setup(animData);
     });
   },
   fileLoadNext: function fileLoadNext() {
-    var _this4 = this;
+    var _this5 = this;
 
     var doTeardown = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
@@ -900,10 +977,10 @@ AFRAME.registerComponent('norman', {
       var animData = _ref2.animData,
           currentFileInfo = _ref2.currentFileInfo;
 
-      if (doTeardown) _this4.teardown();
+      if (doTeardown) _this5.teardown();
       // console.log('animData: ', animData, currentFileInfo)
-      _this4.currentFileInfo = currentFileInfo;
-      _this4.setup(animData);
+      _this5.currentFileInfo = currentFileInfo;
+      _this5.setup(animData);
     });
   },
   handleNext: function handleNext() {
@@ -950,10 +1027,10 @@ AFRAME.registerComponent('norman', {
     })];
   },
   removeOnionSkin: function removeOnionSkin() {
-    var _this5 = this;
+    var _this6 = this;
 
     this.onionSkins.map(function (onionSkinEnt) {
-      _this5.el.removeChild(onionSkinEnt);
+      _this6.el.removeChild(onionSkinEnt);
     });
     this.onionSkins = [];
   },

@@ -70,6 +70,7 @@ const getRandomUniqueName = () => {
 // TODO: DRY up loadPrev & loadNext
 
 const loadPrev = (currentFileInfo) => {
+  console.log('loading prev from fileInfo: ', currentFileInfo)
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['desc'])
