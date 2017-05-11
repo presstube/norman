@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Norman</title>
     <meta name="description" content="Minimalist animation sketchbook for WebVR.">
-    <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/0.5.0/aframe.min.js"></script>
     <script src="https://rawgit.com/ryanbetts/aframe-daydream-controller-component/master/dist/aframe-daydream-controller-component.min.js"></script>
     <script src="build/main.js"></script>
   </head>
@@ -12,19 +12,23 @@
     <div id="firebaseui-auth-container"></div>
     <a-scene id="scene" webvr-ui fog="color: #222; near: 0; far:0.8">
       <a-sky color="#222"></a-sky>
+      
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10; fly:true"
         position="0 0 0"
         ></a-camera>
 
-      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
-      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
+      <a-entity id="remote" daydream-controller>
+        <a-cone id="ray" color="#ddd" position="0 0 -2" rotation="-90 0 0" radius-bottom="0.0003" radius-top="0.0003" height="4"></a-cone>
+        <a-box id="position-guide" visible="false" position="0 0 -2"></a-box>
+      </a-entity>
 
       <a-entity id="norman" norman position="0 1.6 -0.5">
         <a-cone color="#333" height="0.1" radius-bottom="0.03" radius-top="0" position="0 0 0" visible="false"></a-cone>
       </a-entity>
-      <a-cone id="yellow-cone" color="yellow" height="0.005" radius-bottom="0.003" radius-top="0" position="0 1.6 -0.5" visible="true"></a-cone>
+      
+      <a-cone id="yellow-cone" color="yellow" height="0.005" radius-bottom="0.003" radius-top="0" position="0 1.6 -0.5" visible="false"></a-cone>
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-cone 
         id="pensphere"
@@ -42,12 +46,13 @@
 
 <!-- 
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/0.5.0/aframe.min.js"></script>
+fog="color: #222; near: 0; far:0.8"
 
-      <a-entity id="remote" daydream-controller>
-        <a-cone id="ray" color="#ddd" position="0 0 -2" rotation="-90 0 0" radius-bottom="0.0003" radius-top="0.0003" height="4"></a-cone>
-        <a-box id="position-guide" visible="false" position="0 0 -2"></a-box>
-      </a-entity>
+      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
+      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
+
+    <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script>
+
 
 
 

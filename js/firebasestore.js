@@ -91,6 +91,8 @@ const loadPrev = (currentFileInfo) => {
   })
 }
 
+
+
 const loadNext = (currentFileInfo) => {
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
@@ -105,6 +107,18 @@ const loadNext = (currentFileInfo) => {
           currentFileInfo = _.nth(fileInfos, currentIndex + 1)
         }
       }
+      loadFile(currentFileInfo).then(animData => {
+        resolve({animData, currentFileInfo})
+      })
+    })
+  })
+}
+
+
+const loadAnimByName = (name) => {
+  return new Promise((resolve, reject) => {
+    firebase.database().ref('animations').child(name).once('value', snapshot => {
+      const currentFileInfo = snapshot.val()
       loadFile(currentFileInfo).then(animData => {
         resolve({animData, currentFileInfo})
       })
@@ -160,6 +174,7 @@ const deleteAnim = ({
 
 
 export {
+  loadAnimByName,
   save,
   loadPrev,
   loadNext,

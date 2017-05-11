@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteAnim, loadPrev, loadNext} from './firebasestore'
+import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore'
 
 import './anim'
 import './drawline'
@@ -10,6 +10,16 @@ import './onionskin'
 import './homeframeghost'
 import './frame'
 import './line'
+
+const comps = [
+  ['clumbied-crank-hops', 'mulgy-bung-flops'],
+  ['gildered-bung-glops', 'brumpled-crank-glops'],
+  ['mulgy-shift-hops', 'mulgy-prunt-clumps'],
+  ['fropley-limp-hunguses', 'brumpled-brine-glops'],
+  ['clumbied-brine-hunguses', 'mulgy-dank-glops'],
+]
+
+let compIndex = 0
 
 AFRAME.registerComponent('norman', {
 
@@ -19,6 +29,7 @@ AFRAME.registerComponent('norman', {
       currentFileInfo: null,
       animData: [[]],
       animsLoaded: [],
+      anims: [],
       fileInfoToDelete: null,
       slideshowPlaying: null,
       lastDaydreamAxis: 0,
@@ -43,23 +54,52 @@ AFRAME.registerComponent('norman', {
 
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
-    // this.setupDaydreamController()
-    _.delay(this.setupControllers.bind(this), 1) // SMELLY
+    this.setupDaydreamController()
+    // _.delay(this.setupControllers.bind(this), 1) // SMELLY
 
     const scene = document.querySelector('#scene')
 
-    this.setup()
-    this.fileLoadPrev()
+    // this.setup()
+    // this.fileLoadPrev()
+    this.loadComp(comps[0])
     this.startPlaying()
     // this.startSlideshow()
 
   },
 
+  loadNextComp() {
+    if (compIndex + 1 == comps.length) {
+      compIndex = 0
+    } else {
+      compIndex +=1
+    }
+    this.loadComp(comps[compIndex])
+  },
+
+  loadComp(comp) {
+    console.log('loading Comp: ', comp)
+    this.animsLoaded = []
+    this.teardown() 
+    _.each(comp, (name) => {
+      loadAnimByName(name).then(data => {
+        console.log('DAATAAAA: ', data)
+        // this.currentFileInfo = data.currentFileInfo
+        this.animsLoaded.push({
+          fileInfo: data.currentFileInfo,
+          animData: data.animData
+        })
+        this.setup(data.animData)
+      })
+    })
+
+  },
+
+
   setupDaydreamController() {
     const remote = document.querySelector("#remote")
     console.log('remote: ', remote.components)
     remote.addEventListener('buttondown', () => {
-      this.fileLoadPrev()
+      this.loadNextComp()
     });
     remote.addEventListener('axismove', (e) => {
       // if (this.lastDaydreamAxis === null) {
@@ -95,7 +135,7 @@ AFRAME.registerComponent('norman', {
 
 
         const animsToTransform = _.cloneDeep(this.animsLoaded)
-        animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
+        // animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
         console.log('animsToTransform: ', animsToTransform)
 
         _.each(animsToTransform, (animToSave) => {
@@ -108,9 +148,14 @@ AFRAME.registerComponent('norman', {
         // this.fileSave() // make this operate on input rather that reaching out itself
       }
       
+      else if (e.code.search('Digit') != -1) {
+        const slot = e.code.split('Digit')[1]
+        this.loadComp(comps[slot])
+      }
       else if (e.code == 'KeyA' && e.altKey) {this.startSlideshow()}
       else if (e.code == 'Comma') {this.fileLoadPrev(!e.shiftKey)}
-      else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
+      // else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
+      else if (e.code == 'Period') {this.loadNextComp()}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {this.fileSave()}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {this.fileSave(false)}
       else if (e.code == 'KeyX' && e.altKey) {this.fileDelete()}
@@ -266,7 +311,12 @@ AFRAME.registerComponent('norman', {
     // this.stopPlaying()
     // this.removeHomeFrameGhost()
     // this.removeOnionSkin()
-    this.removeAnim()
+    // this.removeAnim()
+    _.each(this.anims, (animEnt) => {
+      this.removeAnim(animEnt)
+    })
+    this.anims = []
+
     this.animData = []
     this.currentFileInfo = null
   },
@@ -331,8 +381,9 @@ AFRAME.registerComponent('norman', {
 
   fileLoadNext(doTeardown = true) {
     if (this.addingFrames) doTeardown = false
-    console.log('LOAD NEXT', doTeardown)
+    
     loadNext(this.currentFileInfo).then(({animData, currentFileInfo}) => {
+      console.log('LOADED NEXT', currentFileInfo.filename)
       if (doTeardown) this.teardown()
       // console.log('animData: ', animData, currentFileInfo)
       this.currentFileInfo = currentFileInfo
@@ -498,11 +549,12 @@ AFRAME.registerComponent('norman', {
     animEnt.setAttribute('anim', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
     this.animComp = animEnt.components.anim
+    this.anims.push(animEnt)
     el.appendChild(animEnt)
   },
 
-  removeAnim() {
-    const {el, animEnt} = this
+  removeAnim(animEnt) {
+    const {el} = this
     el.removeChild(animEnt)
     this.animEnt = null
   },

@@ -226,7 +226,7 @@ AFRAME.registerComponent('drawline', {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.deleteAnim = exports.loadNext = exports.loadPrev = exports.save = undefined;
+exports.deleteAnim = exports.loadNext = exports.loadPrev = exports.save = exports.loadAnimByName = undefined;
 
 var _firebase = require('firebase');
 
@@ -357,6 +357,17 @@ var loadNext = function loadNext(currentFileInfo) {
   });
 };
 
+var loadAnimByName = function loadAnimByName(name) {
+  return new Promise(function (resolve, reject) {
+    firebase.database().ref('animations').child(name).once('value', function (snapshot) {
+      var currentFileInfo = snapshot.val();
+      loadFile(currentFileInfo).then(function (animData) {
+        resolve({ animData: animData, currentFileInfo: currentFileInfo });
+      });
+    });
+  });
+};
+
 var loadFile = function loadFile(fileInfo) {
   return new Promise(function (resolve, reject) {
     _jquery2.default.getJSON(fileInfo.downloadURL, function (json) {
@@ -400,6 +411,7 @@ var deleteAnim = function deleteAnim(_ref) {
   });
 };
 
+exports.loadAnimByName = loadAnimByName;
 exports.save = save;
 exports.loadPrev = loadPrev;
 exports.loadNext = loadNext;
@@ -605,6 +617,10 @@ require('./line');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var comps = [['clumbied-crank-hops', 'mulgy-bung-flops'], ['gildered-bung-glops', 'brumpled-crank-glops'], ['mulgy-shift-hops', 'mulgy-prunt-clumps'], ['fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-brine-hunguses', 'mulgy-dank-glops']];
+
+var compIndex = 0;
+
 AFRAME.registerComponent('norman', {
   init: function init() {
     // console.log('WHATTT???')
@@ -612,6 +628,7 @@ AFRAME.registerComponent('norman', {
       currentFileInfo: null,
       animData: [[]],
       animsLoaded: [],
+      anims: [],
       fileInfoToDelete: null,
       slideshowPlaying: null,
       lastDaydreamAxis: 0,
@@ -636,43 +653,70 @@ AFRAME.registerComponent('norman', {
 
     this.frameInterval = 1000 / this.fps;
     this.setupKeyboard();
-    // this.setupDaydreamController()
-    _lodash2.default.delay(this.setupControllers.bind(this), 1); // SMELLY
+    this.setupDaydreamController();
+    // _.delay(this.setupControllers.bind(this), 1) // SMELLY
 
     var scene = document.querySelector('#scene');
 
-    this.setup();
-    this.fileLoadPrev();
+    // this.setup()
+    // this.fileLoadPrev()
+    this.loadComp(comps[0]);
     this.startPlaying();
     // this.startSlideshow()
   },
-  setupDaydreamController: function setupDaydreamController() {
+  loadNextComp: function loadNextComp() {
+    if (compIndex + 1 == comps.length) {
+      compIndex = 0;
+    } else {
+      compIndex += 1;
+    }
+    this.loadComp(comps[compIndex]);
+  },
+  loadComp: function loadComp(comp) {
     var _this = this;
+
+    console.log('loading Comp: ', comp);
+    this.animsLoaded = [];
+    this.teardown();
+    _lodash2.default.each(comp, function (name) {
+      (0, _firebasestore.loadAnimByName)(name).then(function (data) {
+        console.log('DAATAAAA: ', data);
+        // this.currentFileInfo = data.currentFileInfo
+        _this.animsLoaded.push({
+          fileInfo: data.currentFileInfo,
+          animData: data.animData
+        });
+        _this.setup(data.animData);
+      });
+    });
+  },
+  setupDaydreamController: function setupDaydreamController() {
+    var _this2 = this;
 
     var remote = document.querySelector("#remote");
     console.log('remote: ', remote.components);
     remote.addEventListener('buttondown', function () {
-      _this.fileLoadPrev();
+      _this2.loadNextComp();
     });
     remote.addEventListener('axismove', function (e) {
       // if (this.lastDaydreamAxis === null) {
       //   this.lastDaydreamAxis = e.detail.axis[0]
       // }
-      var diff = _this.lastDaydreamAxis - e.detail.axis[0];
-      var oldRot = _this.el.getAttribute('rotation');
+      var diff = _this2.lastDaydreamAxis - e.detail.axis[0];
+      var oldRot = _this2.el.getAttribute('rotation');
       var newY = oldRot.y + diff * 100;
       var rot = "0 " + newY + " 0";
-      _this.el.setAttribute('rotation', rot);
-      _this.lastDaydreamAxis = e.detail.axis[0];
+      _this2.el.setAttribute('rotation', rot);
+      _this2.lastDaydreamAxis = e.detail.axis[0];
     });
   },
   setupKeyboard: function setupKeyboard() {
-    var _this2 = this;
+    var _this3 = this;
 
     document.addEventListener('keydown', function (e) {
       console.log('keydown: ', e);
       if (e.code == 'Enter') {
-        _this2.togglePlay();
+        _this3.togglePlay();
       }
       // else if (e.key == 'S') {
       //   // console.log('saving: ')
@@ -681,7 +725,7 @@ AFRAME.registerComponent('norman', {
 
       else if (e.code == 'Space') {
           var cone = document.querySelector("#yellow-cone").object3D;
-          var el = _this2.el;
+          var el = _this3.el;
 
           var norm = el.object3D;
           cone.updateMatrixWorld();
@@ -691,38 +735,43 @@ AFRAME.registerComponent('norman', {
           // this.animData = animDataNewReg
 
 
-          var animsToTransform = _lodash2.default.cloneDeep(_this2.animsLoaded);
-          animsToTransform.push({ fileInfo: _this2.currentFileInfo, animData: _this2.animData });
+          var animsToTransform = _lodash2.default.cloneDeep(_this3.animsLoaded);
+          // animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
           console.log('animsToTransform: ', animsToTransform);
 
           _lodash2.default.each(animsToTransform, function (animToSave) {
-            var animDataNewReg = _this2.setReg(animToSave.animData, norm.matrix);
+            var animDataNewReg = _this3.setReg(animToSave.animData, norm.matrix);
             animToSave.animData = animDataNewReg;
-            _this2.fileSave(true, animToSave);
+            _this3.fileSave(true, animToSave);
           });
 
           // this.fileSave() // make this operate on input rather that reaching out itself
+        } else if (e.code.search('Digit') != -1) {
+          var slot = e.code.split('Digit')[1];
+          _this3.loadComp(comps[slot]);
         } else if (e.code == 'KeyA' && e.altKey) {
-          _this2.startSlideshow();
+          _this3.startSlideshow();
         } else if (e.code == 'Comma') {
-          _this2.fileLoadPrev(!e.shiftKey);
-        } else if (e.code == 'Period') {
-          _this2.fileLoadNext(!e.shiftKey);
-        } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {
-          _this2.fileSave();
-        } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {
-          _this2.fileSave(false);
-        } else if (e.code == 'KeyX' && e.altKey) {
-          _this2.fileDelete();
-        } else if (e.key == 'o') {
-          _this2.toggleOnion();
-        } else if (e.key == ',') {
-          _this2.changeFPS(-1);
-        } else if (e.key == '.') {
-          _this2.changeFPS(1);
-        } else if (e.key == 't') {
-          _this2.addLineData([{ x: 0, y: 1, z: 2 }, { x: 0, y: 1, z: 2 }], 2);
+          _this3.fileLoadPrev(!e.shiftKey);
         }
+        // else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
+        else if (e.code == 'Period') {
+            _this3.loadNextComp();
+          } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {
+            _this3.fileSave();
+          } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {
+            _this3.fileSave(false);
+          } else if (e.code == 'KeyX' && e.altKey) {
+            _this3.fileDelete();
+          } else if (e.key == 'o') {
+            _this3.toggleOnion();
+          } else if (e.key == ',') {
+            _this3.changeFPS(-1);
+          } else if (e.key == '.') {
+            _this3.changeFPS(1);
+          } else if (e.key == 't') {
+            _this3.addLineData([{ x: 0, y: 1, z: 2 }, { x: 0, y: 1, z: 2 }], 2);
+          }
     });
   },
   setReg: function setReg(animData, matrixToApply) {
@@ -750,7 +799,7 @@ AFRAME.registerComponent('norman', {
     this.slideshowPlaying = clearInterval(this.slideshowPlaying);
   },
   setupControllers: function setupControllers() {
-    var _this3 = this;
+    var _this4 = this;
 
     var controllers = document.querySelectorAll('a-entity[oculus-touch-controls]'),
         _controllers = _slicedToArray(controllers, 2),
@@ -765,7 +814,7 @@ AFRAME.registerComponent('norman', {
         boundFileLoadNext = this.fileLoadNext.bind(this),
         boundFileDelete = this.fileDelete.bind(this),
         addFilesystemListeners = function addFilesystemListeners() {
-      _this3.fileSystemMode = true; // smelly.. do this with adding and removing listeners
+      _this4.fileSystemMode = true; // smelly.. do this with adding and removing listeners
       primaryHand.addEventListener('UP_ON', boundFileNew);
       primaryHand.addEventListener('DOWN_ON', boundFileSave);
       primaryHand.addEventListener('LEFT_ON', boundFileLoadPrev);
@@ -773,7 +822,7 @@ AFRAME.registerComponent('norman', {
       primaryHand.addEventListener('thumbstickdown', boundFileDelete);
     },
         removeFilesystemListeners = function removeFilesystemListeners() {
-      _this3.fileSystemMode = false; // smelly.. do this with adding and removing listeners
+      _this4.fileSystemMode = false; // smelly.. do this with adding and removing listeners
       primaryHand.removeEventListener('UP_ON', boundFileNew);
       primaryHand.removeEventListener('DOWN_ON', boundFileSave);
       primaryHand.removeEventListener('LEFT_ON', boundFileLoadPrev);
@@ -788,22 +837,22 @@ AFRAME.registerComponent('norman', {
 
     primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D);
     primaryHand.addEventListener('triggerdown', function () {
-      return _this3.startDrawing();
+      return _this4.startDrawing();
     });
     primaryHand.addEventListener('triggerup', function () {
-      return _this3.stopDrawing();
+      return _this4.stopDrawing();
     });
     primaryHand.addEventListener('abuttondown', function (e) {
-      return _this3.toggleOnion();
+      return _this4.toggleOnion();
     });
     primaryHand.addEventListener('bbuttondown', function (e) {
-      return _this3.togglePlay();
+      return _this4.togglePlay();
     });
     secondaryHand.addEventListener('triggerdown', function (e) {
-      return _this3.addingFrames = true;
+      return _this4.addingFrames = true;
     });
     secondaryHand.addEventListener('triggerup', function (e) {
-      return _this3.addingFrames = false;
+      return _this4.addingFrames = false;
     });
     // secondaryHand.addEventListener('Ydown', addFilesystemListeners)
     // secondaryHand.addEventListener('Yup', removeFilesystemListeners)
@@ -812,36 +861,36 @@ AFRAME.registerComponent('norman', {
     this.setupThumbStickDirectionEvents(primaryHand, 0.5);
     this.setupThumbStickDirectionEvents(secondaryHand, 0.01);
     secondaryHand.addEventListener('RIGHT_ON', function () {
-      _this3.autoNext = true;
-      _this3.handleNext();
+      _this4.autoNext = true;
+      _this4.handleNext();
     });
     secondaryHand.addEventListener('LEFT_ON', function () {
-      _this3.autoPrev = true;
-      _this3.handlePrev();
+      _this4.autoPrev = true;
+      _this4.handlePrev();
     });
     secondaryHand.addEventListener('RIGHT_OFF', function (e) {
-      return _this3.autoNext = false;
+      return _this4.autoNext = false;
     });
     secondaryHand.addEventListener('LEFT_OFF', function (e) {
-      return _this3.autoPrev = false;
+      return _this4.autoPrev = false;
     });
     primaryHand.addEventListener('axismove', function (e) {
-      if (!_this3.fileSystemMode) {
+      if (!_this4.fileSystemMode) {
         // smelly.. do this with adding and removing listeners
-        if (!_this3.firstAxisFired) {
-          _this3.firstAxisFired = true;
-        } else if (!_this3.isAnimPlaying) {
-          _this3.fps = 0;
-          _this3.startPlaying();
+        if (!_this4.firstAxisFired) {
+          _this4.firstAxisFired = true;
+        } else if (!_this4.isAnimPlaying) {
+          _this4.fps = 0;
+          _this4.startPlaying();
         }
-        _this3.changeFPS(e.detail.axis[0]);
+        _this4.changeFPS(e.detail.axis[0]);
       }
     });
     secondaryHand.addEventListener('gripdown', function (e) {
-      return _this3.grab();
+      return _this4.grab();
     });
     secondaryHand.addEventListener('gripup', function (e) {
-      return _this3.drop();
+      return _this4.drop();
     });
   },
   setupThumbStickDirectionEvents: function setupThumbStickDirectionEvents(controller) {
@@ -893,10 +942,17 @@ AFRAME.registerComponent('norman', {
     // this.setupOnionSkin()
   },
   teardown: function teardown() {
+    var _this5 = this;
+
     // this.stopPlaying()
     // this.removeHomeFrameGhost()
     // this.removeOnionSkin()
-    this.removeAnim();
+    // this.removeAnim()
+    _lodash2.default.each(this.anims, function (animEnt) {
+      _this5.removeAnim(animEnt);
+    });
+    this.anims = [];
+
     this.animData = [];
     this.currentFileInfo = null;
   },
@@ -936,7 +992,7 @@ AFRAME.registerComponent('norman', {
     // this.fileNew()
   },
   fileLoadPrev: function fileLoadPrev() {
-    var _this4 = this;
+    var _this6 = this;
 
     var doTeardown = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
@@ -950,37 +1006,38 @@ AFRAME.registerComponent('norman', {
           currentFileInfo = _ref.currentFileInfo;
 
       if (doTeardown) {
-        _this4.teardown();
+        _this6.teardown();
       } else {
         // stash that last animation
-        _this4.removeOnionSkin();
-        _this4.animsLoaded.push({
-          fileInfo: _this4.currentFileInfo,
-          animData: _this4.animData
+        _this6.removeOnionSkin();
+        _this6.animsLoaded.push({
+          fileInfo: _this6.currentFileInfo,
+          animData: _this6.animData
         });
       }
 
       // console.log('animData: ', animData, fileInfo)
 
-      _this4.currentFileInfo = currentFileInfo;
-      _this4.setup(animData);
+      _this6.currentFileInfo = currentFileInfo;
+      _this6.setup(animData);
     });
   },
   fileLoadNext: function fileLoadNext() {
-    var _this5 = this;
+    var _this7 = this;
 
     var doTeardown = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
     if (this.addingFrames) doTeardown = false;
-    console.log('LOAD NEXT', doTeardown);
+
     (0, _firebasestore.loadNext)(this.currentFileInfo).then(function (_ref2) {
       var animData = _ref2.animData,
           currentFileInfo = _ref2.currentFileInfo;
 
-      if (doTeardown) _this5.teardown();
+      console.log('LOADED NEXT', currentFileInfo.filename);
+      if (doTeardown) _this7.teardown();
       // console.log('animData: ', animData, currentFileInfo)
-      _this5.currentFileInfo = currentFileInfo;
-      _this5.setup(animData);
+      _this7.currentFileInfo = currentFileInfo;
+      _this7.setup(animData);
     });
   },
   handleNext: function handleNext() {
@@ -1027,10 +1084,10 @@ AFRAME.registerComponent('norman', {
     })];
   },
   removeOnionSkin: function removeOnionSkin() {
-    var _this6 = this;
+    var _this8 = this;
 
     this.onionSkins.map(function (onionSkinEnt) {
-      _this6.el.removeChild(onionSkinEnt);
+      _this8.el.removeChild(onionSkinEnt);
     });
     this.onionSkins = [];
   },
@@ -1135,11 +1192,11 @@ AFRAME.registerComponent('norman', {
     animEnt.setAttribute('anim', { norman: '#norman', animData: animData });
     animEnt.setAttribute('id', 'anim');
     this.animComp = animEnt.components.anim;
+    this.anims.push(animEnt);
     el.appendChild(animEnt);
   },
-  removeAnim: function removeAnim() {
-    var el = this.el,
-        animEnt = this.animEnt;
+  removeAnim: function removeAnim(animEnt) {
+    var el = this.el;
 
     el.removeChild(animEnt);
     this.animEnt = null;
