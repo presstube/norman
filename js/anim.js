@@ -67,8 +67,9 @@ AFRAME.registerComponent('anim', {
     el.appendChild(frameEntity)
     frameEntity.setAttribute('frame', {
       frameData: frameData,
-      color: '#ddd',
+      color: 'black',
       // color: '#222',
+      color: '#ddd',
       style: 'solid'
     })
     return frameEntity

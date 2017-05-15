@@ -7,6 +7,9 @@ var _lodash2 = _interopRequireDefault(_lodash);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; } // import 'aframe'
+
+
 AFRAME.registerComponent('anim', {
 
   schema: {
@@ -80,16 +83,16 @@ AFRAME.registerComponent('anim', {
     });
   },
   makeFrameEntity: function makeFrameEntity(frameData) {
+    var _frameEntity$setAttri;
+
     var frameEntity = document.createElement('a-entity'),
         el = this.el;
 
     el.appendChild(frameEntity);
-    frameEntity.setAttribute('frame', {
+    frameEntity.setAttribute('frame', (_frameEntity$setAttri = {
       frameData: frameData,
-      color: '#ddd',
-      // color: '#222',
-      style: 'solid'
-    });
+      color: 'black'
+    }, _defineProperty(_frameEntity$setAttri, 'color', '#ddd'), _defineProperty(_frameEntity$setAttri, 'style', 'solid'), _frameEntity$setAttri));
     return frameEntity;
   },
   gotoNextFrame: function gotoNextFrame() {
@@ -141,7 +144,7 @@ AFRAME.registerComponent('anim', {
   onFrameAdded: function onFrameAdded(e) {
     this.frameEntities.splice(e.detail.insertIndex, 0, this.makeFrameEntity([]));
   }
-}); // import 'aframe'
+});
 
 },{"lodash":25}],2:[function(require,module,exports){
 'use strict';
@@ -617,7 +620,13 @@ require('./line');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var comps = [['clumbied-crank-hops', 'mulgy-bung-flops'], ['gildered-bung-glops', 'brumpled-crank-glops'], ['mulgy-shift-hops', 'mulgy-prunt-clumps'], ['fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-brine-hunguses', 'mulgy-dank-glops']];
+var counter = 0;
+
+var comps = [['mulgy-shift-hops', 'mulgy-prunt-clumps', 'fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-clam-shanks'], // norman
+['clumbied-crank-hops', 'mulgy-bung-flops'], ['lorgussy-clam-hinges'], ['gildered-bung-glops', 'brumpled-crank-glops'], ['fropley-groft-lumps'], ['mulgy-shift-hops', 'mulgy-prunt-clumps'], ['fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-brine-hunguses', 'mulgy-dank-glops'], ['gildered-frump-hinges'], ['brumpled-dank-hunguses'], ['lorgussy-bung-clamps'], ['fropley-clam-shanks', 'trulmy-dank-hops'], ['brumpled-shift-hinges'], ['gildered-shift-hunguses'], ['troubling-plex-hunguses'], // black pearl motion study
+['trulmy-limp-donks'], // runnning man
+['marbled-groft-clumps'], // craggly norman letters
+['mulgy-ront-hops']];
 
 var compIndex = 0;
 
@@ -644,7 +653,8 @@ AFRAME.registerComponent('norman', {
       onionSkins: [],
       onionVisible: false,
       isRightHanded: true,
-      fileSystemMode: false
+      fileSystemMode: false,
+      remote: document.querySelector("#remote")
     });
 
     var cam = document.querySelector('#camera');
@@ -654,7 +664,7 @@ AFRAME.registerComponent('norman', {
     this.frameInterval = 1000 / this.fps;
     this.setupKeyboard();
     this.setupDaydreamController();
-    // _.delay(this.setupControllers.bind(this), 1) // SMELLY
+    _lodash2.default.delay(this.setupControllers.bind(this), 1); // SMELLY
 
     var scene = document.querySelector('#scene');
 
@@ -663,6 +673,20 @@ AFRAME.registerComponent('norman', {
     this.loadComp(comps[0]);
     this.startPlaying();
     // this.startSlideshow()
+  },
+  tick: function tick(time, timeDelta) {
+    var _remote$object3D$rota = this.remote.object3D.rotation,
+        _x = _remote$object3D$rota._x,
+        _y = _remote$object3D$rota._y,
+        _z = _remote$object3D$rota._z;
+
+    var newRot = THREE.Math.radToDeg(_x) + ' ' + THREE.Math.radToDeg(_y) + ' ' + THREE.Math.radToDeg(_z);
+    this.el.setAttribute('rotation', String(newRot));
+
+    // counter++
+    // if (counter % 100 == 0) {
+    //   console.log('rot: ', newRot)
+    // }
   },
   loadNextComp: function loadNextComp() {
     if (compIndex + 1 == comps.length) {
@@ -678,8 +702,14 @@ AFRAME.registerComponent('norman', {
     console.log('loading Comp: ', comp);
     this.animsLoaded = [];
     this.teardown();
-    _lodash2.default.each(comp, function (name) {
-      (0, _firebasestore.loadAnimByName)(name).then(function (data) {
+
+    var animLoads = _lodash2.default.map(comp, function (name) {
+      return (0, _firebasestore.loadAnimByName)(name);
+    });
+
+    Promise.all(animLoads).then(function (values) {
+      console.log('promise all completet: ', values);
+      _lodash2.default.each(values, function (data) {
         console.log('DAATAAAA: ', data);
         // this.currentFileInfo = data.currentFileInfo
         _this.animsLoaded.push({
@@ -689,6 +719,18 @@ AFRAME.registerComponent('norman', {
         _this.setup(data.animData);
       });
     });
+
+    // _.each(comp, (name) => {
+    //   loadAnimByName(name).then(data => {
+    //     console.log('DAATAAAA: ', data)
+    //     // this.currentFileInfo = data.currentFileInfo
+    //     this.animsLoaded.push({
+    //       fileInfo: data.currentFileInfo,
+    //       animData: data.animData
+    //     })
+    //     this.setup(data.animData)
+    //   })
+    // })
   },
   setupDaydreamController: function setupDaydreamController() {
     var _this2 = this;
@@ -698,17 +740,17 @@ AFRAME.registerComponent('norman', {
     remote.addEventListener('buttondown', function () {
       _this2.loadNextComp();
     });
-    remote.addEventListener('axismove', function (e) {
-      // if (this.lastDaydreamAxis === null) {
-      //   this.lastDaydreamAxis = e.detail.axis[0]
-      // }
-      var diff = _this2.lastDaydreamAxis - e.detail.axis[0];
-      var oldRot = _this2.el.getAttribute('rotation');
-      var newY = oldRot.y + diff * 100;
-      var rot = "0 " + newY + " 0";
-      _this2.el.setAttribute('rotation', rot);
-      _this2.lastDaydreamAxis = e.detail.axis[0];
-    });
+    // remote.addEventListener('axismove', (e) => {
+    //   // if (this.lastDaydreamAxis === null) {
+    //   //   this.lastDaydreamAxis = e.detail.axis[0]
+    //   // }
+    //   const diff = e.detail.axis[0] - this.lastDaydreamAxis
+    //   const oldRot = this.el.getAttribute('rotation')
+    //   const newY = oldRot.y + (diff*200)
+    //   const rot = "0 " + newY + " 0"
+    //   this.el.setAttribute('rotation', rot)
+    //   this.lastDaydreamAxis = e.detail.axis[0]
+    // });
   },
   setupKeyboard: function setupKeyboard() {
     var _this3 = this;
@@ -753,25 +795,25 @@ AFRAME.registerComponent('norman', {
           _this3.startSlideshow();
         } else if (e.code == 'Comma') {
           _this3.fileLoadPrev(!e.shiftKey);
+        } else if (e.code == 'Period') {
+          _this3.fileLoadNext(!e.shiftKey);
+        } else if (e.code == 'BracketRight') {
+          _this3.loadNextComp();
+        } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {
+          _this3.fileSave();
+        } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {
+          _this3.fileSave(false);
+        } else if (e.code == 'KeyX' && e.altKey) {
+          _this3.fileDelete();
+        } else if (e.key == 'o') {
+          _this3.toggleOnion();
+        } else if (e.key == ',') {
+          _this3.changeFPS(-1);
+        } else if (e.key == '.') {
+          _this3.changeFPS(1);
+        } else if (e.key == 't') {
+          _this3.addLineData([{ x: 0, y: 1, z: 2 }, { x: 0, y: 1, z: 2 }], 2);
         }
-        // else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
-        else if (e.code == 'Period') {
-            _this3.loadNextComp();
-          } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {
-            _this3.fileSave();
-          } else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {
-            _this3.fileSave(false);
-          } else if (e.code == 'KeyX' && e.altKey) {
-            _this3.fileDelete();
-          } else if (e.key == 'o') {
-            _this3.toggleOnion();
-          } else if (e.key == ',') {
-            _this3.changeFPS(-1);
-          } else if (e.key == '.') {
-            _this3.changeFPS(1);
-          } else if (e.key == 't') {
-            _this3.addLineData([{ x: 0, y: 1, z: 2 }, { x: 0, y: 1, z: 2 }], 2);
-          }
     });
   },
   setReg: function setReg(animData, matrixToApply) {
@@ -1000,11 +1042,11 @@ AFRAME.registerComponent('norman', {
     // finding a name that works for both keyboard and controller would be good
     // secondaryHandTriggerDown or something
     if (this.addingFrames) doTeardown = false;
-    console.log('LOAD PREV', doTeardown, this.currentFileInfo);
     (0, _firebasestore.loadPrev)(this.currentFileInfo).then(function (_ref) {
       var animData = _ref.animData,
           currentFileInfo = _ref.currentFileInfo;
 
+      console.log('LOADED PREV', currentFileInfo.filename);
       if (doTeardown) {
         _this6.teardown();
       } else {

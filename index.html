@@ -10,16 +10,19 @@
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene" webvr-ui fog="color: #222; near: 0; far:0.6">
+    <a-scene id="scene" fog="color: #222; near: 0; far:0.6">
       <a-sky color="#222"></a-sky>
 
       <a-camera 
         id="camera" 
-        wasd-controls="acceleration: 10; fly:true"
+        wasd-controls="acceleration: 1; easing:3; fly:true"
         position="0 0 0"
         ></a-camera>
 
-      <a-entity id="remote" daydream-controller>
+      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
+      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
+
+      <a-entity id="remote" daydream-controller visible="false">
         <a-cone id="ray" color="#ddd" position="0 0 -2" rotation="-90 0 0" radius-bottom="0.0003" radius-top="0.0003" height="4"></a-cone>
         <a-box id="position-guide" visible="false" position="0 0 -2"></a-box>
       </a-entity>
@@ -29,6 +32,7 @@
       </a-entity>
       
       <a-cone id="yellow-cone" color="yellow" height="0.005" radius-bottom="0.003" radius-top="0" position="0 1.6 -0.5" visible="false"></a-cone>
+
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-cone 
         id="pensphere"
@@ -48,12 +52,10 @@
     
 fog="color: #222; near: 0; far:0.8"
 
-      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
-      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
 
     <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script>
 
-
+webvr-ui 
 
 
         camera="userHeight: 1.6"

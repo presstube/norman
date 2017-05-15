@@ -11,12 +11,30 @@ import './homeframeghost'
 import './frame'
 import './line'
 
+let counter = 0
+
 const comps = [
+
+  ['mulgy-shift-hops', 'mulgy-prunt-clumps','fropley-limp-hunguses', 'brumpled-brine-glops'],
+  ['clumbied-clam-shanks'], // norman
   ['clumbied-crank-hops', 'mulgy-bung-flops'],
+  ['lorgussy-clam-hinges'],
   ['gildered-bung-glops', 'brumpled-crank-glops'],
+  ['fropley-groft-lumps'],
   ['mulgy-shift-hops', 'mulgy-prunt-clumps'],
   ['fropley-limp-hunguses', 'brumpled-brine-glops'],
   ['clumbied-brine-hunguses', 'mulgy-dank-glops'],
+  ['gildered-frump-hinges'],
+  ['brumpled-dank-hunguses'],
+  ['lorgussy-bung-clamps'],
+  ['fropley-clam-shanks', 'trulmy-dank-hops'],
+  ['brumpled-shift-hinges'],
+  ['gildered-shift-hunguses'],
+  ['troubling-plex-hunguses'], // black pearl motion study
+  ['trulmy-limp-donks'], // runnning man
+  ['marbled-groft-clumps'], // craggly norman letters
+  ['mulgy-ront-hops'], // abstract short loop
+
 ]
 
 let compIndex = 0
@@ -45,7 +63,8 @@ AFRAME.registerComponent('norman', {
       onionSkins: [],
       onionVisible: false,
       isRightHanded: true,
-      fileSystemMode: false
+      fileSystemMode: false,
+      remote: document.querySelector("#remote"),
     })
 
     const cam = document.querySelector('#camera')
@@ -55,7 +74,7 @@ AFRAME.registerComponent('norman', {
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
     this.setupDaydreamController()
-    // _.delay(this.setupControllers.bind(this), 1) // SMELLY
+    _.delay(this.setupControllers.bind(this), 1) // SMELLY
 
     const scene = document.querySelector('#scene')
 
@@ -64,6 +83,20 @@ AFRAME.registerComponent('norman', {
     this.loadComp(comps[0])
     this.startPlaying()
     // this.startSlideshow()
+
+  },
+
+  tick(time, timeDelta) {
+    const {_x, _y, _z} = this.remote.object3D.rotation
+    const newRot = THREE.Math.radToDeg( _x ) + ' ' + 
+                   THREE.Math.radToDeg( _y ) + ' ' + 
+                   THREE.Math.radToDeg( _z )
+    this.el.setAttribute('rotation', String(newRot))
+    
+    // counter++
+    // if (counter % 100 == 0) {
+    //   console.log('rot: ', newRot)
+    // }
 
   },
 
@@ -80,8 +113,14 @@ AFRAME.registerComponent('norman', {
     console.log('loading Comp: ', comp)
     this.animsLoaded = []
     this.teardown() 
-    _.each(comp, (name) => {
-      loadAnimByName(name).then(data => {
+
+    const animLoads = _.map(comp, (name) => {
+      return loadAnimByName(name)
+    })
+
+    Promise.all(animLoads).then(values => {
+      console.log('promise all completet: ', values)
+      _.each(values, (data) => {
         console.log('DAATAAAA: ', data)
         // this.currentFileInfo = data.currentFileInfo
         this.animsLoaded.push({
@@ -92,6 +131,18 @@ AFRAME.registerComponent('norman', {
       })
     })
 
+    // _.each(comp, (name) => {
+    //   loadAnimByName(name).then(data => {
+    //     console.log('DAATAAAA: ', data)
+    //     // this.currentFileInfo = data.currentFileInfo
+    //     this.animsLoaded.push({
+    //       fileInfo: data.currentFileInfo,
+    //       animData: data.animData
+    //     })
+    //     this.setup(data.animData)
+    //   })
+    // })
+
   },
 
 
@@ -101,17 +152,17 @@ AFRAME.registerComponent('norman', {
     remote.addEventListener('buttondown', () => {
       this.loadNextComp()
     });
-    remote.addEventListener('axismove', (e) => {
-      // if (this.lastDaydreamAxis === null) {
-      //   this.lastDaydreamAxis = e.detail.axis[0]
-      // }
-      const diff = this.lastDaydreamAxis - e.detail.axis[0]
-      const oldRot = this.el.getAttribute('rotation')
-      const newY = oldRot.y + (diff*100)
-      const rot = "0 " + newY + " 0"
-      this.el.setAttribute('rotation', rot)
-      this.lastDaydreamAxis = e.detail.axis[0]
-    });
+    // remote.addEventListener('axismove', (e) => {
+    //   // if (this.lastDaydreamAxis === null) {
+    //   //   this.lastDaydreamAxis = e.detail.axis[0]
+    //   // }
+    //   const diff = e.detail.axis[0] - this.lastDaydreamAxis
+    //   const oldRot = this.el.getAttribute('rotation')
+    //   const newY = oldRot.y + (diff*200)
+    //   const rot = "0 " + newY + " 0"
+    //   this.el.setAttribute('rotation', rot)
+    //   this.lastDaydreamAxis = e.detail.axis[0]
+    // });
   },
 
   setupKeyboard() {
@@ -154,8 +205,8 @@ AFRAME.registerComponent('norman', {
       }
       else if (e.code == 'KeyA' && e.altKey) {this.startSlideshow()}
       else if (e.code == 'Comma') {this.fileLoadPrev(!e.shiftKey)}
-      // else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
-      else if (e.code == 'Period') {this.loadNextComp()}
+      else if (e.code == 'Period') {this.fileLoadNext(!e.shiftKey)}
+      else if (e.code == 'BracketRight') {this.loadNextComp()}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && !e.ctrlKey) {this.fileSave()}
       else if (e.key == 'ArrowDown' && e.altKey && e.shiftKey && e.ctrlKey) {this.fileSave(false)}
       else if (e.code == 'KeyX' && e.altKey) {this.fileDelete()}
@@ -359,8 +410,8 @@ AFRAME.registerComponent('norman', {
     // finding a name that works for both keyboard and controller would be good
     // secondaryHandTriggerDown or something
     if (this.addingFrames) doTeardown = false  
-    console.log('LOAD PREV', doTeardown, this.currentFileInfo )
     loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
+      console.log('LOADED PREV', currentFileInfo.filename )
       if (doTeardown) {
         this.teardown()
       } else {
