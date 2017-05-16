@@ -354,7 +354,7 @@ AFRAME.registerComponent('norman', {
   setup(animData = [[]]) {
     this.animData = animData
     // this.addAnim()
-    _.times(20, () => this.addAnim())
+    _.times(100, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -603,14 +603,14 @@ AFRAME.registerComponent('norman', {
     animEnt.setAttribute('animmeshline', {norman: '#norman', animData, initFrame})
     // animEnt.setAttribute('anim', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
-    let spreadMax = 0.5
+    let spreadMax = 1
     const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
     spreadMax = 20
     const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
     // console.log('pos: ', pos)
     animEnt.setAttribute('position', pos)
     animEnt.setAttribute('rotation', rot)
-    // this.animComp = animEnt.components.anim
+    this.animComp = animEnt.components.animmeshline
     this.anims.push(animEnt)
     el.appendChild(animEnt)
   },
