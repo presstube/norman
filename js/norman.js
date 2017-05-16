@@ -167,7 +167,7 @@ AFRAME.registerComponent('norman', {
 
   setupKeyboard() {
     document.addEventListener('keydown', e => {
-      console.log('keydown: ', e)
+      // console.log('keydown: ', e)
       if (e.code == 'Enter') {this.togglePlay()} 
       // else if (e.key == 'S') {
       //   // console.log('saving: ')
@@ -353,7 +353,8 @@ AFRAME.registerComponent('norman', {
 
   setup(animData = [[]]) {
     this.animData = animData
-    this.addAnim()
+    // this.addAnim()
+    _.times(20, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -596,13 +597,26 @@ AFRAME.registerComponent('norman', {
 
   addAnim() {
     this.animEnt = document.createElement('a-entity')
-    const {animEnt, el, animData} = this
+    const {animEnt, el, animData, getRandPosSpread} = this
     // console.log('adding anim:', animData)
-    animEnt.setAttribute('animmeshline', {norman: '#norman', animData})
+    const initFrame = Math.floor(Math.random() * 20)
+    animEnt.setAttribute('animmeshline', {norman: '#norman', animData, initFrame})
+    // animEnt.setAttribute('anim', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
+    let spreadMax = 0.5
+    const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
+    spreadMax = 20
+    const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
+    // console.log('pos: ', pos)
+    animEnt.setAttribute('position', pos)
+    animEnt.setAttribute('rotation', rot)
     // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
     el.appendChild(animEnt)
+  },
+
+  getRandPosSpread(max) {
+    return (Math.random() * max) - (Math.random() * max)
   },
 
   removeAnim(animEnt) {
