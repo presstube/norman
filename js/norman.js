@@ -10,6 +10,7 @@ import './onionskin'
 import './homeframeghost'
 import './frame'
 import './line'
+import './animmeshline'
 
 let counter = 0
 
@@ -596,9 +597,10 @@ AFRAME.registerComponent('norman', {
   addAnim() {
     this.animEnt = document.createElement('a-entity')
     const {animEnt, el, animData} = this
-    animEnt.setAttribute('anim', {norman: '#norman', animData})
+    // console.log('adding anim:', animData)
+    animEnt.setAttribute('animmeshline', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
-    this.animComp = animEnt.components.anim
+    // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
     el.appendChild(animEnt)
   },

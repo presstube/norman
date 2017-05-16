@@ -13,6 +13,7 @@
     "firebaseui": "^1.0.1",
     "jquery": "^3.2.1",
     "lodash": "^4.17.4",
+    "three.meshline": "^1.0.3",
     "webvr-ui": "^0.9.4"
   },
   "devDependencies": {

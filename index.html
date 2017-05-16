@@ -5,12 +5,13 @@
     <title>Norman</title>
     <meta name="description" content="Minimalist animation sketchbook for WebVR.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/0.5.0/aframe.min.js"></script>
+    <script src='vendor/THREE.MeshLine.js'></script>
     <script src="https://rawgit.com/ryanbetts/aframe-daydream-controller-component/master/dist/aframe-daydream-controller-component.min.js"></script>
     <script src="build/main.js"></script>
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene" fog="color: #222; near: 0; far:0.6">
+    <a-scene id="scene">
       <a-sky color="#222"></a-sky>
 
       <a-camera 
@@ -49,6 +50,8 @@
 </html>
 
 <!-- 
+    
+fog="color: #222; near: 0; far:0.6"
     
 fog="color: #222; near: 0; far:0.8"
 
