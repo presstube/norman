@@ -15,6 +15,7 @@ let counter = 0
 
 const comps = [
 
+  ['gildered-frump-hinges'],
   ['mulgy-shift-hops', 'mulgy-prunt-clumps','fropley-limp-hunguses', 'brumpled-brine-glops'],
   ['clumbied-clam-shanks'], // norman
   ['clumbied-crank-hops', 'mulgy-bung-flops'],
@@ -24,7 +25,6 @@ const comps = [
   ['mulgy-shift-hops', 'mulgy-prunt-clumps'],
   ['fropley-limp-hunguses', 'brumpled-brine-glops'],
   ['clumbied-brine-hunguses', 'mulgy-dank-glops'],
-  ['gildered-frump-hinges'],
   ['brumpled-dank-hunguses'],
   ['lorgussy-bung-clamps'],
   ['fropley-clam-shanks', 'trulmy-dank-hops'],
@@ -34,7 +34,6 @@ const comps = [
   ['trulmy-limp-donks'], // runnning man
   ['marbled-groft-clumps'], // craggly norman letters
   ['mulgy-ront-hops'], // abstract short loop
-
 ]
 
 let compIndex = 0
@@ -174,30 +173,30 @@ AFRAME.registerComponent('norman', {
       //   uploadAnimData(null, {data: this.animData})
       // }
 
-      else if (e.code == 'Space') {
-        const cone = document.querySelector("#yellow-cone").object3D
-        const {el} = this
-        const norm = el.object3D
-        cone.updateMatrixWorld()
-        const worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld)
-        cone.add(norm)
-        norm.applyMatrix(worldToLocal)
-        // this.animData = animDataNewReg
+      // else if (e.code == 'Space') {
+      //   const cone = document.querySelector("#yellow-cone").object3D
+      //   const {el} = this
+      //   const norm = el.object3D
+      //   cone.updateMatrixWorld()
+      //   const worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld)
+      //   cone.add(norm)
+      //   norm.applyMatrix(worldToLocal)
+      //   // this.animData = animDataNewReg
 
 
-        const animsToTransform = _.cloneDeep(this.animsLoaded)
-        // animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
-        console.log('animsToTransform: ', animsToTransform)
+      //   const animsToTransform = _.cloneDeep(this.animsLoaded)
+      //   // animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
+      //   console.log('animsToTransform: ', animsToTransform)
 
-        _.each(animsToTransform, (animToSave) => {
-          const animDataNewReg = this.setReg(animToSave.animData, norm.matrix)
-          animToSave.animData = animDataNewReg
-          this.fileSave(true, animToSave)
-        })
+      //   _.each(animsToTransform, (animToSave) => {
+      //     const animDataNewReg = this.setReg(animToSave.animData, norm.matrix)
+      //     animToSave.animData = animDataNewReg
+      //     this.fileSave(true, animToSave)
+      //   })
 
 
-        // this.fileSave() // make this operate on input rather that reaching out itself
-      }
+      //   // this.fileSave() // make this operate on input rather that reaching out itself
+      // }
       
       else if (e.code.search('Digit') != -1) {
         const slot = e.code.split('Digit')[1]
