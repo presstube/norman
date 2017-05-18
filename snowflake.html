@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - buffergeometry - lines - indexed</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #cccccc;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+
+			a {
+				color: #0080ff;
+			}
+
+		</style>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/85/three.js"></script>
+	</head>
+	<body>
+
+		<div id="container"></div>
+
+		<script>
+
+			var container, stats;
+
+			var camera, scene, renderer;
+
+			var mesh, parent_node;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 9000;
+
+				scene = new THREE.Scene();
+
+				var geometry = new THREE.BufferGeometry();
+				var material = new THREE.LineBasicMaterial();
+
+				var positions = [];
+				var next_positions_index = 0;
+				var indices_array = [];
+
+				function addVertex(v) {
+					positions.push(v.x, v.y, v.z);
+
+					console.log('added vertex: ', v.x, v.y, v.z)
+					next_positions_index++;
+				}
+
+				// simple Koch curve
+				function addLineSeg(p0, p4) {
+
+					var i = next_positions_index-1; // p0 already there
+					addVertex(p4);
+					// indices_array.push(i, i+1);
+					// indices_array.push(i, i+1);
+					indices_array.push(i, i+1); // here is where it is connecting to the last line segment
+					console.log('added line seg and pushed indices: ', i, i+1)
+				}
+
+				function buildLine(points) {
+
+					console.log('start building new line')
+
+					addVertex(points[0]); // here is where it is breaking from the last line because it is not pushing any indices
+
+					for (var p_index=0; p_index != points.length-1; ++p_index) {
+						// console.log('about to iterate on p-index: ', p_index)
+						addLineSeg(points[p_index], points[p_index+1]);
+					}
+				}
+
+				var y = -2000;
+				buildLine
+				(
+					[
+						new THREE.Vector3(982, y+200, 0),
+						new THREE.Vector3(500, y+600, 0)
+					]
+				);
+
+				y += 1000;
+				buildLine
+				(
+					[
+						new THREE.Vector3(0, y, 0),
+						new THREE.Vector3(100, y+500, 0),
+						new THREE.Vector3(500, y+0, 0),
+					]
+				);
+
+				y += 1000;
+				buildLine
+				(
+					[
+						new THREE.Vector3(0, y, 0),
+						new THREE.Vector3(500, y, 0),
+						new THREE.Vector3(289, y+72, 0),
+						new THREE.Vector3(-384, y-720, 0),
+					]
+				);
+
+				y += 1000;
+				buildLine
+				(
+					[
+						new THREE.Vector3(250, y, 0),
+						new THREE.Vector3(500, y+0, 0),
+						new THREE.Vector3(100, y+500, 0),
+						new THREE.Vector3(982, y+0, 0),
+						new THREE.Vector3(500, y+368, 0)
+					]
+				);
+				// --------------------------------
+
+				geometry.setIndex( new THREE.BufferAttribute( new Uint16Array( indices_array ), 1 ) );
+
+				geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( positions ), 3 ) );
+
+				console.log('pos: ', positions)
+				console.log('indices_array: ', indices_array)
+				
+				mesh = new THREE.LineSegments( geometry, material );
+
+				parent_node = new THREE.Object3D();
+				parent_node.add(mesh);
+
+				scene.add( parent_node );
+
+				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+
+				container.appendChild( renderer.domElement );	
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+
+			}
+
+			function render() {
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>

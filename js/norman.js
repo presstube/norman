@@ -10,6 +10,7 @@ import './onionskin'
 import './homeframeghost'
 import './frame'
 import './line'
+import './linemeshline'
 import './animmeshline'
 
 let counter = 0
@@ -354,7 +355,7 @@ AFRAME.registerComponent('norman', {
   setup(animData = [[]]) {
     this.animData = animData
     // this.addAnim()
-    _.times(100, () => this.addAnim())
+    _.times(10, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -611,6 +612,7 @@ AFRAME.registerComponent('norman', {
     animEnt.setAttribute('position', pos)
     animEnt.setAttribute('rotation', rot)
     this.animComp = animEnt.components.animmeshline
+    // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
     el.appendChild(animEnt)
   },

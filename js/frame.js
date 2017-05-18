@@ -18,6 +18,7 @@ AFRAME.registerComponent('frame', {
     var lineEntity = document.createElement('a-entity');
     this.el.appendChild(lineEntity);
     lineEntity.setAttribute('line', {
+    // lineEntity.setAttribute('linemeshline', {
       lineData: lineData,
       color: this.data.color,
       style: this.data.style,
