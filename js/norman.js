@@ -5,6 +5,7 @@ import $ from 'jquery'
 import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore'
 
 import './anim'
+import './animlinesegments'
 import './drawline'
 import './onionskin'
 import './homeframeghost'
@@ -52,7 +53,7 @@ AFRAME.registerComponent('norman', {
       fileInfoToDelete: null,
       slideshowPlaying: null,
       lastDaydreamAxis: 0,
-      fps: 30,
+      fps: 60,
       maxFPS: 120,
       isAnimPlaying: false,
       isDrawing: false,
@@ -355,7 +356,7 @@ AFRAME.registerComponent('norman', {
   setup(animData = [[]]) {
     this.animData = animData
     // this.addAnim()
-    _.times(10, () => this.addAnim())
+    _.times(1, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -601,7 +602,7 @@ AFRAME.registerComponent('norman', {
     const {animEnt, el, animData, getRandPosSpread} = this
     // console.log('adding anim:', animData)
     const initFrame = Math.floor(Math.random() * 20)
-    animEnt.setAttribute('animmeshline', {norman: '#norman', animData, initFrame})
+    animEnt.setAttribute('animlinesegments', {norman: '#norman', animData, initFrame})
     // animEnt.setAttribute('anim', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
     let spreadMax = 1
@@ -609,9 +610,9 @@ AFRAME.registerComponent('norman', {
     spreadMax = 20
     const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
     // console.log('pos: ', pos)
-    animEnt.setAttribute('position', pos)
-    animEnt.setAttribute('rotation', rot)
-    this.animComp = animEnt.components.animmeshline
+    // animEnt.setAttribute('position', pos)
+    // animEnt.setAttribute('rotation', rot)
+    this.animComp = animEnt.components.animlinesegments
     // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
     el.appendChild(animEnt)
