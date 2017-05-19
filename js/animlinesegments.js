@@ -17,8 +17,10 @@ AFRAME.registerComponent('animlinesegments', {
     this.totalFrames = animData.length
     this.frameChangeTime = null
 
+    // console.log('animD12ata: ', animData)
+
     this.frames = animData.map((frame, index) => {
-      2
+      // console.log('frame index: ', index, frame)
       const geometry = new THREE.BufferGeometry(),
             material = new THREE.LineBasicMaterial(),
             positions = [],
@@ -26,33 +28,50 @@ AFRAME.registerComponent('animlinesegments', {
 
       let nextPosIndex = 0
 
-      const addVertex = v => {
-        positions.push(v.x, v.y, v.z)
+      const addVertex = (v, index) => {
+        if (v) { 
+          // console.log('yes: ', v.x)
+        // console.log('adding vertex: ', v)
+          positions.push(v.x, v.y, v.z)
+        } else {
+          // console.log('no... Where are these coming from???, ', index, v)
+          positions.push(0, 0, 0)
+        }
         nextPosIndex++
       }
 
-      const addSubsequentVertex = v => {
+      const addSubsequentVertex = (v, index) => {
         const i = nextPosIndex - 1
-        addVertex(v)
+        // console.log('adding vertex: ', index)
+        addVertex(v, index)
         indices.push(i, i+1)
       }
 
       const makeLine = vertices => {
         addVertex(vertices[0], 0)
+        // if (vertices.length > 0) {
+
+        // }
         for (let i=1; i < vertices.length; i++) {
-          addSubsequentVertex(vertices[i]);
+          // console.log('about to iterate on p-index: ', i)
+          addSubsequentVertex(vertices[i], i);
         }
       }
 
-      _.each(frame, line => {
-        // if not a blank frame
+      _.each(frame, (line, index) => {
+        // console.log('line index: ', index)
+        makeLine(line)
         if (line.length) makeLine(line)
       })
+
+      // console.log('positions: ', positions)
+      // console.log('indices: ', indices)
 
       geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1))
       geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
       const mesh = new THREE.LineSegments(geometry, material)
 
+      // const mesh = new THREE.Mesh(line.geometry, material)
       this.el.object3D.add(mesh)
       return mesh
     })

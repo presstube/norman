@@ -116,14 +116,17 @@ AFRAME.registerComponent('norman', {
     this.animsLoaded = []
     this.teardown() 
 
-    const animLoads = _.map(comp, (name) => {
-      return loadAnimByName(name)
-    })
+    const animLoads = [loadAnimByName(comp[0])]
+
+    // const animLoads = _.map(comp, (name) => {
+    //   return loadAnimByName(name)
+    // })
 
     Promise.all(animLoads).then(values => {
+      console.log('comp: ', comp)
       console.log('promise all completet: ', values)
-      _.each(values, (data) => {
-        console.log('DAATAAAA: ', data)
+      _.each(values, (data, index) => {
+        // console.log('DAATAAAA: ', data)
         // this.currentFileInfo = data.currentFileInfo
         this.animsLoaded.push({
           fileInfo: data.currentFileInfo,
@@ -354,7 +357,7 @@ AFRAME.registerComponent('norman', {
   },
 
   setup(animData = [[]]) {
-    console.log('setting up: ', animData)
+    // console.log('setting up: ', animData)
     this.animData = animData
     this.addAnim()
     // _.times(1, () => this.addAnim())
@@ -617,7 +620,7 @@ AFRAME.registerComponent('norman', {
     this.animComp = animEnt.components.animlinesegments
     // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
-    console.log('animEnt: ', animEnt)
+    // console.3log('animEnt: ', animEnt)
     el.appendChild(animEnt)
   },
 
