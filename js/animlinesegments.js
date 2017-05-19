@@ -18,7 +18,7 @@ AFRAME.registerComponent('animlinesegments', {
     this.frameChangeTime = null
 
     this.frames = animData.map((frame, index) => {
-      // console.log('frame: ', frame)
+      2
       const geometry = new THREE.BufferGeometry(),
             material = new THREE.LineBasicMaterial(),
             positions = [],
@@ -27,40 +27,32 @@ AFRAME.registerComponent('animlinesegments', {
       let nextPosIndex = 0
 
       const addVertex = v => {
-        console.log('adding vertex: ', v.x)
         positions.push(v.x, v.y, v.z)
         nextPosIndex++
       }
 
-      const addSubsequentVertex = (v) => {
+      const addSubsequentVertex = v => {
         const i = nextPosIndex - 1
         addVertex(v)
         indices.push(i, i+1)
       }
 
       const makeLine = vertices => {
-        addVertex(vertices[0])
-        // if (vertices.length > 0) {
-
-        // }
+        addVertex(vertices[0], 0)
         for (let i=1; i < vertices.length; i++) {
-          // console.log('about to iterate on p-index: ', i)
           addSubsequentVertex(vertices[i]);
         }
       }
 
       _.each(frame, line => {
-        makeLine(line)
+        // if not a blank frame
+        if (line.length) makeLine(line)
       })
-
-      // console.log('positions: ', positions)
-      // console.log('indices: ', indices)
 
       geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1))
       geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
       const mesh = new THREE.LineSegments(geometry, material)
 
-      // const mesh = new THREE.Mesh(line.geometry, material)
       this.el.object3D.add(mesh)
       return mesh
     })

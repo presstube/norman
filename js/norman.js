@@ -53,7 +53,7 @@ AFRAME.registerComponent('norman', {
       fileInfoToDelete: null,
       slideshowPlaying: null,
       lastDaydreamAxis: 0,
-      fps: 60,
+      fps: 30,
       maxFPS: 120,
       isAnimPlaying: false,
       isDrawing: false,
@@ -82,7 +82,7 @@ AFRAME.registerComponent('norman', {
 
     // this.setup()
     // this.fileLoadPrev()
-    this.loadComp(comps[0])
+    this.loadComp(comps[3])
     this.startPlaying()
     // this.startSlideshow()
 
@@ -354,9 +354,10 @@ AFRAME.registerComponent('norman', {
   },
 
   setup(animData = [[]]) {
+    console.log('setting up: ', animData)
     this.animData = animData
-    // this.addAnim()
-    _.times(1, () => this.addAnim())
+    this.addAnim()
+    // _.times(1, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -604,17 +605,19 @@ AFRAME.registerComponent('norman', {
     const initFrame = Math.floor(Math.random() * 20)
     animEnt.setAttribute('animlinesegments', {norman: '#norman', animData, initFrame})
     // animEnt.setAttribute('anim', {norman: '#norman', animData})
-    animEnt.setAttribute('id', 'anim')
-    let spreadMax = 1
-    const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
-    spreadMax = 20
-    const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
-    // console.log('pos: ', pos)
+    
+    // animEnt.setAttribute('id', 'anim')
+    // let spreadMax = 0.3
+    // const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
+    // spreadMax = 20
+    // const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
+    
     // animEnt.setAttribute('position', pos)
     // animEnt.setAttribute('rotation', rot)
     this.animComp = animEnt.components.animlinesegments
     // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
+    console.log('animEnt: ', animEnt)
     el.appendChild(animEnt)
   },
 
