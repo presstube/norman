@@ -20,7 +20,7 @@ AFRAME.registerComponent('animlinesegments', {
     this.frames = animData.map((frame, index) => {
       2
       const geometry = new THREE.BufferGeometry(),
-            material = new THREE.LineBasicMaterial(),
+            material = new THREE.LineBasicMaterial({color: 'black'}),
             positions = [],
             indices = []
 

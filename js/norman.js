@@ -39,7 +39,7 @@ const comps = [
   ['mulgy-ront-hops'], // abstract short loop
 ]
 
-let compIndex = 0
+let compIndex = 12
 
 AFRAME.registerComponent('norman', {
 
@@ -82,7 +82,7 @@ AFRAME.registerComponent('norman', {
 
     // this.setup()
     // this.fileLoadPrev()
-    this.loadComp(comps[3])
+    this.loadComp(comps[compIndex])
     this.startPlaying()
     // this.startSlideshow()
 
@@ -354,10 +354,10 @@ AFRAME.registerComponent('norman', {
   },
 
   setup(animData = [[]]) {
-    console.log('setting up: ', animData)
+    // console.log('setting up: ', animData)
     this.animData = animData
-    this.addAnim()
-    // _.times(1, () => this.addAnim())
+    // this.addAnim()
+    _.times(1, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -602,22 +602,23 @@ AFRAME.registerComponent('norman', {
     this.animEnt = document.createElement('a-entity')
     const {animEnt, el, animData, getRandPosSpread} = this
     // console.log('adding anim:', animData)
-    const initFrame = Math.floor(Math.random() * 20)
+    const initFrame = 0
+    // const initFrame = Math.floor(Math.random() * 20)
     animEnt.setAttribute('animlinesegments', {norman: '#norman', animData, initFrame})
     // animEnt.setAttribute('anim', {norman: '#norman', animData})
     
     // animEnt.setAttribute('id', 'anim')
-    // let spreadMax = 0.3
+    // let spreadMax = 0.1
     // const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
     // spreadMax = 20
     // const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
-    
     // animEnt.setAttribute('position', pos)
     // animEnt.setAttribute('rotation', rot)
+
     this.animComp = animEnt.components.animlinesegments
     // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
-    console.log('animEnt: ', animEnt)
+    // console.log('animEnt: ', animEnt)
     el.appendChild(animEnt)
   },
 

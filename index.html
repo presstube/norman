@@ -11,8 +11,8 @@
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene">
-      <a-sky color="#222"></a-sky>
+    <a-scene id="scene" fog="color: #eee; near: 0; far:1">
+      <a-sky color="#eee"></a-sky>
 
       <a-camera 
         id="camera" 
@@ -28,7 +28,7 @@
         <a-box id="position-guide" visible="false" position="0 0 -2"></a-box>
       </a-entity>
 
-      <a-entity id="norman" norman position="0 1.6 -0.5">
+      <a-entity id="norman" norman position="0 1.6 -0.55">
         <a-cone color="#333" height="0.1" radius-bottom="0.03" radius-top="0" position="0 0 0" visible="false"></a-cone>
       </a-entity>
       
@@ -50,6 +50,8 @@
 </html>
 
 <!-- 
+    
+
     
 fog="color: #222; near: 0; far:0.6"
     

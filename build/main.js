@@ -146,7 +146,301 @@ AFRAME.registerComponent('anim', {
   }
 });
 
-},{"lodash":25}],2:[function(require,module,exports){
+},{"lodash":28}],2:[function(require,module,exports){
+'use strict';
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+AFRAME.registerComponent('animlinesegments', {
+
+  schema: {
+    norman: { type: 'selector' },
+    animData: { type: 'array' },
+    initFrame: { type: 'int' }
+  },
+
+  init: function init() {
+    var _this = this;
+
+    var _data = this.data,
+        animData = _data.animData,
+        initFrame = _data.initFrame;
+
+
+    this.currentFrame = initFrame;
+    this.totalFrames = animData.length;
+    this.frameChangeTime = null;
+
+    this.frames = animData.map(function (frame, index) {
+      2;
+      var geometry = new THREE.BufferGeometry(),
+          material = new THREE.LineBasicMaterial(),
+          positions = [],
+          indices = [];
+
+      var nextPosIndex = 0;
+
+      var addVertex = function addVertex(v) {
+        positions.push(v.x, v.y, v.z);
+        nextPosIndex++;
+      };
+
+      var addSubsequentVertex = function addSubsequentVertex(v) {
+        var i = nextPosIndex - 1;
+        addVertex(v);
+        indices.push(i, i + 1);
+      };
+
+      var makeLine = function makeLine(vertices) {
+        addVertex(vertices[0], 0);
+        for (var i = 1; i < vertices.length; i++) {
+          addSubsequentVertex(vertices[i]);
+        }
+      };
+
+      _lodash2.default.each(frame, function (line) {
+        // if not a blank frame
+        if (line.length) makeLine(line);
+      });
+
+      geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+      geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+      var mesh = new THREE.LineSegments(geometry, material);
+
+      _this.el.object3D.add(mesh);
+      return mesh;
+    });
+  },
+  remove: function remove() {},
+  tick: function tick(time, timeDelta) {
+
+    var isAnimPlaying = true,
+        fps = 30,
+        frameInterval = 1000 / fps;
+
+    if (isAnimPlaying) {
+      if (!this.frameChangeTime) this.frameChangeTime = time;
+      var frameChangeTime = this.frameChangeTime,
+          diff = time - frameChangeTime;
+
+      if (diff >= Math.abs(frameInterval)) {
+        this.frameChangeTime = time;
+        if (frameInterval >= 0) {
+          this.gotoNextFrame();
+        } else {
+          this.gotoPrevFrame();
+        }
+      }
+      this.showOnlyCurrentFrame();
+    }
+  },
+  gotoNextFrame: function gotoNextFrame() {
+    var el = this.el,
+        currentFrame = this.currentFrame,
+        totalFrames = this.totalFrames;
+
+    el.emit('EXIT_FRAME', { frame: currentFrame });
+    if (currentFrame + 1 == totalFrames) {
+      this.currentFrame = 0;
+    } else {
+      this.currentFrame++;
+    }
+    this.renderFrame();
+  },
+  gotoPrevFrame: function gotoPrevFrame() {
+    var el = this.el,
+        currentFrame = this.currentFrame,
+        totalFrames = this.totalFrames;
+
+    el.emit('EXIT_FRAME', { frame: currentFrame });
+    if (currentFrame - 1 < 0) {
+      this.currentFrame = totalFrames - 1;
+    } else {
+      this.currentFrame--;
+    }
+    this.renderFrame();
+  },
+  renderFrame: function renderFrame() {
+    var el = this.el,
+        currentFrame = this.currentFrame;
+
+    this.showOnlyCurrentFrame();
+    el.emit('ENTER_FRAME', { frame: currentFrame });
+  },
+  showOnlyCurrentFrame: function showOnlyCurrentFrame() {
+    var _this2 = this;
+
+    _lodash2.default.each(this.frames, function (frame, index) {
+      frame.visible = index === _this2.currentFrame ? true : false;
+    });
+  }
+});
+
+/*
+    // const {animData} = this.data,
+    //       geometry = new THREE.Geometry(),
+    //       line = new MeshLine(),
+    //       material = new MeshLineMaterial({
+    //         // sizeAttenuation: 1,
+    //         lineWidth: 0.002
+    //       })
+
+    // _.each(animData, frame => {
+    //   _.each(frame, line => {
+    //     _.each(line, point => geometry.vertices.push(point))
+    //   })
+    // })
+
+    // line.setGeometry( geometry )
+    // const mesh = new THREE.Mesh( line.geometry, material )
+    // this.el.setObject3D('line', mesh)
+    // // this.el.object3D.add(mesh)
+*/
+// import 'aframe'
+
+},{"lodash":28}],3:[function(require,module,exports){
+'use strict';
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+AFRAME.registerComponent('animmeshline', {
+
+  schema: {
+    norman: { type: 'selector' },
+    animData: { type: 'array' },
+    initFrame: { type: 'int' }
+  },
+
+  init: function init() {
+    var _this = this;
+
+    var _data = this.data,
+        animData = _data.animData,
+        initFrame = _data.initFrame;
+
+
+    this.currentFrame = initFrame;
+    this.totalFrames = animData.length;
+    this.frameChangeTime = null;
+
+    this.frames = animData.map(function (frame, index) {
+      // console.log('frame: ', frame)
+      var geometry = new THREE.Geometry(),
+          line = new MeshLine(),
+          material = new MeshLineMaterial({
+        sizeAttenuation: true,
+        lineWidth: 0.001 });
+
+      _lodash2.default.each(frame, function (line) {
+        _lodash2.default.each(line, function (point) {
+          return geometry.vertices.push(point);
+        });
+      });
+
+      line.setGeometry(geometry);
+      var mesh = new THREE.Mesh(line.geometry, material);
+      // this.el.setObject3D(`frame${index}`, mesh) // replaces last
+      _this.el.object3D.add(mesh);
+      // console.log('mesh: ', mesh)
+      return mesh;
+    });
+  },
+  remove: function remove() {},
+  tick: function tick(time, timeDelta) {
+
+    var isAnimPlaying = true,
+        fps = 30,
+        frameInterval = 1000 / fps;
+
+    if (isAnimPlaying) {
+      if (!this.frameChangeTime) this.frameChangeTime = time;
+      var frameChangeTime = this.frameChangeTime,
+          diff = time - frameChangeTime;
+
+      if (diff >= Math.abs(frameInterval)) {
+        this.frameChangeTime = time;
+        if (frameInterval >= 0) {
+          this.gotoNextFrame();
+        } else {
+          this.gotoPrevFrame();
+        }
+      }
+      this.showOnlyCurrentFrame();
+    }
+  },
+  gotoNextFrame: function gotoNextFrame() {
+    var el = this.el,
+        currentFrame = this.currentFrame,
+        totalFrames = this.totalFrames;
+
+    el.emit('EXIT_FRAME', { frame: currentFrame });
+    if (currentFrame + 1 == totalFrames) {
+      this.currentFrame = 0;
+    } else {
+      this.currentFrame++;
+    }
+    this.renderFrame();
+  },
+  gotoPrevFrame: function gotoPrevFrame() {
+    var el = this.el,
+        currentFrame = this.currentFrame,
+        totalFrames = this.totalFrames;
+
+    el.emit('EXIT_FRAME', { frame: currentFrame });
+    if (currentFrame - 1 < 0) {
+      this.currentFrame = totalFrames - 1;
+    } else {
+      this.currentFrame--;
+    }
+    this.renderFrame();
+  },
+  renderFrame: function renderFrame() {
+    var el = this.el,
+        currentFrame = this.currentFrame;
+
+    this.showOnlyCurrentFrame();
+    el.emit('ENTER_FRAME', { frame: currentFrame });
+  },
+  showOnlyCurrentFrame: function showOnlyCurrentFrame() {
+    var _this2 = this;
+
+    _lodash2.default.each(this.frames, function (frame, index) {
+      frame.visible = index === _this2.currentFrame ? true : false;
+    });
+  }
+});
+
+/*
+    // const {animData} = this.data,
+    //       geometry = new THREE.Geometry(),
+    //       line = new MeshLine(),
+    //       material = new MeshLineMaterial({
+    //         // sizeAttenuation: 1,
+    //         lineWidth: 0.002
+    //       })
+
+    // _.each(animData, frame => {
+    //   _.each(frame, line => {
+    //     _.each(line, point => geometry.vertices.push(point))
+    //   })
+    // })
+
+    // line.setGeometry( geometry )
+    // const mesh = new THREE.Mesh( line.geometry, material )
+    // this.el.setObject3D('line', mesh)
+    // // this.el.object3D.add(mesh)
+*/
+// import 'aframe'
+
+},{"lodash":28}],4:[function(require,module,exports){
 'use strict';
 
 // import 'aframe'
@@ -223,7 +517,7 @@ AFRAME.registerComponent('drawline', {
   }
 });
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -420,7 +714,7 @@ exports.loadPrev = loadPrev;
 exports.loadNext = loadNext;
 exports.deleteAnim = deleteAnim;
 
-},{"firebase":19,"firebaseui":23,"jquery":24,"lodash":25}],4:[function(require,module,exports){
+},{"firebase":22,"firebaseui":26,"jquery":27,"lodash":28}],6:[function(require,module,exports){
 'use strict';
 
 var _lodash = require('lodash');
@@ -445,6 +739,7 @@ AFRAME.registerComponent('frame', {
     var lineEntity = document.createElement('a-entity');
     this.el.appendChild(lineEntity);
     lineEntity.setAttribute('line', {
+      // lineEntity.setAttribute('linemeshline', {
       lineData: lineData,
       color: this.data.color,
       style: this.data.style,
@@ -454,7 +749,7 @@ AFRAME.registerComponent('frame', {
   }
 }); // import 'aframe'
 
-},{"lodash":25}],5:[function(require,module,exports){
+},{"lodash":28}],7:[function(require,module,exports){
 'use strict';
 
 // import 'aframe'
@@ -531,7 +826,7 @@ AFRAME.registerComponent('homeframeghost', {
   }
 });
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
 
 var _webvrUi = require('webvr-ui');
@@ -548,7 +843,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-},{"./norman":8,"lodash":25,"webvr-ui":30}],7:[function(require,module,exports){
+},{"./norman":11,"lodash":28,"webvr-ui":33}],9:[function(require,module,exports){
 'use strict';
 
 // import 'aframe'
@@ -590,7 +885,43 @@ AFRAME.registerComponent('line', {
   }
 });
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
+'use strict';
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+AFRAME.registerComponent('linemeshline', {
+
+  schema: {
+    lineData: { type: 'array' },
+    color: { type: 'string', default: 'black' },
+    style: { type: 'string', default: 'solid' },
+    opacity: { type: 'number', default: 1 }
+  },
+
+  init: function init() {
+    var lineData = this.data.lineData,
+        geometry = new THREE.Geometry(),
+        line = new MeshLine(),
+        material = new MeshLineMaterial({
+      sizeAttenuation: true,
+      lineWidth: 0.001 });
+
+
+    _lodash2.default.each(lineData, function (point) {
+      return geometry.vertices.push(point);
+    });
+    line.setGeometry(geometry);
+    var mesh = new THREE.Mesh(line.geometry, material);
+    this.el.setObject3D('line', mesh);
+  }
+}); // import 'aframe'
+
+},{"lodash":28}],11:[function(require,module,exports){
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }(); // import 'aframe'
@@ -608,6 +939,8 @@ var _firebasestore = require('./firebasestore');
 
 require('./anim');
 
+require('./animlinesegments');
+
 require('./drawline');
 
 require('./onionskin');
@@ -618,17 +951,21 @@ require('./frame');
 
 require('./line');
 
+require('./linemeshline');
+
+require('./animmeshline');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var counter = 0;
 
-var comps = [['mulgy-shift-hops', 'mulgy-prunt-clumps', 'fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-clam-shanks'], // norman
-['clumbied-crank-hops', 'mulgy-bung-flops'], ['lorgussy-clam-hinges'], ['gildered-bung-glops', 'brumpled-crank-glops'], ['fropley-groft-lumps'], ['mulgy-shift-hops', 'mulgy-prunt-clumps'], ['fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-brine-hunguses', 'mulgy-dank-glops'], ['gildered-frump-hinges'], ['brumpled-dank-hunguses'], ['lorgussy-bung-clamps'], ['fropley-clam-shanks', 'trulmy-dank-hops'], ['brumpled-shift-hinges'], ['gildered-shift-hunguses'], ['troubling-plex-hunguses'], // black pearl motion study
+var comps = [['gildered-frump-hinges'], ['mulgy-shift-hops', 'mulgy-prunt-clumps', 'fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-clam-shanks'], // norman
+['clumbied-crank-hops', 'mulgy-bung-flops'], ['lorgussy-clam-hinges'], ['gildered-bung-glops', 'brumpled-crank-glops'], ['fropley-groft-lumps'], ['mulgy-shift-hops', 'mulgy-prunt-clumps'], ['fropley-limp-hunguses', 'brumpled-brine-glops'], ['clumbied-brine-hunguses', 'mulgy-dank-glops'], ['brumpled-dank-hunguses'], ['lorgussy-bung-clamps'], ['fropley-clam-shanks', 'trulmy-dank-hops'], ['brumpled-shift-hinges'], ['gildered-shift-hunguses'], ['troubling-plex-hunguses'], // black pearl motion study
 ['trulmy-limp-donks'], // runnning man
 ['marbled-groft-clumps'], // craggly norman letters
 ['mulgy-ront-hops']];
 
-var compIndex = 0;
+var compIndex = 12;
 
 AFRAME.registerComponent('norman', {
   init: function init() {
@@ -670,7 +1007,7 @@ AFRAME.registerComponent('norman', {
 
     // this.setup()
     // this.fileLoadPrev()
-    this.loadComp(comps[0]);
+    this.loadComp(comps[compIndex]);
     this.startPlaying();
     // this.startSlideshow()
   },
@@ -756,7 +1093,7 @@ AFRAME.registerComponent('norman', {
     var _this3 = this;
 
     document.addEventListener('keydown', function (e) {
-      console.log('keydown: ', e);
+      // console.log('keydown: ', e)
       if (e.code == 'Enter') {
         _this3.togglePlay();
       }
@@ -765,30 +1102,32 @@ AFRAME.registerComponent('norman', {
       //   uploadAnimData(null, {data: this.animData})
       // }
 
-      else if (e.code == 'Space') {
-          var cone = document.querySelector("#yellow-cone").object3D;
-          var el = _this3.el;
+      // else if (e.code == 'Space') {
+      //   const cone = document.querySelector("#yellow-cone").object3D
+      //   const {el} = this
+      //   const norm = el.object3D
+      //   cone.updateMatrixWorld()
+      //   const worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld)
+      //   cone.add(norm)
+      //   norm.applyMatrix(worldToLocal)
+      //   // this.animData = animDataNewReg
 
-          var norm = el.object3D;
-          cone.updateMatrixWorld();
-          var worldToLocal = new THREE.Matrix4().getInverse(cone.matrixWorld);
-          cone.add(norm);
-          norm.applyMatrix(worldToLocal);
-          // this.animData = animDataNewReg
+
+      //   const animsToTransform = _.cloneDeep(this.animsLoaded)
+      //   // animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
+      //   console.log('animsToTransform: ', animsToTransform)
+
+      //   _.each(animsToTransform, (animToSave) => {
+      //     const animDataNewReg = this.setReg(animToSave.animData, norm.matrix)
+      //     animToSave.animData = animDataNewReg
+      //     this.fileSave(true, animToSave)
+      //   })
 
 
-          var animsToTransform = _lodash2.default.cloneDeep(_this3.animsLoaded);
-          // animsToTransform.push({fileInfo: this.currentFileInfo, animData: this.animData})
-          console.log('animsToTransform: ', animsToTransform);
+      //   // this.fileSave() // make this operate on input rather that reaching out itself
+      // }
 
-          _lodash2.default.each(animsToTransform, function (animToSave) {
-            var animDataNewReg = _this3.setReg(animToSave.animData, norm.matrix);
-            animToSave.animData = animDataNewReg;
-            _this3.fileSave(true, animToSave);
-          });
-
-          // this.fileSave() // make this operate on input rather that reaching out itself
-        } else if (e.code.search('Digit') != -1) {
+      else if (e.code.search('Digit') != -1) {
           var slot = e.code.split('Digit')[1];
           _this3.loadComp(comps[slot]);
         } else if (e.code == 'KeyA' && e.altKey) {
@@ -976,22 +1315,28 @@ AFRAME.registerComponent('norman', {
     });
   },
   setup: function setup() {
+    var _this5 = this;
+
     var animData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [[]];
 
+    // console.log('setting up: ', animData)
     this.animData = animData;
-    this.addAnim();
+    // this.addAnim()
+    _lodash2.default.times(15, function () {
+      return _this5.addAnim();
+    });
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
   teardown: function teardown() {
-    var _this5 = this;
+    var _this6 = this;
 
     // this.stopPlaying()
     // this.removeHomeFrameGhost()
     // this.removeOnionSkin()
     // this.removeAnim()
     _lodash2.default.each(this.anims, function (animEnt) {
-      _this5.removeAnim(animEnt);
+      _this6.removeAnim(animEnt);
     });
     this.anims = [];
 
@@ -1034,7 +1379,7 @@ AFRAME.registerComponent('norman', {
     // this.fileNew()
   },
   fileLoadPrev: function fileLoadPrev() {
-    var _this6 = this;
+    var _this7 = this;
 
     var doTeardown = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
@@ -1048,24 +1393,24 @@ AFRAME.registerComponent('norman', {
 
       console.log('LOADED PREV', currentFileInfo.filename);
       if (doTeardown) {
-        _this6.teardown();
+        _this7.teardown();
       } else {
         // stash that last animation
-        _this6.removeOnionSkin();
-        _this6.animsLoaded.push({
-          fileInfo: _this6.currentFileInfo,
-          animData: _this6.animData
+        _this7.removeOnionSkin();
+        _this7.animsLoaded.push({
+          fileInfo: _this7.currentFileInfo,
+          animData: _this7.animData
         });
       }
 
       // console.log('animData: ', animData, fileInfo)
 
-      _this6.currentFileInfo = currentFileInfo;
-      _this6.setup(animData);
+      _this7.currentFileInfo = currentFileInfo;
+      _this7.setup(animData);
     });
   },
   fileLoadNext: function fileLoadNext() {
-    var _this7 = this;
+    var _this8 = this;
 
     var doTeardown = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
@@ -1076,10 +1421,10 @@ AFRAME.registerComponent('norman', {
           currentFileInfo = _ref2.currentFileInfo;
 
       console.log('LOADED NEXT', currentFileInfo.filename);
-      if (doTeardown) _this7.teardown();
+      if (doTeardown) _this8.teardown();
       // console.log('animData: ', animData, currentFileInfo)
-      _this7.currentFileInfo = currentFileInfo;
-      _this7.setup(animData);
+      _this8.currentFileInfo = currentFileInfo;
+      _this8.setup(animData);
     });
   },
   handleNext: function handleNext() {
@@ -1126,10 +1471,10 @@ AFRAME.registerComponent('norman', {
     })];
   },
   removeOnionSkin: function removeOnionSkin() {
-    var _this8 = this;
+    var _this9 = this;
 
     this.onionSkins.map(function (onionSkinEnt) {
-      _this8.el.removeChild(onionSkinEnt);
+      _this9.el.removeChild(onionSkinEnt);
     });
     this.onionSkins = [];
   },
@@ -1229,13 +1574,30 @@ AFRAME.registerComponent('norman', {
     this.animEnt = document.createElement('a-entity');
     var animEnt = this.animEnt,
         el = this.el,
-        animData = this.animData;
+        animData = this.animData,
+        getRandPosSpread = this.getRandPosSpread;
+    // console.log('adding anim:', animData)
 
-    animEnt.setAttribute('anim', { norman: '#norman', animData: animData });
-    animEnt.setAttribute('id', 'anim');
-    this.animComp = animEnt.components.anim;
+    var initFrame = Math.floor(Math.random() * 20);
+    animEnt.setAttribute('animlinesegments', { norman: '#norman', animData: animData, initFrame: initFrame });
+    // animEnt.setAttribute('anim', {norman: '#norman', animData})
+
+    // animEnt.setAttribute('id', 'anim')
+    var spreadMax = 0.1;
+    var pos = getRandPosSpread(spreadMax) + ' ' + getRandPosSpread(spreadMax) + ' ' + getRandPosSpread(spreadMax);
+    spreadMax = 20;
+    var rot = getRandPosSpread(spreadMax) + ' ' + getRandPosSpread(spreadMax) + ' ' + getRandPosSpread(spreadMax);
+
+    animEnt.setAttribute('position', pos);
+    animEnt.setAttribute('rotation', rot);
+    this.animComp = animEnt.components.animlinesegments;
+    // this.animComp = animEnt.components.anim
     this.anims.push(animEnt);
+    // console.log('animEnt: ', animEnt)
     el.appendChild(animEnt);
+  },
+  getRandPosSpread: function getRandPosSpread(max) {
+    return Math.random() * max - Math.random() * max;
   },
   removeAnim: function removeAnim(animEnt) {
     var el = this.el;
@@ -1312,7 +1674,7 @@ AFRAME.registerComponent('norman', {
   }
 });
 
-},{"./anim":1,"./drawline":2,"./firebasestore":3,"./frame":4,"./homeframeghost":5,"./line":7,"./onionskin":9,"jquery":24,"lodash":25}],9:[function(require,module,exports){
+},{"./anim":1,"./animlinesegments":2,"./animmeshline":3,"./drawline":4,"./firebasestore":5,"./frame":6,"./homeframeghost":7,"./line":9,"./linemeshline":10,"./onionskin":12,"jquery":27,"lodash":28}],12:[function(require,module,exports){
 'use strict';
 
 var _lodash = require('lodash');
@@ -1441,7 +1803,7 @@ AFRAME.registerComponent('onionskin', {
   }
 }); // import 'aframe'
 
-},{"lodash":25}],10:[function(require,module,exports){
+},{"lodash":28}],13:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -1754,7 +2116,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
 Terms: https://firebase.google.com/terms/ */
@@ -1771,7 +2133,7 @@ var firebase = (0, _firebase_app.createFirebaseNamespace)();
 exports.default = firebase;
 module.exports = exports['default'];
 
-},{"./app/firebase_app":14}],12:[function(require,module,exports){
+},{"./app/firebase_app":17}],15:[function(require,module,exports){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
 Terms: https://firebase.google.com/terms/ */
@@ -1818,7 +2180,7 @@ function patchProperty(obj, prop, value) {
     obj[prop] = value;
 }
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
 Terms: https://firebase.google.com/terms/ */
@@ -1909,7 +2271,7 @@ var ErrorFactory = exports.ErrorFactory = function () {
     return ErrorFactory;
 }();
 
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
 Terms: https://firebase.google.com/terms/ */
@@ -2190,7 +2552,7 @@ var errors = {
 };
 var appErrors = new _errors.ErrorFactory('app', 'Firebase', errors);
 
-},{"./deep_copy":12,"./errors":13,"./shared_promise":15,"./subscribe":16}],15:[function(require,module,exports){
+},{"./deep_copy":15,"./errors":16,"./shared_promise":18,"./subscribe":19}],18:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
@@ -2220,7 +2582,7 @@ var local = exports.local = {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"promise-polyfill":21}],16:[function(require,module,exports){
+},{"promise-polyfill":24}],19:[function(require,module,exports){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
 Terms: https://firebase.google.com/terms/ */
@@ -2449,7 +2811,7 @@ function implementsAnyMethods(obj, methods) {
 function noop() {
 }
 
-},{"./shared_promise":15}],17:[function(require,module,exports){
+},{"./shared_promise":18}],20:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
@@ -2701,7 +3063,7 @@ c){if("create"===a)try{c.auth()}catch(d){}});firebase.INTERNAL.extendNamespace({
 }).call(typeof global !== undefined ? global : typeof self !== undefined ? self : typeof window !== undefined ? window : {});
 module.exports = firebase.auth;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./app":11}],18:[function(require,module,exports){
+},{"./app":14}],21:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
@@ -2968,7 +3330,7 @@ d;return d.Ya},{Reference:U,Query:X,Database:Pg,enableLogging:Sb,INTERNAL:Z,TEST
 }).call(typeof global !== undefined ? global : typeof self !== undefined ? self : typeof window !== undefined ? window : {});
 module.exports = firebase.database;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./app":11}],19:[function(require,module,exports){
+},{"./app":14}],22:[function(require,module,exports){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
 Terms: https://firebase.google.com/terms/ */
@@ -2990,7 +3352,7 @@ require('./messaging');
 exports.default = firebase;
 module.exports = exports['default'];
 
-},{"./app":11,"./auth":17,"./database":18,"./messaging":20,"./storage":22}],20:[function(require,module,exports){
+},{"./app":14,"./auth":20,"./database":21,"./messaging":23,"./storage":25}],23:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
@@ -3034,7 +3396,7 @@ var U=function(a){"serviceWorker"in navigator&&navigator.serviceWorker.addEventL
 }).call(typeof global !== undefined ? global : typeof self !== undefined ? self : typeof window !== undefined ? window : {});
 module.exports = firebase.messaging;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./app":11}],21:[function(require,module,exports){
+},{"./app":14}],24:[function(require,module,exports){
 (function (root) {
 
   // Store setTimeout reference so promise-polyfill will be unaffected by
@@ -3269,7 +3631,7 @@ module.exports = firebase.messaging;
 
 })(this);
 
-},{}],22:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function (global){
 /*! @license Firebase v3.7.8
 Build: rev-44ec95c
@@ -3330,7 +3692,7 @@ Z(G.prototype,"ref",G.prototype.la);ra.STATE_CHANGED="state_changed";x.RUNNING="
 }).call(typeof global !== undefined ? global : typeof self !== undefined ? self : typeof window !== undefined ? window : {});
 module.exports = firebase.storage;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./app":11}],23:[function(require,module,exports){
+},{"./app":14}],26:[function(require,module,exports){
 (function() { var firebase=require('firebase');/*
 
  Copyright 2015 Google Inc. All Rights Reserved.
@@ -3576,7 +3938,7 @@ typeof d.href?d.href:String(d));var d=c.target||d.target,f=[];for(e in c)switch(
 c=document.createEvent("MouseEvent"),c.initMouseEvent("click",!0,!0,b,1),e.dispatchEvent(c),e={}):c.noreferrer?(e=b.open("",d,e),b=qb(a),e&&(ab&&-1!=b.indexOf(";")&&(b="'"+b.replace(/'/g,"%27")+"'"),e.opener=null,b='<META HTTP-EQUIV="refresh" content="0; url='+ra(b)+'">',e.document.write(wb((new ub).fd(b))),e.document.close())):e=b.open(qb(a),d,e);e&&e.focus()}else window.location.assign(a)};ma("firebaseui.auth.AuthUI",xj);ma("firebaseui.auth.AuthUI.prototype.start",xj.prototype.start);ma("firebaseui.auth.AuthUI.prototype.setConfig",
 xj.prototype.zb);ma("firebaseui.auth.AuthUI.prototype.signIn",xj.prototype.wd);ma("firebaseui.auth.AuthUI.prototype.reset",xj.prototype.reset);ma("firebaseui.auth.CredentialHelper.ACCOUNT_CHOOSER_COM",vh);ma("firebaseui.auth.CredentialHelper.NONE","none")})(); })();module.exports=firebaseui;
 
-},{"firebase":19}],24:[function(require,module,exports){
+},{"firebase":22}],27:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.2.1
  * https://jquery.com/
@@ -13831,7 +14193,7 @@ if ( !noGlobal ) {
 return jQuery;
 } );
 
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -30919,7 +31281,7 @@ return jQuery;
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],26:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /*!
 * screenfull
 * v3.2.0 - 2017-04-16
@@ -31072,7 +31434,7 @@ return jQuery;
 	}
 })();
 
-},{}],27:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 var _enterVrButton = require('./enter-vr-button');
@@ -31174,7 +31536,7 @@ if (typeof AFRAME !== 'undefined' && AFRAME) {
   });
 }
 
-},{"./enter-vr-button":29,"./states":31}],28:[function(require,module,exports){
+},{"./enter-vr-button":32,"./states":34}],31:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31296,7 +31658,7 @@ var generateCSS = exports.generateCSS = function generateCSS(options) {
     return '\n    @font-face {\n        font-family: \'Karla\';\n        font-style: normal;\n        font-weight: 400;\n        src: local(\'Karla\'), local(\'Karla-Regular\'), \n             url(https://fonts.gstatic.com/s/karla/v5/31P4mP32i98D9CEnGyeX9Q.woff2) format(\'woff2\');\n        unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;\n    }\n    @font-face {\n        font-family: \'Karla\';\n        font-style: normal;\n        font-weight: 400;\n        src: local(\'Karla\'), local(\'Karla-Regular\'), \n             url(https://fonts.gstatic.com/s/karla/v5/Zi_e6rBgGqv33BWF8WTq8g.woff2) format(\'woff2\');\n        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, \n                       U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;\n    }\n\n    button.' + cssPrefix + '-button {\n        font-family: \'Karla\', sans-serif;\n\n        border: ' + borderColor + ' ' + borderWidth + 'px solid;\n        border-radius: ' + borderRadius + 'px;\n        box-sizing: border-box;\n        background: ' + (options.background ? options.background : 'none') + ';\n\n        height: ' + height + 'px;\n        min-width: ' + fontSize * 9.6 + 'px;\n        display: inline-block;\n        position: relative;\n\n        cursor: pointer;\n    }\n    \n    button.' + cssPrefix + '-button:focus {\n      outline: none;\n    }\n\n    /*\n    * Logo\n    */\n\n    .' + cssPrefix + '-logo {\n        width: ' + height + 'px;\n        height: ' + height + 'px;\n        position: absolute;\n        top:0px;\n        left:0px;\n        width: ' + (height - 4) + 'px;\n        height: ' + (height - 4) + 'px;\n    }\n    .' + cssPrefix + '-svg {\n        fill: ' + options.color + ';\n        margin-top: ' + ((height - fontSize * _LOGO_SCALE) / 2 - 2) + 'px;\n        margin-left: ' + height / 3 + 'px;\n    }\n    .' + cssPrefix + '-svg-error {\n        fill: ' + options.color + ';\n        display:none;\n        margin-top: ' + ((height - 28 / 18 * fontSize * _LOGO_SCALE) / 2 - 2) + 'px;\n        margin-left: ' + height / 3 + 'px;\n    }\n\n\n    /*\n    * Title\n    */\n\n    .' + cssPrefix + '-title {\n        color: ' + options.color + ';\n        position: relative;\n        font-size: ' + fontSize + 'px;\n        padding-left: ' + height * 1.05 + 'px;\n        padding-right: ' + (borderRadius - 10 < 5 ? height / 3 : borderRadius - 10) + 'px;\n    }\n\n    /*\n    * disabled\n    */\n\n    button.' + cssPrefix + '-button[disabled=true] {\n        opacity: ' + options.disabledOpacity + ';\n    }\n\n    button.' + cssPrefix + '-button[disabled=true] > .' + cssPrefix + '-logo > .' + cssPrefix + '-svg {\n        display:none;\n    }\n\n    button.' + cssPrefix + '-button[disabled=true] > .' + cssPrefix + '-logo > .' + cssPrefix + '-svg-error {\n        display:initial;\n    }\n  ';
 };
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31740,7 +32102,7 @@ var ifChild = function ifChild(el, cssPrefix, suffix, fn) {
   c && fn(c);
 };
 
-},{"./dom":28,"./states":31,"./webvr-manager":32,"eventemitter3":10}],30:[function(require,module,exports){
+},{"./dom":31,"./states":34,"./webvr-manager":35,"eventemitter3":13}],33:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31787,7 +32149,7 @@ exports.WebVRManager = _webvrManager2.default; // Copyright 2016 Google Inc.
 //     See the License for the specific language governing permissions and
 // limitations under the License.
 
-},{"./aframe-component":27,"./dom":28,"./enter-vr-button":29,"./states":31,"./webvr-manager":32}],31:[function(require,module,exports){
+},{"./aframe-component":30,"./dom":31,"./enter-vr-button":32,"./states":34,"./webvr-manager":35}],34:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -31838,7 +32200,7 @@ exports.default = {
   ERROR_UNKOWN: ERROR_UNKOWN
 };
 
-},{}],32:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -32135,4 +32497,4 @@ var WebVRManager = function (_EventEmitter) {
 
 exports.default = WebVRManager;
 
-},{"./states":31,"eventemitter3":10,"screenfull":26}]},{},[6]);
+},{"./states":34,"eventemitter3":13,"screenfull":29}]},{},[8]);

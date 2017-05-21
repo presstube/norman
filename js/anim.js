@@ -69,7 +69,7 @@ AFRAME.registerComponent('anim', {
       frameData: frameData,
       color: 'black',
       // color: '#222',
-      color: '#ddd',
+      // color: '#ddd',
       style: 'solid'
     })
     return frameEntity
