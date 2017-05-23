@@ -6,6 +6,7 @@ import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasest
 
 import './anim'
 import './animlinesegments'
+import './animsinglegeometry'
 import './drawline'
 import './onionskin'
 import './homeframeghost'
@@ -116,11 +117,11 @@ AFRAME.registerComponent('norman', {
     this.animsLoaded = []
     this.teardown() 
 
-    const animLoads = [loadAnimByName(comp[0])]
+    // const animLoads = [loadAnimByName(comp[0])]
 
-    // const animLoads = _.map(comp, (name) => {
-    //   return loadAnimByName(name)
-    // })
+    const animLoads = _.map(comp, (name) => {
+      return loadAnimByName(name)
+    })
 
     Promise.all(animLoads).then(values => {
       console.log('comp: ', comp)
@@ -359,8 +360,8 @@ AFRAME.registerComponent('norman', {
   setup(animData = [[]]) {
     // console.log('setting up: ', animData)
     this.animData = animData
-    this.addAnim()
-    // _.times(1, () => this.addAnim())
+    // this.addAnim()
+    _.times(100, () => this.addAnim())
     // this.addHomeFrameGhost()
     // this.setupOnionSkin()
   },
@@ -606,18 +607,22 @@ AFRAME.registerComponent('norman', {
     const {animEnt, el, animData, getRandPosSpread} = this
     // console.log('adding anim:', animData)
     const initFrame = Math.floor(Math.random() * 20)
-    animEnt.setAttribute('animlinesegments', {norman: '#norman', animData, initFrame})
+    animEnt.setAttribute('animlinesegments', {norman: '#norman', animData, initFrame: 0})
+    // animEnt.setAttribute('animsinglegeometry', {norman: '#norman', animData, initFrame})
     // animEnt.setAttribute('anim', {norman: '#norman', animData})
     
     // animEnt.setAttribute('id', 'anim')
-    // let spreadMax = 0.3
-    // const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
-    // spreadMax = 20
-    // const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
+
+    let spreadMax = 0.3
+    const pos = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
+    spreadMax = 20
+    const rot = `${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)} ${getRandPosSpread(spreadMax)}`
     
-    // animEnt.setAttribute('position', pos)
-    // animEnt.setAttribute('rotation', rot)
+    animEnt.setAttribute('position', pos)
+    animEnt.setAttribute('rotation', rot)
+
     this.animComp = animEnt.components.animlinesegments
+    // this.animComp = animEnt.components.animsinglegeometry
     // this.animComp = animEnt.components.anim
     this.anims.push(animEnt)
     // console.3log('animEnt: ', animEnt)
