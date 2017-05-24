@@ -7,27 +7,22 @@ AFRAME.registerComponent('draw', {
   // },
 
   init() {
-    Object.assign(this, {
-      // fetching own deps.. pyucky or appropriately loose?
-      norman: document.querySelector('#norman').components.norman,
-      primaryHand: Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))[1],
+    this.normanEnt = document.querySelector('#norman')
+    this.primaryHand = Array.prototype.slice.call(document.querySelectorAll('a-entity[oculus-touch-controls]'))[1]
+    this.pen = this.primaryHand.object3D
+    this.isDrawing = false
+    this.distThresh = 0.001
+    this.lastPos = null
 
-      isDrawing: false,
-      distThresh: 0.001,
-      lastPos: null,
-    })
-
-    const {primaryHand} = this
-
-    primaryHand.addEventListener('triggerdown', () => {
+    this.primaryHand.addEventListener('triggerdown', () => {
       this.startDrawing()
     })
 
-    primaryHand.addEventListener('triggerup', () => {
+    this.primaryHand.addEventListener('triggerup', () => {
       this.stopDrawing()
     })
 
-    console.log('draw here: ', primaryHand)
+    console.log('draw here: ', this.targetAnim)
   },
   
   remove() {
@@ -35,31 +30,59 @@ AFRAME.registerComponent('draw', {
   },
 
   tick() {
-    const {isDrawing, primaryHand} = this
+    const {isDrawing} = this
+
     if (isDrawing) {
-      console.log('drawing!: ', isDrawing)
+
+      const {primaryHand, distThresh} = this,
+            currentPos = this.getLocalPenPos(this.pen.position),
+            distToLastPos = this.lastPos.distanceTo(currentPos)
+
+      if (distToLastPos > distThresh) {
+        console.log('drawing!: ', this.getLocalPenPos(this.pen.position))
+        // this.targetAnim.addVertex()
+      }
+      this.lastPos = currentPos
     }
   },
 
   ///////////////// NON-LIFECYCLE
 
   startDrawing() {
-    console.log('startgin ')
     if (!this.isDrawing) {
+      this.lastPos = this.getLocalPenPos(this.pen.position)
       this.isDrawing = true
+      // this.targetAnim.startLine()
     }
   },
 
   stopDrawing() {
     if (this.isDrawing) {
       this.isDrawing = false
+      // this.targetAnim.finishLine()
     }
   },
 
   setTargetAnim(targetAnim) {
     // console.log('setting target anim')
     this.targetAnim = targetAnim
-    // deal with target anim switching in the middle of a line being drawn?
-  }
+    // NB: deal with target anim switching in the middle of a line being drawn?
+  },
+
+  getLocalPenPos(penPos) {
+    const {targetAnim, pen} = this
+    let pos = new THREE.Vector3()
+    pen.localToWorld(pos)
+    this.normanEnt.object3D.worldToLocal(pos)
+    return pos
+  },
 
 })
+
+
+
+
+
+
+
+
