@@ -5,7 +5,7 @@ import $ from 'jquery'
 import {save, deleteAnim, loadPrev, loadNext} from './firebasestore'
 
 import './anim'
-import './drawline'
+import './draw'
 import './onionskin'
 import './homeframeghost'
 import './frame'
@@ -30,30 +30,17 @@ AFRAME.registerComponent('norman', {
       onionSkins: [],
       onionVisible: false,
       isRightHanded: true,
-      fileSystemMode: false
+      fileSystemMode: false,
+      // primaryHand: null,
+      // secondaryHand: null,
     })
 
-    const cam = document.querySelector('#camera')
-
-    console.log('cam: ', cam)
-    // cam.setAttribute('camera', {userHeight: 1.6})
-
     this.frameInterval = 1000 / this.fps
+
     this.setupKeyboard()
-    _.delay(this.setupControllers.bind(this), 1) // SMELLY
-
-    const scene = document.querySelector('#scene')
-    console.log('asdasd: ', scene)
-
-    // scene.addEventListener('enter-vr', () => {
-    //   console.log('entering vr')
-    //   cam.setAttribute('camera', {userHeight: 0})
-    // })
-
+    _.delay(this.setupControllers.bind(this), 1) // SMELLY!
+    this.setupDraw()
     this.setup()
-
-
-
   },
 
   setupKeyboard() {
@@ -105,14 +92,18 @@ AFRAME.registerComponent('norman', {
           }
 
 
-
     Object.assign(this, {secondaryHand, primaryHand})
 
-    console.log('secondaryHand: ', secondaryHand)
+
 
     primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
-    primaryHand.addEventListener('triggerdown', () => this.startDrawing())
-    primaryHand.addEventListener('triggerup', () => this.stopDrawing())
+
+
+
+    // primaryHand.addEventListener('triggerdown', () => {
+    //   this.startDrawing()
+    // })
+    // primaryHand.addEventListener('triggerup', () => this.stopDrawing())
     primaryHand.addEventListener('abuttondown', e => this.toggleOnion())
     primaryHand.addEventListener('bbuttondown', e => this.togglePlay())
     secondaryHand.addEventListener('triggerdown', e => this.addingFrames = true)
@@ -146,8 +137,6 @@ AFRAME.registerComponent('norman', {
     })
     secondaryHand.addEventListener('gripdown', e => this.grab())
     secondaryHand.addEventListener('gripup', e => this.drop())
-
-
   },
 
   setupThumbStickDirectionEvents(controller, thresh = 0.5) {
@@ -191,6 +180,7 @@ AFRAME.registerComponent('norman', {
     this.addAnim()
     this.addHomeFrameGhost()
     this.setupOnionSkin()
+    this.drawComp.setTargetAnim(this.animComp)
   },
 
   teardown() {
@@ -355,24 +345,19 @@ AFRAME.registerComponent('norman', {
     })
   },
 
-  startDrawing() {
-    if (!this.isDrawing) {
-      this.isDrawing = true
-      this.addDrawline()
-    }
-  },
+  // startDrawing() {
+  //   if (!this.isDrawing) {
+  //     this.isDrawing = true
+  //   }
+  // },
 
-  stopDrawing() {
-    if (this.isDrawing) {
-      this.isDrawing = false
-      this.removeDrawline()
-    }
-  },
+  // stopDrawing() {
+  //   if (this.isDrawing) {
+  //     this.isDrawing = false
+  //   }
+  // },
 
   togglePlay() {
-
-    console.log('asdasdasd PLAY TOGGLE')
-
     if (this.isAnimPlaying) {
       this.stopPlaying()
     } else {
@@ -390,16 +375,21 @@ AFRAME.registerComponent('norman', {
     this.el.emit('STOPPED_PLAYING')
   },
 
-  addDrawline() {
-    this.drawlineEnt = document.createElement('a-entity')
-    const {drawlineEnt, el} = this
-    drawlineEnt.setAttribute('drawline', {norman: '#norman'})
-    el.appendChild(drawlineEnt)
+  setupDraw() {
+    const {el} = this,
+          drawEnt = document.createElement('a-entity')
+
+    drawEnt.setAttribute('draw', {})
+    el.appendChild(drawEnt)
+    Object.assign(this, {
+      drawEnt, 
+      drawComp: drawEnt.components.draw 
+    })
   },
 
-  removeDrawline() {
-    this.el.removeChild(this.drawlineEnt)
-  },
+  // removeDrawline() {
+  //   this.el.removeChild(this.drawEnt)
+  // },
 
   addAnim() {
     this.animEnt = document.createElement('a-entity')
