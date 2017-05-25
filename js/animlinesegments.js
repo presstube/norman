@@ -19,61 +19,15 @@ AFRAME.registerComponent('animlinesegments', {
     this.frameChangeTime = null
     this.animData = animData
 
-    console.log('asdasd: ', this.animData)
-
-    this.frames = animData.map((frame, index) => {
+    this.frames = animData.map((frameData, index) => {
       // console.log('frame index: ', index, frame)
       const geometry = new THREE.BufferGeometry(),
-            material = new THREE.LineBasicMaterial({color: 'black'}),
-            positions = [],
-            indices = []
+            material = new THREE.LineBasicMaterial({color: 'black'})
 
-      let nextPosIndex = 0
+      this.updateGeometry(geometry, frameData)
 
-      const addVertex = (v, index) => {
-        if (v) { 
-          // console.log('yes: ', v.x)
-        // console.log('adding vertex: ', v)
-          positions.push(v.x, v.y, v.z)
-        } else {
-          // console.log('no... Where are these coming from???, ', index, v)
-          positions.push(0, 0, 0)
-        }
-        nextPosIndex++
-      }
-
-      const addSubsequentVertex = (v, index) => {
-        const i = nextPosIndex - 1
-        // console.log('adding vertex: ', index)
-        addVertex(v, index)
-        indices.push(i, i+1)
-      }
-
-      const makeLine = vertices => {
-        addVertex(vertices[0], 0)
-        // if (vertices.length > 0) {
-
-        // }
-        for (let i=1; i < vertices.length; i++) {
-          // console.log('about to iterate on p-index: ', i)
-          addSubsequentVertex(vertices[i], i);
-        }
-      }
-
-      _.each(frame, (line, index) => {
-        // console.log('line index: ', index)
-        makeLine(line)
-        if (line.length) makeLine(line)
-      })
-
-      // console.log('positions: ', positions)
-      // console.log('indices: ', indices)
-
-      geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1))
-      geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
       const mesh = new THREE.LineSegments(geometry, material)
 
-      // const mesh = new THREE.Mesh(line.geometry, material)
       this.el.object3D.add(mesh)
       return mesh
     })
@@ -189,70 +143,53 @@ AFRAME.registerComponent('animlinesegments', {
   },
 
   updateFrame(frameIndex) {
-    // get mesh for that frame
-    // get the geometry on that mesh
-    // get the positions attribute array on that geometry
-    // get the newly updated frameData for that frameIndex
-    // rebuild the position attribute array with the updated frameData
-    // rebuild the index from the updated frameData
-    // set the drawRange with the new positions.length?
+    const geometry = this.frames[frameIndex].geometry,
+          frameData = this.animData[frameIndex]
 
-      // This is just rebuilding from scratch.. may not perform well
-      // but need to get it working first
-
-      const frameData = this.animData[frameIndex],
-            geometry = this.frames[frameIndex].geometry,
-            positions = [],
-            indices = []
-
-      // console.log('updating frame: ' , geometry)
-
-      let nextPosIndex = 0
-
-      const addVertex = (v, index) => {
-        if (v) { 
-          // console.log('yes: ', v.x)
-        // console.log('adding vertex: ', v)
-          positions.push(v.x, v.y, v.z)
-        } else {
-          // console.log('no... Where are these coming from???, ', index, v)
-          positions.push(0, 0, 0)
-        }
-        nextPosIndex++
-      }
-
-      const addSubsequentVertex = (v, index) => {
-        const i = nextPosIndex - 1
-        // console.log('adding vertex: ', index)
-        addVertex(v, index)
-        indices.push(i, i+1)
-      }
-
-      const makeLine = vertices => {
-        addVertex(vertices[0], 0)
-        // if (vertices.length > 0) {
-
-        // }
-        for (let i=1; i < vertices.length; i++) {
-          // console.log('about to iterate on p-index: ', i)
-          addSubsequentVertex(vertices[i], i);
-        }
-      }
-
-      _.each(frameData, (line, index) => {
-        // console.log('line index: ', index)
-        makeLine(line)
-        if (line.length) makeLine(line)
-      })
-
-      // console.log('positions: ', positions)
-      // console.log('indices: ', indices)
-
-      geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1))
-      geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
-      geometry.attributes.position.needsUpdate = true
-
+    this.updateGeometry(geometry, frameData)
   },
+
+  updateGeometry(geometry, frameData) {
+    const positions = [],
+          indices = []
+
+    let nextPosIndex = 0
+
+    const addVertex = (v, index) => {
+      if (v) { 
+        positions.push(v.x, v.y, v.z)
+      } else {
+        console.log('no... Where are these coming from???, ', index, v)
+        positions.push(0, 0, 0)
+      }
+      nextPosIndex++
+    }
+
+    const addSubsequentVertex = (v, index) => {
+      const i = nextPosIndex - 1
+      // console.log('adding vertex: ', index)
+      addVertex(v, index)
+      indices.push(i, i+1)
+    }
+
+    const makeLine = vertices => {
+      addVertex(vertices[0], 0)
+      for (let i=1; i < vertices.length; i++) {
+        addSubsequentVertex(vertices[i], i);
+      }
+    }
+
+    _.each(frameData, (line, index) => {
+      if (line.length) makeLine(line)
+    })
+
+    // console.log('positions: ', positions)
+    // console.log('indices: ', indices)
+
+    geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1))
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3))
+    geometry.attributes.position.needsUpdate = true
+  }
 
 
 
