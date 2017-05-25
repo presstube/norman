@@ -39,10 +39,10 @@ AFRAME.registerComponent('draw', {
             distToLastPos = this.lastPos.distanceTo(currentPos)
 
       if (distToLastPos > distThresh) {
-        console.log('drawing!: ', this.getLocalPenPos(this.pen.position))
-        // this.targetAnim.addVertex()
+        // console.log('drawing!: ', this.getLocalPenPos(this.pen.position))
+        this.targetAnim.addVertex(currentPos)
+        this.lastPos = currentPos
       }
-      this.lastPos = currentPos
     }
   },
 
@@ -52,14 +52,14 @@ AFRAME.registerComponent('draw', {
     if (!this.isDrawing) {
       this.lastPos = this.getLocalPenPos(this.pen.position)
       this.isDrawing = true
-      // this.targetAnim.startLine()
+      this.targetAnim.startLine(this.lastPos)
     }
   },
 
   stopDrawing() {
     if (this.isDrawing) {
       this.isDrawing = false
-      // this.targetAnim.finishLine()
+      this.targetAnim.finishLine(this.getLocalPenPos(this.pen.position))
     }
   },
 

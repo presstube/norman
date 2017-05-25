@@ -5,6 +5,7 @@ import $ from 'jquery'
 import {save, deleteAnim, loadPrev, loadNext} from './firebasestore'
 
 import './anim'
+import './animlinesegments'
 import './draw'
 import './onionskin'
 import './homeframeghost'
@@ -41,6 +42,7 @@ AFRAME.registerComponent('norman', {
     _.delay(this.setupControllers.bind(this), 1) // SMELLY!
     this.setupDraw()
     this.setup()
+    this.fileLoadPrev()
   },
 
   setupKeyboard() {
@@ -177,16 +179,17 @@ AFRAME.registerComponent('norman', {
 
   setup(animData = [[]]) {
     this.animData = animData
-    this.addAnim()
-    this.addHomeFrameGhost()
-    this.setupOnionSkin()
+    // this.addAnim()
+    this.addAnimLineSegments()
+    // this.addHomeFrameGhost()
+    // this.setupOnionSkin()
     this.drawComp.setTargetAnim(this.animComp)
   },
 
   teardown() {
     // this.stopPlaying()
-    this.removeHomeFrameGhost()
-    this.removeOnionSkin()
+    // this.removeHomeFrameGhost()
+    // this.removeOnionSkin()
     this.removeAnim()
     this.animData = []
     this.currentFileInfo = null
@@ -219,8 +222,9 @@ AFRAME.registerComponent('norman', {
 
   fileLoadPrev(doTeardown = true) {
     if (this.addingFrames) doTeardown = false
-    console.log('LOAD PREV', doTeardown)
+    // console.log('LOAD PREV', doTeardown)
     loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
+      console.log('LOAD PREV', animData)
       if (doTeardown) this.teardown()
       // console.log('animData: ', animData, currentFileInfo)
       this.currentFileInfo = currentFileInfo
@@ -230,8 +234,8 @@ AFRAME.registerComponent('norman', {
 
   fileLoadNext(doTeardown = true) {
     if (this.addingFrames) doTeardown = false
-    console.log('LOAD NEXT', doTeardown)
     loadNext(this.currentFileInfo).then(({animData, currentFileInfo}) => {
+      console.log('LOAD NEXT', animData)
       if (doTeardown) this.teardown()
       // console.log('animData: ', animData, currentFileInfo)
       this.currentFileInfo = currentFileInfo
@@ -391,12 +395,21 @@ AFRAME.registerComponent('norman', {
   //   this.el.removeChild(this.drawEnt)
   // },
 
-  addAnim() {
+  // addAnim() {
+  //   this.animEnt = document.createElement('a-entity')
+  //   const {animEnt, el, animData} = this
+  //   animEnt.setAttribute('anim', {norman: '#norman', animData})
+  //   animEnt.setAttribute('id', 'anim')
+  //   this.animComp = animEnt.components.anim
+  //   el.appendChild(animEnt)
+  // },
+
+  addAnimLineSegments() {
     this.animEnt = document.createElement('a-entity')
     const {animEnt, el, animData} = this
-    animEnt.setAttribute('anim', {norman: '#norman', animData})
+    animEnt.setAttribute('animlinesegments', {norman: '#norman', animData})
     animEnt.setAttribute('id', 'anim')
-    this.animComp = animEnt.components.anim
+    this.animComp = animEnt.components.animlinesegments
     el.appendChild(animEnt)
   },
 
