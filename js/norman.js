@@ -47,7 +47,7 @@ AFRAME.registerComponent('norman', {
 
   setupKeyboard() {
     document.addEventListener('keydown', e => {
-      console.log('keydown: ', e)
+      // console.log('keydown: ', e)
       if (e.code == 'Enter') {this.togglePlay()} 
       // else if (e.key == 'S') {
       //   // console.log('saving: ')

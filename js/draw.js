@@ -22,7 +22,6 @@ AFRAME.registerComponent('draw', {
       this.stopDrawing()
     })
 
-    console.log('draw here: ', this.targetAnim)
   },
   
   remove() {

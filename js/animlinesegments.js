@@ -1,5 +1,6 @@
 // import 'aframe'
 import _ from 'lodash'
+// import './animrendererperf'
 
 AFRAME.registerComponent('animlinesegments', {
 
@@ -24,7 +25,7 @@ AFRAME.registerComponent('animlinesegments', {
       const geometry = new THREE.BufferGeometry(),
             material = new THREE.LineBasicMaterial({color: 'black'})
 
-      this.updateGeometry(geometry, frameData)
+      this.fillGeometry(geometry, frameData)
 
       const mesh = new THREE.LineSegments(geometry, material)
 
@@ -108,21 +109,14 @@ AFRAME.registerComponent('animlinesegments', {
   },
 
   startLine(pos) {
-    // console.log('starting line on frame ', this.currentFrame)
-    // set a flag lineBeingDrawn = true
-    // get the anim data
-    // get the current frameData
-    // push a new empty lineData array
-    // push the pos into it that new lineData 
-    // get the geometry for the current frame
-    // update that geometry with the newly updated current frameData
-    // phew!
-
     const {animData, currentFrame} = this,
           frameData = animData[currentFrame]
 
-    // console.log('frameData: ', frameData)
     frameData.push([pos])
+
+    // emit ANIM_DATA_CHANGED
+    // type: LINE_STARTED
+    // detail: {lineData}
 
     this.updateFrame(currentFrame)
 
@@ -134,40 +128,48 @@ AFRAME.registerComponent('animlinesegments', {
           frameData = animData[currentFrame]
 
     _.last(frameData).push(pos)
+
+    // emit ANIM_DATA_CHANGED
+    // type: VERTEX_ADDED
+    // detail: {lineData, frameIndex}
+
     this.updateFrame(currentFrame)
   },
 
-  finishLine(pos) { // maybe it doesn't take a pos?
-    console.log('finishing line on frame ', this.currentFrame)
-    // not sure if I actually need to do anything here
+  finishLine(pos) {
+    // console.log('finishing line on frame ', this.currentFrame)
+
+    // emit ANIM_DATA_CHANGED
+    // type: LINE_FINISHED
+    // detail: {lineData, }
+
+    // not sure if I actually need to do anything here?
+    // I think I would if I was to implement incremental changes
+    // to the geometry, rather than this full-rebuild approach
   },
+
+
 
   updateFrame(frameIndex) {
     const geometry = this.frames[frameIndex].geometry,
           frameData = this.animData[frameIndex]
 
-    this.updateGeometry(geometry, frameData)
+    this.fillGeometry(geometry, frameData)
   },
 
-  updateGeometry(geometry, frameData) {
+  fillGeometry(geometry, frameData) {
     const positions = [],
           indices = []
 
     let nextPosIndex = 0
 
     const addVertex = (v, index) => {
-      if (v) { 
-        positions.push(v.x, v.y, v.z)
-      } else {
-        console.log('no... Where are these coming from???, ', index, v)
-        positions.push(0, 0, 0)
-      }
+      positions.push(v.x, v.y, v.z)
       nextPosIndex++
     }
 
     const addSubsequentVertex = (v, index) => {
       const i = nextPosIndex - 1
-      // console.log('adding vertex: ', index)
       addVertex(v, index)
       indices.push(i, i+1)
     }
