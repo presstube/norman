@@ -125,6 +125,8 @@ AFRAME.registerComponent('anim', {
     })
   },
 
+  // gotoFrame(index)
+
   gotoNextFrame() {
     const {el, currentFrame, animData} = this,
           totalFrames = animData.length
@@ -152,12 +154,14 @@ AFRAME.registerComponent('anim', {
   },
 
   beforeFrameChange() {
-    const {el, EXIT_FRAME, currentFrame} = this
+    const {el, EXIT_FRAME, currentFrame, isDrawing} = this
+    if (isDrawing) this.finishLine(this.getLocalPenPos(this.pen.position))
     el.emit(EXIT_FRAME, {frame: currentFrame})
   },
 
   afterFrameChange() {
-    const {el, ENTER_FRAME, currentFrame} = this
+    const {el, ENTER_FRAME, currentFrame, isDrawing} = this
+    if (isDrawing) this.startLine(this.getLocalPenPos(this.pen.position))
     el.emit(ENTER_FRAME, {frame: currentFrame})
   },
 
