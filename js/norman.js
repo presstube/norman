@@ -38,10 +38,14 @@ AFRAME.registerComponent('norman', {
           secondaryHand = this.isRightHanded ? leftHand : rightHand,
           pensphereEnt = document.querySelector("#pensphere")
 
-          primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
-          this.setupThumbStickDirectionEvents(primaryHand, 0.5)
-          this.setupThumbStickDirectionEvents(secondaryHand, 0.5)
-          Object.assign(this, {secondaryHand, primaryHand})
+    primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
+    this.setupThumbStickDirectionEvents(primaryHand, 0.5)
+    this.setupThumbStickDirectionEvents(secondaryHand, 0.5)
+    this.abstractABXY(leftHand, 'left')
+    this.abstractABXY(rightHand, 'right')
+    Object.assign(this, {secondaryHand, primaryHand})
+
+    primaryHand.addEventListener('upperbuttondown', this.handlePrimaryUpperButtonDown.bind(this))
   },
 
   fileLoadPrev(doTeardown = true) {
@@ -81,7 +85,29 @@ AFRAME.registerComponent('norman', {
     this.el.emit('STOPPED_PLAYING')
   },
 
+
+  // CTRL
+
+  handlePrimaryUpperButtonDown() {
+    this.togglePlay()
+  },
+
+
   // HELPERS
+
+  abstractABXY(c, hand) {
+    if (hand === 'left') {
+      c.addEventListener('xbuttondown', () => { c.emit('lowerbuttondown')})
+      c.addEventListener('xbuttonup', () => { c.emit('lowerbuttonup')})
+      c.addEventListener('ybuttondown', () => { c.emit('upperbuttondown')})
+      c.addEventListener('ybuttonup', () => { c.emit('upperbuttonup')})
+    } else if (hand === 'right') {
+      c.addEventListener('abuttondown', () => { c.emit('lowerbuttondown')})
+      c.addEventListener('abuttonup', () => { c.emit('lowerbuttonup')})
+      c.addEventListener('bbuttondown', () => { c.emit('upperbuttondown')})
+      c.addEventListener('bbuttonup', () => { c.emit('upperbuttonup')})
+    }
+  },
 
   setupThumbStickDirectionEvents(controller, thresh = 0.5) {
     let left = false,

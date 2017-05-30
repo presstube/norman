@@ -233,7 +233,6 @@ AFRAME.registerComponent('anim', {
   },
 
   startDrawing() {
-    console.log('dRAWINASDASD')
     if (!this.isDrawing) {
       this.lastPos = this.getLocalPenPos(this.pen.position)
       this.isDrawing = true
@@ -245,6 +244,8 @@ AFRAME.registerComponent('anim', {
     if (this.isDrawing) {
       this.isDrawing = false
       this.finishLine(this.getLocalPenPos(this.pen.position))
+      if (this.autoNext) this.gotoNextFrame()
+      if (this.autoPrev) this.gotoPrevFrame()
     }
   },
 
