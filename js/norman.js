@@ -39,7 +39,8 @@ AFRAME.registerComponent('norman', {
           pensphereEnt = document.querySelector("#pensphere")
 
           primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
-
+          this.setupThumbStickDirectionEvents(primaryHand, 0.5)
+          this.setupThumbStickDirectionEvents(secondaryHand, 0.5)
           Object.assign(this, {secondaryHand, primaryHand})
   },
 
@@ -78,6 +79,44 @@ AFRAME.registerComponent('norman', {
   stopPlaying() {
     this.isAnimPlaying = false
     this.el.emit('STOPPED_PLAYING')
+  },
+
+  // HELPERS
+
+  setupThumbStickDirectionEvents(controller, thresh = 0.5) {
+    let left = false,
+        right = false,
+        up = false,
+        down = false,
+        c = controller
+    c.addEventListener('axismove', e => {
+      const [xAxis, yAxis] = e.detail.axis
+      if (xAxis > thresh && !right) {
+        c.emit('RIGHT_ON')
+        right = true
+      } else if (xAxis < thresh && right) {
+        c.emit('RIGHT_OFF')
+        right = false
+      } else if (xAxis < -thresh && !left) {
+        c.emit('LEFT_ON')
+        left = true
+      } else if (xAxis > -thresh && left) {
+        c.emit('LEFT_OFF')
+        left = false
+      } else if (yAxis > thresh && !down) {
+        c.emit('DOWN_ON')
+        down = true
+      } else if (yAxis < thresh && down) {
+        c.emit('DOWN_OFF')
+        down = false
+      } else if (yAxis < -thresh && !up) {
+        c.emit('UP_ON')
+        up = true
+      } else if (yAxis > -thresh && up) {
+        c.emit('UP_OFF')
+        up = false
+      }
+    })
   },
 
 })

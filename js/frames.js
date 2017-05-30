@@ -41,7 +41,6 @@ export default (anim, animData) => {
   displayFrame(0)
 
   const onEnterFrame = (e) => {
-    console.log(e.detail.frame)
     displayFrame(e.detail.frame)
   }
 

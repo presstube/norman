@@ -15,10 +15,8 @@ AFRAME.registerComponent('anim', {
     this.ENTER_FRAME = 'ENTER_FRAME'
     this.EXIT_FRAME = 'EXIT_FRAME'
     this.ANIM_DATA_CHANGED = 'ANIM_DATA_CHANGED'
-
     this.FRAME_INSERTED = 'FRAME_INSERTED'
     this.FRAME_REMOVED = 'FRAME_REMOVED'
-
     this.LINE_STARTED = 'LINE_STARTED'
     this.LINE_ADDED_TO = 'LINE_ADDED_TO'
     this.LINE_FINISHED = 'LINE_FINISHED'
@@ -27,16 +25,16 @@ AFRAME.registerComponent('anim', {
     this.normanComp = norman.components.norman
     this.animData = animData
     this.currentFrame = 0
-    // this.totalFrames = animData.length
     this.frameChangeTime = null
     this.distThresh = 0.001
     this.lastPos = null
-
+    this.autoNext = false
+    this.autoPrev = false
+    this.frameEditing = false
     this.frames = new Frames(this, animData)
 
     this.bindKeyboard()
     this.bindOculusTouchControllers()
-
   },
 
   remove() {
@@ -69,11 +67,9 @@ AFRAME.registerComponent('anim', {
 
   handleDraw() {
     if (this.isDrawing) {
-
-      const {primaryHand, distThresh} = this,
-            currentPos = this.getLocalPenPos(this.pen.position),
-            distToLastPos = this.lastPos.distanceTo(currentPos)
-
+      const {pen, distThresh, lastPos} = this,
+            currentPos = this.getLocalPenPos(pen.position),
+            distToLastPos = lastPos.distanceTo(currentPos)
       if (distToLastPos > distThresh) {
         this.addToLine(currentPos)
         this.lastPos = currentPos
@@ -115,17 +111,19 @@ AFRAME.registerComponent('anim', {
     // good chance there will be a race condition here when setting up a blank anim in Norman
     const {primaryHand, secondaryHand} = this.normanComp
     this.pen = primaryHand.object3D
-    this.primaryHand = primaryHand
 
-    primaryHand.addEventListener('triggerdown', () => {
-      this.startDrawing()
-    })
-    primaryHand.addEventListener('triggerup', () => {
-      this.stopDrawing()
-    })
+    primaryHand.addEventListener('triggerdown', this.handlePrimaryTriggerDown.bind(this))
+    primaryHand.addEventListener('triggerup', this.handlePrimaryTriggerUp.bind(this)) 
+    secondaryHand.addEventListener('triggerdown', this.handleSecondaryTriggerDown.bind(this))
+    secondaryHand.addEventListener('triggerup', this.handleSecondaryTriggerUp.bind(this))
+    secondaryHand.addEventListener('LEFT_ON', this.handleSecondaryLeftOn.bind(this))
+    secondaryHand.addEventListener('RIGHT_ON', this.handleSecondaryRightOn.bind(this))
+    secondaryHand.addEventListener('LEFT_OFF', this.handleSecondaryLeftOff.bind(this))
+    secondaryHand.addEventListener('RIGHT_OFF', this.handleSecondaryRightOff.bind(this))
+    secondaryHand.addEventListener('thumbstickdown', this.handleSecondaryThumbstickDown.bind(this))
   },
 
-  // gotoFrame(index)
+  // MODEL METHODS
 
   gotoNextFrame() {
     const {el, currentFrame, animData} = this,
@@ -179,36 +177,6 @@ AFRAME.registerComponent('anim', {
     el.emit(FRAME_REMOVED, {frameIndex: index})
   },
 
-  // CTRL
-
-  insertFrameAt(position, frameIndex) {
-    if (!frameIndex) frameIndex = this.currentFrame
-
-    if (position === 'after') {
-      frameIndex += 1
-      this.currentFrame += 1
-    } else {
-      // do nothing
-    }
-
-    this.insertFrame(frameIndex)
-  },
-
-  startDrawing() {
-    if (!this.isDrawing) {
-      this.lastPos = this.getLocalPenPos(this.pen.position)
-      this.isDrawing = true
-      this.startLine(this.lastPos)
-    }
-  },
-
-  stopDrawing() {
-    if (this.isDrawing) {
-      this.isDrawing = false
-      this.finishLine(this.getLocalPenPos(this.pen.position))
-    }
-  },
-
   startLine(pos) {
     const {el, animData, currentFrame, ANIM_DATA_CHANGED, LINE_STARTED} = this,
           frameData = animData[currentFrame]
@@ -246,6 +214,84 @@ AFRAME.registerComponent('anim', {
       frameIndex: currentFrame, 
       frameData
     })
+  },
+
+
+  // CTRL
+
+  insertFrameAt(position, frameIndex) {
+    if (!frameIndex) frameIndex = this.currentFrame
+
+    if (position === 'after') {
+      frameIndex += 1
+      this.currentFrame += 1
+    } else {
+      // do nothing
+    }
+
+    this.insertFrame(frameIndex)
+  },
+
+  startDrawing() {
+    console.log('dRAWINASDASD')
+    if (!this.isDrawing) {
+      this.lastPos = this.getLocalPenPos(this.pen.position)
+      this.isDrawing = true
+      this.startLine(this.lastPos)
+    }
+  },
+
+  stopDrawing() {
+    if (this.isDrawing) {
+      this.isDrawing = false
+      this.finishLine(this.getLocalPenPos(this.pen.position))
+    }
+  },
+
+  handlePrimaryTriggerDown() {
+    this.startDrawing()
+  },
+
+  handlePrimaryTriggerUp() {
+    this.stopDrawing()
+  },
+
+  handleSecondaryTriggerDown() {
+    this.frameEditing = true
+  },
+
+  handleSecondaryTriggerUp() {
+    this.frameEditing = false
+  },
+
+  handleSecondaryLeftOn() {
+    this.autoPrev = true
+    if (this.frameEditing) {
+      this.insertFrameAt('before')
+    } else {
+      this.gotoPrevFrame()
+    }
+  },
+ 
+  handleSecondaryLeftOff() {
+    this.autoPrev = false
+  },
+
+  handleSecondaryRightOn() {
+    this.autoNext = true
+    if (this.frameEditing) {
+      this.insertFrameAt('after')
+    } else {
+      this.gotoNextFrame()
+    }
+  },
+
+  handleSecondaryRightOff() {
+    this.autoNext = false
+  },
+
+  handleSecondaryThumbstickDown() {
+    if (this.frameEditing) this.removeFrame()
   },
 
   // HELPERS
