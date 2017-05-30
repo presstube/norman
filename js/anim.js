@@ -12,16 +12,10 @@ AFRAME.registerComponent('anim', {
     
     const {norman, animData} = this.data
 
-    this.ctrl = {
-      onWhatever() {
-
-      }
-    }
-
     this.ENTER_FRAME = 'ENTER_FRAME'
     this.EXIT_FRAME = 'EXIT_FRAME'
     this.ANIM_DATA_CHANGED = 'ANIM_DATA_CHANGED'
-    
+
     this.FRAME_INSERTED = 'FRAME_INSERTED'
     this.FRAME_REMOVED = 'FRAME_REMOVED'
 
@@ -33,7 +27,7 @@ AFRAME.registerComponent('anim', {
     this.normanComp = norman.components.norman
     this.animData = animData
     this.currentFrame = 0
-    this.totalFrames = animData.length
+    // this.totalFrames = animData.length
     this.frameChangeTime = null
     this.distThresh = 0.001
     this.lastPos = null
@@ -93,6 +87,13 @@ AFRAME.registerComponent('anim', {
       if (e.code == 'Enter') {}
       else if (e.code == 'Comma') {this.gotoPrevFrame()}
       else if (e.code == 'Period') {this.gotoNextFrame()}
+
+      else if (e.code == 'BracketLeft' && e.shiftKey) {this.removeFrame()}
+
+      else if (e.code == 'BracketLeft') {this.insertFrameAt('before')}
+      else if (e.code == 'BracketRight') {this.insertFrameAt('after')}
+
+
        
       // // else if (e.key == 'S') {
       // //   // console.log('saving: ')
@@ -125,7 +126,9 @@ AFRAME.registerComponent('anim', {
   },
 
   gotoNextFrame() {
-    const {el, currentFrame, totalFrames} = this
+    const {el, currentFrame, animData} = this,
+          totalFrames = animData.length
+          
     this.beforeFrameChange()
     if (currentFrame + 1 == totalFrames) {
       this.currentFrame = 0
@@ -136,7 +139,9 @@ AFRAME.registerComponent('anim', {
   },
 
   gotoPrevFrame() {
-    const {el, currentFrame, totalFrames} = this
+    const {el, currentFrame, animData} = this,
+          totalFrames = animData.length
+
     this.beforeFrameChange()
     if (currentFrame - 1 < 0) {
       this.currentFrame = totalFrames - 1
@@ -157,18 +162,33 @@ AFRAME.registerComponent('anim', {
   },
 
   insertFrame(index) {
-    const {el, FRAME_INSERTED} = this
-    emit(ENTER_FRAME, {frame: currentFrame})
-
-    //
+    const {el, animData, FRAME_INSERTED} = this
+    animData.splice(index, 0, [])
+    el.emit(FRAME_INSERTED, {frameIndex: index})
   },
 
   removeFrame(index) {
-    //
-
+    // TODO, bug if removing last frame. fix when brain is fresh
+    const {el, animData, currentFrame, FRAME_REMOVED} = this
+    if (index === undefined) index = currentFrame
+    animData.splice(index, 1)
+    el.emit(FRAME_REMOVED, {frameIndex: index})
   },
 
   // CTRL
+
+  insertFrameAt(position, frameIndex) {
+    if (!frameIndex) frameIndex = this.currentFrame
+
+    if (position === 'after') {
+      frameIndex += 1
+      this.currentFrame += 1
+    } else {
+      // do nothing
+    }
+
+    this.insertFrame(frameIndex)
+  },
 
   startDrawing() {
     if (!this.isDrawing) {
