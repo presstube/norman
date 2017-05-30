@@ -39,7 +39,7 @@ AFRAME.registerComponent('draw', {
 
       if (distToLastPos > distThresh) {
         // console.log('drawing!: ', this.getLocalPenPos(this.pen.position))
-        this.targetAnim.addVertex(currentPos)
+        this.targetAnim.addToLine(currentPos)
         this.lastPos = currentPos
       }
     }
@@ -63,7 +63,7 @@ AFRAME.registerComponent('draw', {
   },
 
   setTargetAnim(targetAnim) {
-    // console.log('setting target anim')
+    console.log('setting target anim')
     this.targetAnim = targetAnim
     // NB: deal with target anim switching in the middle of a line being drawn?
   },

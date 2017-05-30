@@ -13,6 +13,8 @@ AFRAME.registerComponent('norman', {
       fps: 30,
       isAnimPlaying: false,
       isRightHanded: true,
+      secondaryHand: null,
+      primaryHand: null,
     })
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
@@ -37,6 +39,8 @@ AFRAME.registerComponent('norman', {
           pensphereEnt = document.querySelector("#pensphere")
 
           primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
+
+          Object.assign(this, {secondaryHand, primaryHand})
   },
 
   fileLoadPrev(doTeardown = true) {

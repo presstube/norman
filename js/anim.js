@@ -20,10 +20,11 @@ AFRAME.registerComponent('anim', {
 
     this.ENTER_FRAME = 'ENTER_FRAME'
     this.EXIT_FRAME = 'EXIT_FRAME'
-    this.FRAME_CHANGED = 'ANIM_FRAME_CHANGED'
-    this.DATA_CHANGED = 'ANIM_DATA_CHANGED'
+    this.ANIM_DATA_CHANGED = 'ANIM_DATA_CHANGED'
+    
     this.FRAME_INSERTED = 'FRAME_INSERTED'
     this.FRAME_REMOVED = 'FRAME_REMOVED'
+
     this.LINE_STARTED = 'LINE_STARTED'
     this.LINE_ADDED_TO = 'LINE_ADDED_TO'
     this.LINE_FINISHED = 'LINE_FINISHED'
@@ -34,12 +35,13 @@ AFRAME.registerComponent('anim', {
     this.currentFrame = 0
     this.totalFrames = animData.length
     this.frameChangeTime = null
+    this.distThresh = 0.001
+    this.lastPos = null
 
     this.frames = new Frames(this, animData)
 
     this.bindKeyboard()
     this.bindOculusTouchControllers()
-
 
   },
 
@@ -48,10 +50,11 @@ AFRAME.registerComponent('anim', {
   },
 
   tick(time, timeDelta) {
-    this.operatePlayhead(time)
+    this.handlePlayhead(time)
+    this.handleDraw()
   },
 
-  operatePlayhead(time) {
+  handlePlayhead(time) {
     const {normanComp} = this,
           {isAnimPlaying, frameInterval} = normanComp
 
@@ -70,10 +73,27 @@ AFRAME.registerComponent('anim', {
     }
   },
 
+  handleDraw() {
+    if (this.isDrawing) {
+
+      const {primaryHand, distThresh} = this,
+            currentPos = this.getLocalPenPos(this.pen.position),
+            distToLastPos = this.lastPos.distanceTo(currentPos)
+
+      if (distToLastPos > distThresh) {
+        this.addToLine(currentPos)
+        this.lastPos = currentPos
+      }
+    }
+  },
+
   bindKeyboard() {
     document.addEventListener('keydown', e => {
-      // // console.log('keydown: ', e)
-      // if (e.code == 'Enter') {this.togglePlay()} 
+      console.log('keydown: ', e)
+      if (e.code == 'Enter') {}
+      else if (e.code == 'Comma') {this.gotoPrevFrame()}
+      else if (e.code == 'Period') {this.gotoNextFrame()}
+       
       // // else if (e.key == 'S') {
       // //   // console.log('saving: ')
       // //   uploadAnimData(null, {data: this.animData})
@@ -91,10 +111,17 @@ AFRAME.registerComponent('anim', {
   },
 
   bindOculusTouchControllers() {
-    // bind the touch controllers to the ctrl
-    const controllers =   document.querySelectorAll('a-entity[oculus-touch-controls]')
+    // good chance there will be a race condition here when setting up a blank anim in Norman
+    const {primaryHand, secondaryHand} = this.normanComp
+    this.pen = primaryHand.object3D
+    this.primaryHand = primaryHand
 
-    console.log('controllers: ', controllers)
+    primaryHand.addEventListener('triggerdown', () => {
+      this.startDrawing()
+    })
+    primaryHand.addEventListener('triggerup', () => {
+      this.stopDrawing()
+    })
   },
 
   gotoNextFrame() {
@@ -141,6 +168,23 @@ AFRAME.registerComponent('anim', {
 
   },
 
+  // CTRL
+
+  startDrawing() {
+    if (!this.isDrawing) {
+      this.lastPos = this.getLocalPenPos(this.pen.position)
+      this.isDrawing = true
+      this.startLine(this.lastPos)
+    }
+  },
+
+  stopDrawing() {
+    if (this.isDrawing) {
+      this.isDrawing = false
+      this.finishLine(this.getLocalPenPos(this.pen.position))
+    }
+  },
+
   startLine(pos) {
     const {el, animData, currentFrame, ANIM_DATA_CHANGED, LINE_STARTED} = this,
           frameData = animData[currentFrame]
@@ -178,6 +222,16 @@ AFRAME.registerComponent('anim', {
       frameIndex: currentFrame, 
       frameData
     })
+  },
+
+  // HELPERS
+
+  getLocalPenPos(penPos) {
+    const {pen, normanEnt} = this
+    let pos = new THREE.Vector3()
+    pen.localToWorld(pos)
+    normanEnt.object3D.worldToLocal(pos)
+    return pos
   },
 
   fillGeometry(geometry, frameData) {
