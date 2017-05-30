@@ -6,7 +6,7 @@ AFRAME.registerComponent('animrendererperf', {
 
     const {norman, animData, initFrame} = this.data
 
-    
+
 
     this.frames = animData.map((frameData, index) => {
       const geometry = new THREE.BufferGeometry(),
@@ -40,8 +40,8 @@ AFRAME.registerComponent('animrendererperf', {
   },
 
   updateFrame(frameData, frameIndex) {
-    const geometry = this.frames[frameIndex].geometry,
-          frameData = this.anim.animData[frameIndex]
+    const geometry = this.frames[frameIndex].geometry
+          // frameData = this.anim.animData[frameIndex]
 
     this.updateGeometry(geometry, frameData)
   },

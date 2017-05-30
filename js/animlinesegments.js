@@ -62,6 +62,14 @@ AFRAME.registerComponent('animlinesegments', {
 
   },
 
+  // NB: make a helper for these kinds of entity/component construction
+  // shouldn't be 
+  makeRendererEnt(frameData) {
+    const rendererEnt = document.createElement('a-entity')
+    rendererEnt.setAttribute('animrendererperf', {})
+    return rendererEnt
+  },
+
   gotoNextFrame() {
     const {el, currentFrame, totalFrames} = this
     this.beforeFrameChange()
