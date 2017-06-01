@@ -1,9 +1,35 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteAnim, loadPrev, loadNext} from './firebasestore'
+import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore'
 
 import './anim'
+
+
+const comps = [
+
+  ['gildered-frump-hinges'],
+  ['mulgy-shift-hops', 'mulgy-prunt-clumps','fropley-limp-hunguses', 'brumpled-brine-glops'],
+  ['clumbied-clam-shanks'], // norman
+  ['clumbied-crank-hops', 'mulgy-bung-flops'],
+  ['lorgussy-clam-hinges'],
+  ['gildered-bung-glops', 'brumpled-crank-glops'],
+  ['fropley-groft-lumps'],
+  ['mulgy-shift-hops', 'mulgy-prunt-clumps'],
+  ['fropley-limp-hunguses', 'brumpled-brine-glops'],
+  ['clumbied-brine-hunguses', 'mulgy-dank-glops'],
+  ['brumpled-dank-hunguses'],
+  ['lorgussy-bung-clamps'],
+  ['fropley-clam-shanks', 'trulmy-dank-hops'],
+  ['brumpled-shift-hinges'],
+  ['gildered-shift-hunguses'],
+  ['troubling-plex-hunguses'], // black pearl motion study
+  ['trulmy-limp-donks'], // runnning man
+  ['marbled-groft-clumps'], // craggly norman letters
+  ['mulgy-ront-hops'], // abstract short loop
+]
+
+
 
 AFRAME.registerComponent('norman', {
 
@@ -18,9 +44,11 @@ AFRAME.registerComponent('norman', {
     })
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
-    _.delay(this.setupControllers.bind(this), 1) // SMELLY!
+    _.delay(this.setupControllers.bind(this), 1) // SMELLY delay!
 
-    this.fileLoadPrev()
+    loadAnimByName('trulmy-limp-donks').then(({animData, currentFileInfo}) => {
+      this.addAnim(animData)
+    })
   },
 
   setupKeyboard() {
@@ -46,17 +74,6 @@ AFRAME.registerComponent('norman', {
     Object.assign(this, {secondaryHand, primaryHand})
 
     primaryHand.addEventListener('upperbuttondown', this.handlePrimaryUpperButtonDown.bind(this))
-  },
-
-  fileLoadPrev(doTeardown = true) {
-    loadPrev(this.currentFileInfo).then(({animData, currentFileInfo}) => {
-      this.currentFileInfo = currentFileInfo
-      this.setup(animData)
-    })
-  },
-
-  setup(animData = [[]]) {
-    this.addAnim(animData)
   },
 
   addAnim(animData) {

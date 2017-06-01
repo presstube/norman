@@ -70,6 +70,7 @@ const getRandomUniqueName = () => {
 // TODO: DRY up loadPrev & loadNext
 
 const loadPrev = (currentFileInfo) => {
+  console.log('loading prev from fileInfo: ', currentFileInfo)
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['desc'])
@@ -90,6 +91,8 @@ const loadPrev = (currentFileInfo) => {
   })
 }
 
+
+
 const loadNext = (currentFileInfo) => {
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
@@ -104,6 +107,18 @@ const loadNext = (currentFileInfo) => {
           currentFileInfo = _.nth(fileInfos, currentIndex + 1)
         }
       }
+      loadFile(currentFileInfo).then(animData => {
+        resolve({animData, currentFileInfo})
+      })
+    })
+  })
+}
+
+
+const loadAnimByName = (name) => {
+  return new Promise((resolve, reject) => {
+    firebase.database().ref('animations').child(name).once('value', snapshot => {
+      const currentFileInfo = snapshot.val()
       loadFile(currentFileInfo).then(animData => {
         resolve({animData, currentFileInfo})
       })
@@ -159,12 +174,12 @@ const deleteAnim = ({
 
 
 export {
+  loadAnimByName,
   save,
   loadPrev,
   loadNext,
   deleteAnim
 }
-
 
 
 

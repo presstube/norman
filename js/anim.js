@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import Frames from './frames'
+import OnionSkin from './onionskin'
 
 AFRAME.registerComponent('anim', {
 
@@ -32,6 +33,7 @@ AFRAME.registerComponent('anim', {
     this.autoPrev = false
     this.frameEditing = false
     this.frames = new Frames(this, animData)
+    this.onionskin = new OnionSkin(this, animData)
 
     this.bindKeyboard()
     this.bindOculusTouchControllers()
@@ -79,7 +81,7 @@ AFRAME.registerComponent('anim', {
 
   bindKeyboard() {
     document.addEventListener('keydown', e => {
-      console.log('keydown: ', e)
+      // console.log('keydown: ', e)
       if (e.code == 'Enter') {}
       else if (e.code == 'Comma') {this.gotoPrevFrame()}
       else if (e.code == 'Period') {this.gotoNextFrame()}
