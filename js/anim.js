@@ -127,29 +127,15 @@ AFRAME.registerComponent('anim', {
 
   // MODEL METHODS
 
-  gotoNextFrame() {
-    const {el, currentFrame, animData} = this,
-          totalFrames = animData.length
-          
+  gotoNextFrame() {         
     this.beforeFrameChange()
-    if (currentFrame + 1 == totalFrames) {
-      this.currentFrame = 0
-    } else {
-      this.currentFrame++
-    }
+    this.currentFrame = this.getRelativeFrame(1)
     this.afterFrameChange()
   },
 
   gotoPrevFrame() {
-    const {el, currentFrame, animData} = this,
-          totalFrames = animData.length
-
     this.beforeFrameChange()
-    if (currentFrame - 1 < 0) {
-      this.currentFrame = totalFrames - 1
-    } else {
-      this.currentFrame--
-    }
+    this.currentFrame = this.getRelativeFrame(-1)
     this.afterFrameChange()
   },
 
@@ -298,6 +284,18 @@ AFRAME.registerComponent('anim', {
   },
 
   // HELPERS
+
+  getRelativeFrame(relativeVal) {
+    const {currentFrame, animData} = this,
+          finalFrame = animData.length -1
+    let relFrame = currentFrame + relativeVal
+    if (relFrame > finalFrame) {
+      relFrame = relFrame - animData.length
+    } else if (relFrame < 0) {
+      relFrame = animData.length + relFrame
+    }
+    return relFrame
+  },
 
   getLocalPenPos(penPos) {
     const {pen, normanEnt} = this

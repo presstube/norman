@@ -2,7 +2,8 @@ import _ from 'lodash'
 
 export default (anim) => {
 
-  console.log('onion skin here')
+  const {el, ENTER_FRAME} = anim
+
 
   const makeSkin = ({
     type = 'relative', // fixed relative
@@ -11,10 +12,7 @@ export default (anim) => {
     color = 'blue',
     opacity = 0.5,
   }) => {
-    console.log('onion: ', type, relativeToCurrentFrame, style, color, opacity)
-
-    let frameToRender
-
+    // console.log('onion: ', type, relativeToCurrentFrame, style, color, opacity)
     const MaterialConstructor = (style === 'solid') ? THREE.LineBasicMaterial : THREE.LineDashedMaterial,
           material = new MaterialConstructor({
             color,
@@ -24,17 +22,18 @@ export default (anim) => {
             gapSize: 1
           })
 
-    console.log('mat: ', material)
+    const onEnterFrame = (e) => {
+      console.log('frame to render: ', anim.getRelativeFrame(relativeToCurrentFrame))
+    }
 
-
-
-    // listen on anim for frame changes or data changes
-    // if there's a frame changes refill the geom
-    // if there's a data change, check to see if it's the frame
-    // if it's the frame refill the geom
-
+    el.addEventListener(ENTER_FRAME, onEnterFrame)
   }
 
-  makeSkin({})
+  makeSkin({
+    type: 'relative',
+    relativeToCurrentFrame: -2,
+    color: 'blue',
+    opacity: 0.8,
+  })
 
 }
