@@ -2,9 +2,7 @@ import _ from 'lodash'
 import $ from 'jquery'
 
 import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore'
-
 import './anim'
-
 
 const comps = [
 
@@ -28,8 +26,6 @@ const comps = [
   ['marbled-groft-clumps'], // craggly norman letters
   ['mulgy-ront-hops'], // abstract short loop
 ]
-
-
 
 AFRAME.registerComponent('norman', {
 

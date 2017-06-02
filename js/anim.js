@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import Frames from './frames'
 import OnionSkin from './onionskin'
+import HomeFrameGhost from './homeframeghost'
 
 AFRAME.registerComponent('anim', {
 
@@ -34,8 +35,8 @@ AFRAME.registerComponent('anim', {
     this.autoPrev = false
     this.frameEditing = false
     this.frames = new Frames(this, animData)
+    this.homeFrameGhost = new HomeFrameGhost(this)
     this.onionskin = null
-    // this.onionskin = new OnionSkin(this, animData)
 
     this.bindKeyboard()
     this.bindOculusTouchControllers()

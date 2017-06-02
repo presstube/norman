@@ -14,14 +14,12 @@ export default (anim) => {
   })
 
   const makeSkin = ({
-    type = 'relative', // fixed relative
+    type = 'relative', // 'fixed' || 'relative' ... may not need this if HomeFrameGhost is back in
     relativeToCurrentFrame = -1,
     color = 'blue',
     opacity = 0.5,
   }) => {
 
-    console.log('onion: ', type, relativeToCurrentFrame, color, opacity)
-    
     const material = new THREE.LineBasicMaterial({
             color,
             transparent: opacity != 1 ? true : false,
