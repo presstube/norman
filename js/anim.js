@@ -2,6 +2,7 @@ import _ from 'lodash'
 import Frames from './frames'
 import OnionSkin from './onionskin'
 import HomeFrameGhost from './homeframeghost'
+import Registration from './registration'
 
 AFRAME.registerComponent('anim', {
 
@@ -34,6 +35,7 @@ AFRAME.registerComponent('anim', {
     this.autoNext = false
     this.autoPrev = false
     this.frameEditing = false
+    this.regMark = new Registration(this)
     this.frames = new Frames(this, animData)
     this.homeFrameGhost = new HomeFrameGhost(this)
     this.onionskin = null
