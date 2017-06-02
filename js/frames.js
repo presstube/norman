@@ -13,7 +13,6 @@ export default (anim, animData) => {
     FRAME_REMOVED,
   } = anim
 
-
   const makeFrame = (frameData) => {
     const geometry = new THREE.BufferGeometry(),
           material = new THREE.LineBasicMaterial({color: 'black'})
