@@ -2,10 +2,16 @@ import _ from 'lodash'
 
 export default (anim) => {
 
-  const {el, ENTER_FRAME} = anim,
+  const {el, ENTER_FRAME, ONION_REMOVED} = anim,
         group = new THREE.Group()
 
   el.object3D.add(group)
+
+  el.addEventListener(ONION_REMOVED, () => {
+    console.log('onionskin heard remove')
+    anim.onionskin = null
+    el.object3D.remove(group)
+  })
 
   const makeSkin = ({
     type = 'relative', // fixed relative
@@ -20,8 +26,6 @@ export default (anim) => {
             color,
             transparent: opacity != 1 ? true : false,
             opacity,
-            dashSize: 3,
-            gapSize: 1
           }),
           geometry = new THREE.BufferGeometry(),
           skin = new THREE.LineSegments(geometry, material)
@@ -31,10 +35,23 @@ export default (anim) => {
       anim.fillGeometry(geometry, anim.animData[frameToRender])
     }
 
+    const removeSkin = () => {
+      console.log('skin heard remove')
+      removeListeners()
+    }
+
+    const addListeners = () => {
+      el.addEventListener(ENTER_FRAME, updateSkin)
+      el.addEventListener(ONION_REMOVED, removeSkin)
+    }
+
+    const removeListeners = () => {
+      el.removeEventListener(ENTER_FRAME, updateSkin)
+      el.removeEventListener(ONION_REMOVED, removeSkin)
+    }
+
+    addListeners()
     updateSkin()
-    el.addEventListener(ENTER_FRAME, updateSkin)
-    // don't put these right on the anim
-    // skins should have it's own container
     group.add(skin)
     return skin
   }

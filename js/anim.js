@@ -21,6 +21,7 @@ AFRAME.registerComponent('anim', {
     this.LINE_STARTED = 'LINE_STARTED'
     this.LINE_ADDED_TO = 'LINE_ADDED_TO'
     this.LINE_FINISHED = 'LINE_FINISHED'
+    this.ONION_REMOVED = 'ONION_REMOVED'
 
     this.normanEnt = norman
     this.normanComp = norman.components.norman
@@ -33,7 +34,8 @@ AFRAME.registerComponent('anim', {
     this.autoPrev = false
     this.frameEditing = false
     this.frames = new Frames(this, animData)
-    this.onionskin = new OnionSkin(this, animData)
+    this.onionskin = null
+    // this.onionskin = new OnionSkin(this, animData)
 
     this.bindKeyboard()
     this.bindOculusTouchControllers()
@@ -114,8 +116,10 @@ AFRAME.registerComponent('anim', {
     const {primaryHand, secondaryHand} = this.normanComp
     this.pen = primaryHand.object3D
 
+
     primaryHand.addEventListener('triggerdown', this.handlePrimaryTriggerDown.bind(this))
     primaryHand.addEventListener('triggerup', this.handlePrimaryTriggerUp.bind(this)) 
+    primaryHand.addEventListener('lowerbuttondown', this.handlePrimaryLowerButtonDown.bind(this)) 
     secondaryHand.addEventListener('triggerdown', this.handleSecondaryTriggerDown.bind(this))
     secondaryHand.addEventListener('triggerup', this.handleSecondaryTriggerUp.bind(this))
     secondaryHand.addEventListener('LEFT_ON', this.handleSecondaryLeftOn.bind(this))
@@ -204,6 +208,15 @@ AFRAME.registerComponent('anim', {
     })
   },
 
+  toggleOnion() {
+    const {el, ONION_REMOVED} = this
+    if (!this.onionskin) {
+      this.onionskin = new OnionSkin(this)
+    } else {
+      el.emit(ONION_REMOVED)
+    }
+  },
+
 
   // CTRL
 
@@ -243,6 +256,10 @@ AFRAME.registerComponent('anim', {
 
   handlePrimaryTriggerUp() {
     this.stopDrawing()
+  },
+
+  handlePrimaryLowerButtonDown() {
+    this.toggleOnion()
   },
 
   handleSecondaryTriggerDown() {
