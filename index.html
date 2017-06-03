@@ -9,7 +9,7 @@
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene" fog="color: #eee; near: 0.1; far:0.8w">
+    <a-scene id="scene" >
       <a-sky color="#eee"></a-sky>
       <a-camera 
         id="camera" 
@@ -18,7 +18,7 @@
         ></a-camera>
       <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
       <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
-      <a-entity id="norman" norman position="0 0 0">
+      <a-entity id="norman" norman position="0 1.6 -0.5">
       </a-entity>
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-cone 
@@ -37,6 +37,8 @@
 </html>
 
 <!-- 
+
+fog="color: #eee; near: 0.1; far:0.8"
         <a-cone color="#333" height="0.1" radius-bottom="0.03" radius-top="0" position="0 0 0"></a-cone>
 
         camera="userHeight: 1.6"
