@@ -70,6 +70,8 @@ AFRAME.registerComponent('norman', {
     Object.assign(this, {secondaryHand, primaryHand})
 
     primaryHand.addEventListener('upperbuttondown', this.handlePrimaryUpperButtonDown.bind(this))
+    secondaryHand.addEventListener('lowerbuttondown', this.handleSecondaryLowerButtonDown.bind(this))
+    secondaryHand.addEventListener('lowerbuttonup', this.handleSecondaryLowerButtonUp.bind(this))
   },
 
   addAnim(animData) {
@@ -98,15 +100,22 @@ AFRAME.registerComponent('norman', {
     this.el.emit('STOPPED_PLAYING')
   },
 
-
-  // CTRL
-
   handlePrimaryUpperButtonDown() {
     this.togglePlay()
   },
 
+  handleSecondaryLowerButtonDown() {
+    console.log('enter filesystem mode')
+  },
 
-  // HELPERS
+  handleSecondaryLowerButtonUp() {
+    console.log('exit filesystem mode')
+  },
+
+
+  // TOUCH CONTROLLER PREP HELPERS
+  // These are not specific to this project and could be broken out 
+  // into a more general library
 
   abstractABXY(c, hand) {
     if (hand === 'left') {
