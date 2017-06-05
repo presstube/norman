@@ -6,9 +6,7 @@ export default (anim) => {
   const {el} = anim,
         geometry = new THREE.Geometry(),
         material = new THREE.LineBasicMaterial({
-          color: 'black',
-          linewidth: 1,
-          scale: 1,
+          color: 'red',
           transparent: true,
           opacity: 0.5,
         }),

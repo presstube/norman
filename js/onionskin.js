@@ -8,7 +8,6 @@ export default (anim) => {
   el.object3D.add(group)
 
   el.addEventListener(ONION_REMOVED, () => {
-    console.log('onionskin heard remove')
     anim.onionskin = null
     el.object3D.remove(group)
   })
@@ -34,7 +33,6 @@ export default (anim) => {
     }
 
     const removeSkin = () => {
-      console.log('skin heard remove')
       removeListeners()
     }
 

@@ -30,11 +30,11 @@ AFRAME.registerComponent('anim', {
     this.animData = animData
     this.currentFrame = 0
     this.frameChangeTime = null
-    this.distThresh = 0.001
-    this.lastPos = null
-    this.autoNext = false
-    this.autoPrev = false
-    this.frameEditing = false
+    // this.distThresh = 0.001
+    // this.lastPos = null
+    // this.autoNext = false
+    // this.autoPrev = false
+    // this.frameEditing = false
     this.regMarker = new RegMarker(this)
     this.frames = new Frames(this, animData)
     this.homeFrameGhost = new HomeFrameGhost(this)
@@ -59,9 +59,9 @@ AFRAME.registerComponent('anim', {
 
   handlePlayhead(time) {
     const {normanComp} = this,
-          {isPlaying, frameInterval} = normanComp
+          {isAnimPlaying, frameInterval} = normanComp
 
-    if (isPlaying) {
+    if (isAnimPlaying) {
       if (!this.frameChangeTime) this.frameChangeTime = time
       const {frameChangeTime} = this,
             diff = time - frameChangeTime
@@ -140,19 +140,19 @@ AFRAME.registerComponent('anim', {
     this.pen = primaryHand.object3D
 
 
-    primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
-    primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
+    // primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
+    // primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
     primaryHand.addEventListener('lowerbuttondown', () => this.handlePrimaryLowerButtonDown()) 
-    secondaryHand.addEventListener('triggerdown', () => this.handleSecondaryTriggerDown())
-    secondaryHand.addEventListener('triggerup', () => this.handleSecondaryTriggerUp())
-    secondaryHand.addEventListener('LEFT_ON', () => this.handleSecondaryLeftOn())
-    secondaryHand.addEventListener('RIGHT_ON', () => this.handleSecondaryRightOn())
-    secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
-    secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
-    secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
+    // secondaryHand.addEventListener('triggerdown', () => this.handleSecondaryTriggerDown())
+    // secondaryHand.addEventListener('triggerup', () => this.handleSecondaryTriggerUp())
+    // secondaryHand.addEventListener('LEFT_ON', () => this.handleSecondaryLeftOn())
+    // secondaryHand.addEventListener('RIGHT_ON', () => this.handleSecondaryRightOn())
+    // secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
+    // secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
+    // secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
   },
 
-  // MODEL METHODS
+  // MODIFIERS
 
   gotoNextFrame() {         
     this.beforeFrameChange()
@@ -240,9 +240,6 @@ AFRAME.registerComponent('anim', {
     }
   },
 
-
-  // CTRL
-
   insertFrameAt(position, frameIndex) {
     if (!frameIndex) frameIndex = this.currentFrame
 
@@ -256,72 +253,72 @@ AFRAME.registerComponent('anim', {
     this.insertFrame(frameIndex)
   },
 
-  startDrawing() {
-    if (!this.isDrawing) {
-      this.lastPos = this.getLocalPenPos(this.pen.position)
-      this.isDrawing = true
-      this.startLine(this.lastPos)
-    }
-  },
+  // startDrawing() {
+  //   if (!this.isDrawing) {
+  //     this.lastPos = this.getLocalPenPos(this.pen.position)
+  //     this.isDrawing = true
+  //     this.startLine(this.lastPos)
+  //   }
+  // },
 
-  stopDrawing() {
-    if (this.isDrawing) {
-      this.isDrawing = false
-      this.finishLine(this.getLocalPenPos(this.pen.position))
-      if (this.autoNext) this.gotoNextFrame()
-      if (this.autoPrev) this.gotoPrevFrame()
-    }
-  },
+  // stopDrawing() {
+  //   if (this.isDrawing) {
+  //     this.isDrawing = false
+  //     this.finishLine(this.getLocalPenPos(this.pen.position))
+  //     if (this.autoNext) this.gotoNextFrame()
+  //     if (this.autoPrev) this.gotoPrevFrame()
+  //   }
+  // },
 
-  handlePrimaryTriggerDown() {
-    this.startDrawing()
-  },
+  // handlePrimaryTriggerDown() {
+  //   this.startDrawing()
+  // },
 
-  handlePrimaryTriggerUp() {
-    this.stopDrawing()
-  },
+  // handlePrimaryTriggerUp() {
+  //   this.stopDrawing()
+  // },
 
   handlePrimaryLowerButtonDown() {
     this.toggleOnion()
   },
 
-  handleSecondaryTriggerDown() {
-    this.frameEditing = true
-  },
+  // handleSecondaryTriggerDown() {
+  //   this.frameEditing = true
+  // },
 
-  handleSecondaryTriggerUp() {
-    this.frameEditing = false
-  },
+  // handleSecondaryTriggerUp() {
+  //   this.frameEditing = false
+  // },
 
-  handleSecondaryLeftOn() {
-    this.autoPrev = true
-    if (this.frameEditing) {
-      this.insertFrameAt('before')
-    } else {
-      this.gotoPrevFrame()
-    }
-  },
+  // handleSecondaryLeftOn() {
+  //   this.autoPrev = true
+  //   if (this.frameEditing) {
+  //     this.insertFrameAt('before')
+  //   } else {
+  //     this.gotoPrevFrame()
+  //   }
+  // },
  
-  handleSecondaryLeftOff() {
-    this.autoPrev = false
-  },
+  // handleSecondaryLeftOff() {
+  //   this.autoPrev = false
+  // },
 
-  handleSecondaryRightOn() {
-    this.autoNext = true
-    if (this.frameEditing) {
-      this.insertFrameAt('after')
-    } else {
-      this.gotoNextFrame()
-    }
-  },
+  // handleSecondaryRightOn() {
+  //   this.autoNext = true
+  //   if (this.frameEditing) {
+  //     this.insertFrameAt('after')
+  //   } else {
+  //     this.gotoNextFrame()
+  //   }
+  // },
 
-  handleSecondaryRightOff() {
-    this.autoNext = false
-  },
+  // handleSecondaryRightOff() {
+  //   this.autoNext = false
+  // },
 
-  handleSecondaryThumbstickDown() {
-    if (this.frameEditing) this.removeFrame()
-  },
+  // handleSecondaryThumbstickDown() {
+  //   if (this.frameEditing) this.removeFrame()
+  // },
 
   // HELPERS
 
