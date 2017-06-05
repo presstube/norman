@@ -11,21 +11,22 @@ export default (anim) => {
           scale: 1,
           transparent: true,
           opacity: 0.5,
-        })
+        }),
+        length = 0.005
 
   geometry.vertices = [
     {x: 0, y: 0, z: 0},
-    {x: 0.01, y: 0, z: 0},
-    
-    {x: -0.01, y: 0, z: 0},
+    {x: length, y: 0, z: 0},
     {x: 0, y: 0, z: 0},
-    {x: 0, y: 0.01, z: 0},
+    {x: -length, y: 0, z: 0},
     {x: 0, y: 0, z: 0},
-    {x: 0, y: -0.01, z: 0},
+    {x: 0, y: length, z: 0},
     {x: 0, y: 0, z: 0},
-    {x: 0, y: 0, z: 0.01},
+    {x: 0, y: -length, z: 0},
     {x: 0, y: 0, z: 0},
-    {x: 0, y: 0, z: -0.01},
+    {x: 0, y: 0, z: length},
+    {x: 0, y: 0, z: 0},
+    {x: 0, y: 0, z: -length},
   ]
 
   const mesh = new THREE.LineSegments(geometry, material)
