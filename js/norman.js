@@ -175,10 +175,8 @@ AFRAME.registerComponent('norman', {
     const {isInsertMode, currentTrackComp, currentTrackEnt} = this
     this.autoPrev = true
     if (isInsertMode) {
-      console.log('inserting frame before on: ', currentTrackEnt.getAttribute('id'))
       currentTrackComp.insertFrameAt('before')
     } else {
-      console.log('going to prev frame on: ', currentTrackEnt.getAttribute('id'))
       currentTrackComp.gotoPrevFrame()
     }
   },
@@ -211,7 +209,6 @@ AFRAME.registerComponent('norman', {
   // MODIFIERS
 
   addTrack() {
-    console.log('adding a track')
     const animEnt = document.createElement('a-entity'),
           {el, tracks} = this
 
@@ -220,13 +217,12 @@ AFRAME.registerComponent('norman', {
       animData: [[]]
     })
     el.appendChild(animEnt)
-    animEnt.setAttribute('id', 'whooo' + Math.random())
+    // animEnt.setAttribute('id', 'whooo' + Math.random())
     this.setCurrentTrack(animEnt)
     tracks.push(animEnt)
   },
 
   removeTrack(track) {
-    console.log('removing a track')
     const {el, tracks} = this
     _.remove(tracks, track)
     el.removeChild(animEnt)
@@ -236,16 +232,30 @@ AFRAME.registerComponent('norman', {
   setCurrentTrack(trackEnt) {
     this.currentTrackEnt = trackEnt
     this.currentTrackComp = trackEnt.components.anim
-
-    console.log('settttununnng: ', this.currentTrackEnt, this.currentTrackComp)
   },
 
   selectPrevTrack() {
-    console.log('stub of select prev track')
+    const {currentTrackEnt, tracks} = this
+    let index = _.findIndex(tracks, currentTrackEnt)
+
+    if (index - 1 === -1) {
+      index = tracks.length - 1
+    } else {
+      index = index - 1
+    }
+    this.setCurrentTrack(tracks[index])
   },
 
   selectNextTrack() {
-    console.log('stub of select next track')
+    const {currentTrackEnt, tracks} = this
+    let index = _.findIndex(tracks, currentTrackEnt)
+
+    if (index + 1 === tracks.length) {
+      index = 0
+    } else {
+      index = index + 1
+    }
+    this.setCurrentTrack(tracks[index])
   },
 
   startDrawing() {
