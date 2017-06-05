@@ -2,7 +2,7 @@ import _ from 'lodash'
 
 export default (anim) => {
 
-  const {el, ENTER_FRAME, ONION_REMOVED} = anim,
+  const {el, ENTER_FRAME, ONION_REMOVED, FRAME_INSERTED, FRAME_REMOVED} = anim,
         group = new THREE.Group()
 
   el.object3D.add(group)
@@ -38,11 +38,15 @@ export default (anim) => {
 
     const addListeners = () => {
       el.addEventListener(ENTER_FRAME, updateSkin)
+      el.addEventListener(FRAME_INSERTED, updateSkin)
+      el.addEventListener(FRAME_REMOVED, updateSkin)
       el.addEventListener(ONION_REMOVED, removeSkin)
     }
 
     const removeListeners = () => {
       el.removeEventListener(ENTER_FRAME, updateSkin)
+      el.removeEventListener(FRAME_INSERTED, updateSkin)
+      el.removeEventListener(FRAME_REMOVED, updateSkin)
       el.removeEventListener(ONION_REMOVED, removeSkin)
     }
 
