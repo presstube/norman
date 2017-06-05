@@ -2,7 +2,7 @@ import _ from 'lodash'
 import Frames from './frames'
 import OnionSkin from './onionskin'
 import HomeFrameGhost from './homeframeghost'
-import Registration from './registration'
+import RegMarker from './regmarker'
 
 AFRAME.registerComponent('anim', {
 
@@ -35,11 +35,15 @@ AFRAME.registerComponent('anim', {
     this.autoNext = false
     this.autoPrev = false
     this.frameEditing = false
-    this.regMark = new Registration(this)
+    this.regMarker = new RegMarker(this)
     this.frames = new Frames(this, animData)
     this.homeFrameGhost = new HomeFrameGhost(this)
     this.onionskin = null
 
+    const {regMarker, homeFrameGhost} = this
+    this.hideOnPlay = [regMarker, homeFrameGhost]
+
+    this.bindNorman()
     this.bindKeyboard()
     this.bindOculusTouchControllers()
   },
@@ -84,6 +88,22 @@ AFRAME.registerComponent('anim', {
     }
   },
 
+  bindNorman() {
+    const {normanEnt, normanComp} = this,
+          {STARTED_PLAYING, STOPPED_PLAYING} = normanComp
+
+    normanEnt.addEventListener('STARTED_PLAYING', () => this.onStartedPlaying())
+    normanEnt.addEventListener('STOPPED_PLAYING', () => this.onStoppedPlaying())
+  },
+
+  onStartedPlaying() {
+    this.hideOnPlay.forEach(toHide => toHide.visible = false)
+  },
+
+  onStoppedPlaying() {
+    this.hideOnPlay.forEach(toHide => toHide.visible = true)
+  },
+
   bindKeyboard() {
     document.addEventListener('keydown', e => {
       // console.log('keydown: ', e)
@@ -120,16 +140,16 @@ AFRAME.registerComponent('anim', {
     this.pen = primaryHand.object3D
 
 
-    primaryHand.addEventListener('triggerdown', this.handlePrimaryTriggerDown.bind(this))
-    primaryHand.addEventListener('triggerup', this.handlePrimaryTriggerUp.bind(this)) 
-    primaryHand.addEventListener('lowerbuttondown', this.handlePrimaryLowerButtonDown.bind(this)) 
-    secondaryHand.addEventListener('triggerdown', this.handleSecondaryTriggerDown.bind(this))
-    secondaryHand.addEventListener('triggerup', this.handleSecondaryTriggerUp.bind(this))
-    secondaryHand.addEventListener('LEFT_ON', this.handleSecondaryLeftOn.bind(this))
-    secondaryHand.addEventListener('RIGHT_ON', this.handleSecondaryRightOn.bind(this))
-    secondaryHand.addEventListener('LEFT_OFF', this.handleSecondaryLeftOff.bind(this))
-    secondaryHand.addEventListener('RIGHT_OFF', this.handleSecondaryRightOff.bind(this))
-    secondaryHand.addEventListener('thumbstickdown', this.handleSecondaryThumbstickDown.bind(this))
+    primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
+    primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
+    primaryHand.addEventListener('lowerbuttondown', () => this.handlePrimaryLowerButtonDown()) 
+    secondaryHand.addEventListener('triggerdown', () => this.handleSecondaryTriggerDown())
+    secondaryHand.addEventListener('triggerup', () => this.handleSecondaryTriggerUp())
+    secondaryHand.addEventListener('LEFT_ON', () => this.handleSecondaryLeftOn())
+    secondaryHand.addEventListener('RIGHT_ON', () => this.handleSecondaryRightOn())
+    secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
+    secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
+    secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
   },
 
   // MODEL METHODS

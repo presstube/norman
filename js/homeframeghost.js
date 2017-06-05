@@ -19,4 +19,6 @@ export default (anim) => {
   updateMesh()
   el.object3D.add(mesh)
 
+  return mesh
+
 }

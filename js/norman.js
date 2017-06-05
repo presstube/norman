@@ -40,6 +40,8 @@ AFRAME.registerComponent('norman', {
       secondaryHand: null,
       primaryHand: null,
     })
+    this.STARTED_PLAYING = 'STARTED_PLAYING'
+    this.STOPPED_PLAYING = 'STOPPED_PLAYING'
     this.frameInterval = 1000 / this.fps
     this.setupKeyboard()
     _.delay(this.setupControllers.bind(this), 1) // SMELLY delay!
@@ -93,13 +95,15 @@ AFRAME.registerComponent('norman', {
   },
 
   startPlaying() {
+    const {el, STARTED_PLAYING} = this
     this.isAnimPlaying = true
-    this.el.emit('STARTED_PLAYING')
+    el.emit(STARTED_PLAYING)
   },
 
   stopPlaying() {
+    const {el, STOPPED_PLAYING} = this
     this.isAnimPlaying = false
-    this.el.emit('STOPPED_PLAYING')
+    el.emit(STOPPED_PLAYING)
   },
 
   handlePrimaryUpperButtonDown() {

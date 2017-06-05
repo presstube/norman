@@ -32,4 +32,6 @@ export default (anim) => {
   const mesh = new THREE.LineSegments(geometry, material)
   el.object3D.add(mesh)
 
+  return mesh
+
 }
