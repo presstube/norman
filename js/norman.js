@@ -32,30 +32,34 @@ const comps = [
 AFRAME.registerComponent('norman', {
 
   init() {
-    Object.assign(this, {
-      currentFileInfo: null,
-      fps: 30,
-      isAnimPlaying: false,
-      isRightHanded: true,
-      secondaryHand: null,
-      primaryHand: null,
-    })
-    this.STARTED_PLAYING = 'STARTED_PLAYING'
-    this.STOPPED_PLAYING = 'STOPPED_PLAYING'
 
+    this.currentFileInfo = null
+    this.fps = 30
+    this.isPlaying = false
+    this.isInsertMode = false
+    this.isFileMode = false
+    this.isGasPedalMode = false
+    this.isRightHanded = true
+    this.secondaryHand = null
+    this.primaryHand = null
     this.frameInterval = 1000 / this.fps
     this.tracks = []
 
+    this.STARTED_PLAYING = 'STARTED_PLAYING'
+    this.STOPPED_PLAYING = 'STOPPED_PLAYING'
+    this.ENTERED_FILE_MODE = 'ENTERED_FILE_MODE'
+    this.EXITED_FILE_MODE = 'EXITED_FILE_MODE'
+    this.ENTERED_INSERT_MODE = 'ENTERED_INSERT_MODE'
+    this.EXITED_INSERT_MODE = 'EXITED_INSERT_MODE'
+
     this.setupKeyboard()
+
+    // SMELLY delay!
     _.delay(() => {
       this.setupControllers()
       this.addTrack()
-    }, 1) // SMELLY delay!
+    }, 1) 
 
-
-    // loadAnimByName('trulmy-limp-donks').then(({animData, currentFileInfo}) => {
-    //   this.addAnim(animData)
-    // })
   },
 
   setupKeyboard() {
@@ -83,7 +87,33 @@ AFRAME.registerComponent('norman', {
     primaryHand.addEventListener('upperbuttondown', this.handlePrimaryUpperButtonDown.bind(this))
     secondaryHand.addEventListener('lowerbuttondown', this.handleSecondaryLowerButtonDown.bind(this))
     secondaryHand.addEventListener('lowerbuttonup', this.handleSecondaryLowerButtonUp.bind(this))
+    secondaryHand.addEventListener('upperbuttondown', this.handleSecondaryUpperButtonDown.bind(this))
+    secondaryHand.addEventListener('upperbuttonup', this.handleSecondaryUpperButtonUp.bind(this))
   },
+
+  // CTRL
+
+  handlePrimaryUpperButtonDown() {
+    this.togglePlay()
+  },
+
+  handleSecondaryLowerButtonDown() {
+    this.enterFileMode()
+  },
+
+  handleSecondaryLowerButtonUp() {
+    this.exitFileMode()
+  },
+
+  handleSecondaryUpperButtonDown() {
+    console.log('enter gas pedal mode')
+  },
+
+  handleSecondaryUpperButtonUp() {
+    console.log('exit gas pedal mode')
+  },
+
+  // MODIFIERS
 
   addTrack() {
     const animEnt = document.createElement('a-entity'),
@@ -106,7 +136,7 @@ AFRAME.registerComponent('norman', {
   },
 
   togglePlay() {
-    if (this.isAnimPlaying) {
+    if (this.isPlaying) {
       this.stopPlaying()
     } else {
       this.startPlaying()
@@ -115,26 +145,47 @@ AFRAME.registerComponent('norman', {
 
   startPlaying() {
     const {el, STARTED_PLAYING} = this
-    this.isAnimPlaying = true
+    this.isPlaying = true
     el.emit(STARTED_PLAYING)
   },
 
   stopPlaying() {
     const {el, STOPPED_PLAYING} = this
-    this.isAnimPlaying = false
+    this.isPlaying = false
     el.emit(STOPPED_PLAYING)
   },
 
-  handlePrimaryUpperButtonDown() {
-    this.togglePlay()
+  enterFileMode() {
+    const {el, ENTERED_FILE_MODE} = this
+    this.isFileMode = true
+    el.emit(ENTERED_FILE_MODE)
   },
 
-  handleSecondaryLowerButtonDown() {
-    console.log('enter filesystem mode')
+  exitFileMode() {
+    const {el, EXITED_FILE_MODE} = this
+    this.isFileMode = false
+    el.emit(EXITED_FILE_MODE)
   },
 
-  handleSecondaryLowerButtonUp() {
-    console.log('exit filesystem mode')
+  enterInsertMode() {
+    const {el, ENTERED_INSERT_MODE} = this
+    this.isInsertMode = true
+    el.emit(ENTERED_INSERT_MODE)
+  },
+
+  exitInsertMode() {
+    const {el, EXITED_INSERT_MODE} = this
+    this.isInsertMode = false
+    el.emit(EXITED_INSERT_MODE)
   },
 
 })
+
+
+
+
+
+
+
+
+

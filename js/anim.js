@@ -59,9 +59,9 @@ AFRAME.registerComponent('anim', {
 
   handlePlayhead(time) {
     const {normanComp} = this,
-          {isAnimPlaying, frameInterval} = normanComp
+          {isPlaying, frameInterval} = normanComp
 
-    if (isAnimPlaying) {
+    if (isPlaying) {
       if (!this.frameChangeTime) this.frameChangeTime = time
       const {frameChangeTime} = this,
             diff = time - frameChangeTime
