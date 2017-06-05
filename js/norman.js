@@ -42,13 +42,20 @@ AFRAME.registerComponent('norman', {
     })
     this.STARTED_PLAYING = 'STARTED_PLAYING'
     this.STOPPED_PLAYING = 'STOPPED_PLAYING'
-    this.frameInterval = 1000 / this.fps
-    this.setupKeyboard()
-    _.delay(this.setupControllers.bind(this), 1) // SMELLY delay!
 
-    loadAnimByName('trulmy-limp-donks').then(({animData, currentFileInfo}) => {
-      this.addAnim(animData)
-    })
+    this.frameInterval = 1000 / this.fps
+    this.tracks = []
+
+    this.setupKeyboard()
+    _.delay(() => {
+      this.setupControllers()
+      this.addTrack()
+    }, 1) // SMELLY delay!
+
+
+    // loadAnimByName('trulmy-limp-donks').then(({animData, currentFileInfo}) => {
+    //   this.addAnim(animData)
+    // })
   },
 
   setupKeyboard() {
@@ -76,6 +83,18 @@ AFRAME.registerComponent('norman', {
     primaryHand.addEventListener('upperbuttondown', this.handlePrimaryUpperButtonDown.bind(this))
     secondaryHand.addEventListener('lowerbuttondown', this.handleSecondaryLowerButtonDown.bind(this))
     secondaryHand.addEventListener('lowerbuttonup', this.handleSecondaryLowerButtonUp.bind(this))
+  },
+
+  addTrack() {
+    const animEnt = document.createElement('a-entity'),
+          {el, tracks} = this
+
+    animEnt.setAttribute('anim', {
+      norman: '#norman', 
+      animData: [[]]
+    })
+    el.appendChild(animEnt)
+    tracks.push(animEnt)
   },
 
   addAnim(animData) {

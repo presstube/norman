@@ -115,8 +115,6 @@ AFRAME.registerComponent('anim', {
 
       else if (e.code == 'BracketLeft') {this.insertFrameAt('before')}
       else if (e.code == 'BracketRight') {this.insertFrameAt('after')}
-
-
        
       // // else if (e.key == 'S') {
       // //   // console.log('saving: ')
@@ -136,7 +134,9 @@ AFRAME.registerComponent('anim', {
 
   bindOculusTouchControllers() {
     // good chance there will be a race condition here when setting up a blank anim in Norman
+    // HAHA, thanks former me! Just ran into that now. hmmmm.
     const {primaryHand, secondaryHand} = this.normanComp
+
     this.pen = primaryHand.object3D
 
 
