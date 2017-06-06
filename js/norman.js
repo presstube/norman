@@ -224,12 +224,22 @@ AFRAME.registerComponent('norman', {
   },
 
   removeTrack(track) {
-    const {el, tracks} = this,
-          removedTrack = _.remove(tracks, track)[0]
-    el.removeChild(removedTrack)
+    const {el, tracks} = this
+
+    _.remove(tracks, track)
+    el.removeChild(track)
+
+    console.log('just removed: ', track)
 
     // this is not good.. think of a better way
     this.setCurrentTrack(_.last(tracks))
+  },
+
+  removeAllTracks() {
+    const {el, tracks} = this
+    tracks.forEach(track => el.removeChild(track))
+    this.tracks = []
+    this.setCurrentTrack(null)
   },
 
   setCurrentTrack(trackEnt) {
@@ -279,9 +289,10 @@ AFRAME.registerComponent('norman', {
   },
 
   fileNew() {
-    console.log('new file')
+    const {tracks} = this
+    console.log('tracks: ', tracks.length)
     // remove all tracks
-    this.tracks.map(this.removeTrack.bind(this))
+    this.removeAllTracks()
     this.addTrack()
   },
 
