@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore'
+import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 
@@ -47,6 +47,7 @@ AFRAME.registerComponent('norman', {
     this.tracks = []
     this.currentTrackEnt = null
     this.currentTrackComp = null
+    this.fileInfo = null
     this.lastPos = null
     this.pen = null
     this.distThresh = 0.001
@@ -59,6 +60,9 @@ AFRAME.registerComponent('norman', {
     this.EXITED_FILE_MODE = 'EXITED_FILE_MODE'
     this.ENTERED_INSERT_MODE = 'ENTERED_INSERT_MODE'
     this.EXITED_INSERT_MODE = 'EXITED_INSERT_MODE'
+
+    this.boundFileNew = this.fileNew.bind(this)
+    this.boundFileSave = this.fileSave.bind(this)
 
     this.setupKeyboard()
 
@@ -189,10 +193,8 @@ AFRAME.registerComponent('norman', {
     const {isInsertMode, currentTrackComp, currentTrackEnt} = this
     this.autoNext = true
     if (isInsertMode) {
-      console.log('inserting frame after on: ', currentTrackEnt.getAttribute('id'))
       currentTrackComp.insertFrameAt('after')
     } else {
-      console.log('going to next frame on: ', currentTrackEnt.getAttribute('id'))
       currentTrackComp.gotoNextFrame()
     }
   },
@@ -217,21 +219,27 @@ AFRAME.registerComponent('norman', {
       animData: [[]]
     })
     el.appendChild(animEnt)
-    // animEnt.setAttribute('id', 'whooo' + Math.random())
     this.setCurrentTrack(animEnt)
     tracks.push(animEnt)
   },
 
   removeTrack(track) {
-    const {el, tracks} = this
-    _.remove(tracks, track)
-    el.removeChild(animEnt)
+    const {el, tracks} = this,
+          removedTrack = _.remove(tracks, track)[0]
+    el.removeChild(removedTrack)
+
+    // this is not good.. think of a better way
     this.setCurrentTrack(_.last(tracks))
   },
 
   setCurrentTrack(trackEnt) {
-    this.currentTrackEnt = trackEnt
-    this.currentTrackComp = trackEnt.components.anim
+    if (trackEnt) {
+      this.currentTrackEnt = trackEnt
+      this.currentTrackComp = trackEnt.components.anim
+    } else {
+      this.currentTrackEnt = null
+      this.currentTrackComp = null
+    }
   },
 
   selectPrevTrack() {
@@ -256,6 +264,34 @@ AFRAME.registerComponent('norman', {
       index = index + 1
     }
     this.setCurrentTrack(tracks[index])
+  },
+
+  addFileModeListeners() {
+    const {primaryHand} = this
+    primaryHand.addEventListener('DOWN_ON', this.boundFileSave)
+    primaryHand.addEventListener('UP_ON', this.boundFileNew)
+  },
+
+  removeFileModeListeners() {
+    const {primaryHand} = this
+    primaryHand.removeEventListener('DOWN_ON', this.boundFileSave)
+    primaryHand.removeEventListener('UP_ON', this.boundFileNew)
+  },
+
+  fileNew() {
+    console.log('new file')
+    // remove all tracks
+    this.tracks.map(this.removeTrack.bind(this))
+    this.addTrack()
+  },
+
+  fileSave() {
+    const {tracks, fileInfo} = this
+    const compData = tracks.map(track => track.components.anim.animData)
+    save(compData, fileInfo).then(fileInfo => {
+      console.log('just saved: ', fileInfo)
+      this.fileInfo = fileInfo
+    })
   },
 
   startDrawing() {
@@ -321,11 +357,13 @@ AFRAME.registerComponent('norman', {
   enterFileMode() {
     const {el, ENTERED_FILE_MODE} = this
     this.isFileMode = true
+    this.addFileModeListeners()
     el.emit(ENTERED_FILE_MODE)
   },
 
   exitFileMode() {
     const {el, EXITED_FILE_MODE} = this
+    this.removeFileModeListeners()
     this.isFileMode = false
     el.emit(EXITED_FILE_MODE)
   },
