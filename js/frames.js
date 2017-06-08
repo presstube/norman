@@ -64,11 +64,38 @@ export default (anim, animData) => {
     displayFrame(frameIndex)
   }
 
+  const onSelectedTrackChanged = (e) => {
+    reflectSelected()
+  }
+
+  const reflectSelected = () => {
+    const {normanComp, currentFrame} = anim
+    if (anim === normanComp.selectedTrackComp) {
+      setOpacity(1)
+    } else {
+      setOpacity(0.5)
+    }
+  }
+
+  const setOpacity = (opacity) => {
+    frames.forEach(frame => {
+      frame.material.transparent = (opacity === 1) ? false : true
+      frame.material.opacity = opacity
+    })
+  }
+
   const addListeners = () => {
+    const {normanEnt, normanComp} = anim,
+          {SELECTED_TRACK_CHANGED, STARTED_PLAYING, STOPPED_PLAYING} = normanComp
+
     el.addEventListener(ENTER_FRAME, onEnterFrame)
     el.addEventListener(ANIM_DATA_CHANGED, onAnimDataChanged)
     el.addEventListener(FRAME_INSERTED, onFrameInserted)
     el.addEventListener(FRAME_REMOVED, onFrameRemoved)
+
+    normanEnt.addEventListener(SELECTED_TRACK_CHANGED, reflectSelected)
+    normanEnt.addEventListener(STARTED_PLAYING, () => setOpacity(1))
+    normanEnt.addEventListener(STOPPED_PLAYING, reflectSelected)
   }
 
   addListeners()

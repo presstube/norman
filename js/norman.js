@@ -45,8 +45,8 @@ AFRAME.registerComponent('norman', {
     this.primaryHand = null
     this.frameInterval = 1000 / this.fps
     this.tracks = []
-    this.currentTrackEnt = null
-    this.currentTrackComp = null
+    this.selectedTrackEnt = null
+    this.selectedTrackComp = null
     this.fileInfo = null
     this.lastPos = null
     this.pen = null
@@ -60,6 +60,7 @@ AFRAME.registerComponent('norman', {
     this.EXITED_FILE_MODE = 'EXITED_FILE_MODE'
     this.ENTERED_INSERT_MODE = 'ENTERED_INSERT_MODE'
     this.EXITED_INSERT_MODE = 'EXITED_INSERT_MODE'
+    this.SELECTED_TRACK_CHANGED = 'EXITED_INSERT_MODE'
 
     this.boundFileNew = this.fileNew.bind(this)
     this.boundFileSave = this.fileSave.bind(this)
@@ -169,19 +170,19 @@ AFRAME.registerComponent('norman', {
 
   handleSecondaryDownOn() {
     if (this.isInsertMode) {
-      this.removeTrack(this.currentTrackEnt)
+      this.removeTrack(this.selectedTrackEnt)
     } else {
       this.selectNextTrack()
     }
   },
 
   handleSecondaryLeftOn() {
-    const {isInsertMode, currentTrackComp, currentTrackEnt} = this
+    const {isInsertMode, selectedTrackComp, selectedTrackEnt} = this
     this.autoPrev = true
     if (isInsertMode) {
-      currentTrackComp.insertFrameAt('before')
+      selectedTrackComp.insertFrameAt('before')
     } else {
-      currentTrackComp.gotoPrevFrame()
+      selectedTrackComp.gotoPrevFrame()
     }
   },
  
@@ -190,12 +191,12 @@ AFRAME.registerComponent('norman', {
   },
 
   handleSecondaryRightOn() {
-    const {isInsertMode, currentTrackComp, currentTrackEnt} = this
+    const {isInsertMode, selectedTrackComp, selectedTrackEnt} = this
     this.autoNext = true
     if (isInsertMode) {
-      currentTrackComp.insertFrameAt('after')
+      selectedTrackComp.insertFrameAt('after')
     } else {
-      currentTrackComp.gotoNextFrame()
+      selectedTrackComp.gotoNextFrame()
     }
   },
 
@@ -204,8 +205,8 @@ AFRAME.registerComponent('norman', {
   },
 
   handleSecondaryThumbstickDown() {
-    const {isInsertMode, currentTrackComp} = this
-    if (isInsertMode) currentTrackComp.removeFrame()
+    const {isInsertMode, selectedTrackComp} = this
+    if (isInsertMode) selectedTrackComp.removeFrame()
   }, 
 
   // MODIFIERS
@@ -219,7 +220,7 @@ AFRAME.registerComponent('norman', {
       animData: [[]]
     })
     el.appendChild(animEnt)
-    this.setCurrentTrack(animEnt)
+    this.setSelectedTrack(animEnt)
     tracks.push(animEnt)
   },
 
@@ -229,51 +230,52 @@ AFRAME.registerComponent('norman', {
     _.remove(tracks, track)
     el.removeChild(track)
 
-    console.log('just removed: ', track)
-
     // this is not good.. think of a better way
-    this.setCurrentTrack(_.last(tracks))
+    this.setSelectedTrack(_.last(tracks))
   },
 
   removeAllTracks() {
     const {el, tracks} = this
     tracks.forEach(track => el.removeChild(track))
     this.tracks = []
-    this.setCurrentTrack(null)
+    this.setSelectedTrack(null)
   },
 
-  setCurrentTrack(trackEnt) {
+  setSelectedTrack(trackEnt) {
+    const {el, SELECTED_TRACK_CHANGED} = this
     if (trackEnt) {
-      this.currentTrackEnt = trackEnt
-      this.currentTrackComp = trackEnt.components.anim
+      this.selectedTrackEnt = trackEnt
+      this.selectedTrackComp = trackEnt.components.anim
     } else {
-      this.currentTrackEnt = null
-      this.currentTrackComp = null
+      this.selectedTrackEnt = null
+      this.selectedTrackComp = null
     }
+    el.emit(SELECTED_TRACK_CHANGED)
   },
 
   selectPrevTrack() {
-    const {currentTrackEnt, tracks} = this
-    let index = _.findIndex(tracks, currentTrackEnt)
+    const {selectedTrackEnt, tracks} = this
+    let index = _.findIndex(tracks, selectedTrackEnt)
 
     if (index - 1 === -1) {
       index = tracks.length - 1
     } else {
       index = index - 1
     }
-    this.setCurrentTrack(tracks[index])
+
+    this.setSelectedTrack(tracks[index])
   },
 
   selectNextTrack() {
-    const {currentTrackEnt, tracks} = this
-    let index = _.findIndex(tracks, currentTrackEnt)
+    const {selectedTrackEnt, tracks} = this
+    let index = _.findIndex(tracks, selectedTrackEnt)
 
     if (index + 1 === tracks.length) {
       index = 0
     } else {
       index = index + 1
     }
-    this.setCurrentTrack(tracks[index])
+    this.setSelectedTrack(tracks[index])
   },
 
   addFileModeListeners() {
@@ -290,9 +292,8 @@ AFRAME.registerComponent('norman', {
 
   fileNew() {
     const {tracks} = this
-    console.log('tracks: ', tracks.length)
-    // remove all tracks
     this.removeAllTracks()
+    this.fileInfo = null
     this.addTrack()
   },
 
@@ -306,32 +307,32 @@ AFRAME.registerComponent('norman', {
   },
 
   startDrawing() {
-    const {currentTrackComp} = this
+    const {selectedTrackComp} = this
     if (!this.isDrawing) {
-      this.lastPos = currentTrackComp.getLocalPenPos(this.pen.position)
+      this.lastPos = selectedTrackComp.getLocalPenPos(this.pen.position)
       this.isDrawing = true
-      currentTrackComp .startLine(this.lastPos)
+      selectedTrackComp .startLine(this.lastPos)
     }
   },
 
   handleDraw() {
-    const {currentTrackComp} = this
+    const {selectedTrackComp} = this
     if (this.isDrawing) {
-      const {pen, distThresh, lastPos, currentTrackComp} = this,
-            currentPos = currentTrackComp.getLocalPenPos(pen.position),
+      const {pen, distThresh, lastPos, selectedTrackComp} = this,
+            currentPos = selectedTrackComp.getLocalPenPos(pen.position),
             distToLastPos = lastPos.distanceTo(currentPos)
       if (distToLastPos > distThresh) {
-        currentTrackComp.addToLine(currentPos)
+        selectedTrackComp.addToLine(currentPos)
         this.lastPos = currentPos
       }
     }
   },
 
   stopDrawing() {
-    const {currentTrackComp} = this
+    const {selectedTrackComp} = this
     if (this.isDrawing) {
       this.isDrawing = false
-      currentTrackComp.finishLine(currentTrackComp.getLocalPenPos(this.pen.position))
+      selectedTrackComp.finishLine(selectedTrackComp.getLocalPenPos(this.pen.position))
       if (this.autoNext) this.handleSecondaryRightOn()
       if (this.autoPrev) this.handleSecondaryLeftOn()
     }

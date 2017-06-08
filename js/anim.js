@@ -46,6 +46,7 @@ AFRAME.registerComponent('anim', {
     this.bindNorman()
     this.bindKeyboard()
     this.bindOculusTouchControllers()
+
   },
 
   remove() {
