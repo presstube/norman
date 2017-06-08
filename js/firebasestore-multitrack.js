@@ -97,8 +97,6 @@ const loadPrev = (fileInfo) => {
   })
 }
 
-
-
 const loadNext = (fileInfo) => {
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {

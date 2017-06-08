@@ -116,6 +116,19 @@ AFRAME.registerComponent('norman', {
 
   // FILE OPS
 
+  buildComp(compData, fileInfo) {
+    const {tracks} = this
+    this.removeAllTracks()
+    this.fileInfo = fileInfo
+    if (compData) {
+      compData.forEach(trackData => {
+        this.addTrack(trackData)
+      })
+    } else {
+      this.addTrack()
+    }
+  },
+
   fileNew() {
     const {tracks} = this
     this.removeAllTracks()
@@ -134,8 +147,9 @@ AFRAME.registerComponent('norman', {
 
   fileLoadPrev() {
     const {fileInfo} = this
-    loadPrev(fileInfo).then((data) => {
-      console.log('loaded prev: ', data)
+    loadPrev(fileInfo).then(({file, fileInfo}) => {
+      console.log('loaded prev: ', file, fileInfo)
+      this.buildComp(file.compData, fileInfo)
     })
   },
 
@@ -228,13 +242,15 @@ AFRAME.registerComponent('norman', {
 
   // MODIFIERS
 
-  addTrack() {
+
+
+  addTrack(trackData) {
     const animEnt = document.createElement('a-entity'),
           {el, tracks} = this
 
     animEnt.setAttribute('anim', {
       norman: '#norman', 
-      animData: [[]]
+      animData: (!trackData) ? [[]] : trackData
     })
     el.appendChild(animEnt)
     this.setSelectedTrack(animEnt)
