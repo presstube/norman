@@ -84,6 +84,14 @@ export default (anim, animData) => {
     })
   }
 
+  const onStartedPlaying = () => {
+    setOpacity(1)
+  }
+
+  const onStoppedPlaying = () => {
+    reflectSelected()
+  }
+
   const addListeners = () => {
     const {normanEnt, normanComp} = anim,
           {SELECTED_TRACK_CHANGED, STARTED_PLAYING, STOPPED_PLAYING} = normanComp
@@ -94,10 +102,30 @@ export default (anim, animData) => {
     el.addEventListener(FRAME_REMOVED, onFrameRemoved)
 
     normanEnt.addEventListener(SELECTED_TRACK_CHANGED, reflectSelected)
-    normanEnt.addEventListener(STARTED_PLAYING, () => setOpacity(1))
-    normanEnt.addEventListener(STOPPED_PLAYING, reflectSelected)
+    normanEnt.addEventListener(STARTED_PLAYING, onStartedPlaying)
+    normanEnt.addEventListener(STOPPED_PLAYING, onStoppedPlaying)
+  }
+
+  const removeListeners = () => {
+    const {normanEnt, normanComp} = anim,
+          {SELECTED_TRACK_CHANGED, STARTED_PLAYING, STOPPED_PLAYING} = normanComp
+
+    el.removeEventListener(ENTER_FRAME, onEnterFrame)
+    el.removeEventListener(ANIM_DATA_CHANGED, onAnimDataChanged)
+    el.removeEventListener(FRAME_INSERTED, onFrameInserted)
+    el.removeEventListener(FRAME_REMOVED, onFrameRemoved)
+
+    normanEnt.removeEventListener(SELECTED_TRACK_CHANGED, reflectSelected)
+    normanEnt.removeEventListener(STARTED_PLAYING, onStartedPlaying)
+    normanEnt.removeEventListener(STOPPED_PLAYING, onStoppedPlaying)
   }
 
   addListeners()
+
+  return {
+    cleanup() {
+      removeListeners()
+    }
+  }
 
 }

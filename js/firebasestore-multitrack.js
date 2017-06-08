@@ -75,23 +75,23 @@ const getRandomUniqueName = () => {
 
 // TODO: DRY up loadPrev & loadNext
 
-const loadPrev = (currentFileInfo) => {
-  console.log('loading prev from fileInfo: ', currentFileInfo)
+const loadPrev = (fileInfo) => {
+  console.log('loading prev from fileInfo: ', fileInfo)
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['desc'])
-      if (!currentFileInfo) {
-        currentFileInfo = _.first(fileInfos)
+      if (!fileInfo) {
+        fileInfo = _.first(fileInfos)
       } else {
-        const currentIndex = _.findIndex(fileInfos, fi => fi.filename === currentFileInfo.filename)
+        const currentIndex = _.findIndex(fileInfos, fi => fi.filename === fileInfo.filename)
         if (currentIndex === fileInfos.length - 1) {
-          currentFileInfo = _.first(fileInfos)
+          fileInfo = _.first(fileInfos)
         } else { 
-          currentFileInfo = _.nth(fileInfos, currentIndex + 1)
+          fileInfo = _.nth(fileInfos, currentIndex + 1)
         }
       }
-      loadFile(currentFileInfo).then(animData => {
-        resolve({animData, currentFileInfo})
+      loadFile(fileInfo).then(file => {
+        resolve({file, fileInfo})
       })
     })
   })
@@ -99,22 +99,22 @@ const loadPrev = (currentFileInfo) => {
 
 
 
-const loadNext = (currentFileInfo) => {
+const loadNext = (fileInfo) => {
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['asc'])
-      if (!currentFileInfo) {
-        currentFileInfo = _.first(fileInfos)
+      if (!fileInfo) {
+        fileInfo = _.first(fileInfos)
       } else {
-        const currentIndex = _.findIndex(fileInfos, fi => fi.filename === currentFileInfo.filename)
+        const currentIndex = _.findIndex(fileInfos, fi => fi.filename === fileInfo.filename)
         if (currentIndex === fileInfos.length - 1) {
-          currentFileInfo = _.first(fileInfos)
+          fileInfo = _.first(fileInfos)
         } else { 
-          currentFileInfo = _.nth(fileInfos, currentIndex + 1)
+          fileInfo = _.nth(fileInfos, currentIndex + 1)
         }
       }
-      loadFile(currentFileInfo).then(animData => {
-        resolve({animData, currentFileInfo})
+      loadFile(fileInfo).then(file => {
+        resolve({file, fileInfo})
       })
     })
   })
@@ -124,9 +124,9 @@ const loadNext = (currentFileInfo) => {
 const loadAnimByName = (name) => {
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').child(name).once('value', snapshot => {
-      const currentFileInfo = snapshot.val()
-      loadFile(currentFileInfo).then(animData => {
-        resolve({animData, currentFileInfo})
+      const fileInfo = snapshot.val()
+      loadFile(fileInfo).then(file => {
+        resolve({file, fileInfo})
       })
     })
   })
@@ -134,8 +134,8 @@ const loadAnimByName = (name) => {
 
 const loadFile = (fileInfo) => {
   return new Promise((resolve, reject) => {
-    $.getJSON(fileInfo.downloadURL, json => {
-      resolve(json.data)
+    $.getJSON(fileInfo.downloadURL, file => {
+      resolve(file)
     })
   })
 }

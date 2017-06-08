@@ -6,29 +6,6 @@ import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasest
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 
-const comps = [
-
-  ['gildered-frump-hinges'],
-  ['mulgy-shift-hops', 'mulgy-prunt-clumps','fropley-limp-hunguses', 'brumpled-brine-glops'],
-  ['clumbied-clam-shanks'], // norman
-  ['clumbied-crank-hops', 'mulgy-bung-flops'],
-  ['lorgussy-clam-hinges'],
-  ['gildered-bung-glops', 'brumpled-crank-glops'],
-  ['fropley-groft-lumps'],
-  ['mulgy-shift-hops', 'mulgy-prunt-clumps'],
-  ['fropley-limp-hunguses', 'brumpled-brine-glops'],
-  ['clumbied-brine-hunguses', 'mulgy-dank-glops'],
-  ['brumpled-dank-hunguses'],
-  ['lorgussy-bung-clamps'],
-  ['fropley-clam-shanks', 'trulmy-dank-hops'],
-  ['brumpled-shift-hinges'],
-  ['gildered-shift-hunguses'],
-  ['troubling-plex-hunguses'], // black pearl motion study
-  ['trulmy-limp-donks'], // runnning man
-  ['marbled-groft-clumps'], // craggly norman letters
-  ['mulgy-ront-hops'], // abstract short loop
-]
-
 AFRAME.registerComponent('norman', {
 
   init() {
@@ -64,6 +41,7 @@ AFRAME.registerComponent('norman', {
 
     this.boundFileNew = this.fileNew.bind(this)
     this.boundFileSave = this.fileSave.bind(this)
+    this.boundFileLoadPrev = this.fileLoadPrev.bind(this)
 
     this.setupKeyboard()
 
@@ -120,6 +98,45 @@ AFRAME.registerComponent('norman', {
     secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
     secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
     secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
+  },
+
+  addFileModeListeners() {
+    const {primaryHand} = this
+    primaryHand.addEventListener('DOWN_ON', this.boundFileSave)
+    primaryHand.addEventListener('UP_ON', this.boundFileNew)
+    primaryHand.addEventListener('LEFT_ON', this.boundFileLoadPrev)
+  },
+
+  removeFileModeListeners() {
+    const {primaryHand} = this
+    primaryHand.removeEventListener('DOWN_ON', this.boundFileSave)
+    primaryHand.removeEventListener('UP_ON', this.boundFileNew)
+    primaryHand.removeEventListener('LEFT_ON', this.boundFileLoadPrev)
+  },
+
+  // FILE OPS
+
+  fileNew() {
+    const {tracks} = this
+    this.removeAllTracks()
+    this.fileInfo = null
+    this.addTrack()
+  },
+
+  fileSave() {
+    const {tracks, fileInfo} = this
+    const compData = tracks.map(track => track.components.anim.animData)
+    save({compData}, fileInfo).then(fileInfo => {
+      console.log('just saved: ', fileInfo)
+      this.fileInfo = fileInfo
+    })
+  },
+
+  fileLoadPrev() {
+    const {fileInfo} = this
+    loadPrev(fileInfo).then((data) => {
+      console.log('loaded prev: ', data)
+    })
   },
 
   // CTRL
@@ -276,34 +293,6 @@ AFRAME.registerComponent('norman', {
       index = index + 1
     }
     this.setSelectedTrack(tracks[index])
-  },
-
-  addFileModeListeners() {
-    const {primaryHand} = this
-    primaryHand.addEventListener('DOWN_ON', this.boundFileSave)
-    primaryHand.addEventListener('UP_ON', this.boundFileNew)
-  },
-
-  removeFileModeListeners() {
-    const {primaryHand} = this
-    primaryHand.removeEventListener('DOWN_ON', this.boundFileSave)
-    primaryHand.removeEventListener('UP_ON', this.boundFileNew)
-  },
-
-  fileNew() {
-    const {tracks} = this
-    this.removeAllTracks()
-    this.fileInfo = null
-    this.addTrack()
-  },
-
-  fileSave() {
-    const {tracks, fileInfo} = this
-    const compData = tracks.map(track => track.components.anim.animData)
-    save(compData, fileInfo).then(fileInfo => {
-      console.log('just saved: ', fileInfo)
-      this.fileInfo = fileInfo
-    })
   },
 
   startDrawing() {

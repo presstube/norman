@@ -51,6 +51,8 @@ AFRAME.registerComponent('anim', {
 
   remove() {
     // remove listeners
+    // cleanup frames object
+    // etc...
   },
 
   tick(time, timeDelta) {
