@@ -183,7 +183,7 @@ AFRAME.registerComponent('anim', {
 
   insertFrame(index) {
     const {el, animData, FRAME_INSERTED} = this
-    animData.splice(index, 0, [])
+    animData.splice(index, 0, [[]])
     el.emit(FRAME_INSERTED, {frameIndex: index})
   },
 
