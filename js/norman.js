@@ -242,12 +242,25 @@ AFRAME.registerComponent('norman', {
   },
 
   handleSecondaryRightOn() {
-    const {isInsertMode, selectedTrackComp, selectedTrackEnt} = this
+    const {isInsertMode, selectedTrackComp, selectedTrackEnt, pen, isDrawing} = this,
+          pos = selectedTrackComp.getLocalPenPos(pen.position)
+    
     this.autoNext = true
+
+    // insert straight-line flag here
+    if (isDrawing) {
+      selectedTrackComp.finishLine(selectedTrackComp.getLocalPenPos(this.pen.position))
+    }
+
     if (isInsertMode) {
       selectedTrackComp.insertFrameAt('after')
     } else {
       selectedTrackComp.gotoNextFrame()
+    }
+    
+    // insert straight-line flag here
+    if (isDrawing) {
+      selectedTrackComp.startLine(pos)
     }
   },
 
@@ -336,7 +349,7 @@ AFRAME.registerComponent('norman', {
     if (!this.isDrawing) {
       this.lastPos = selectedTrackComp.getLocalPenPos(this.pen.position)
       this.isDrawing = true
-      selectedTrackComp .startLine(this.lastPos)
+      selectedTrackComp.startLine(this.lastPos)
     }
   },
 
