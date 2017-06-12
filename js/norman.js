@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteAnim, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
+import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 
@@ -42,6 +42,8 @@ AFRAME.registerComponent('norman', {
     this.boundFileNew = this.fileNew.bind(this)
     this.boundFileSave = this.fileSave.bind(this)
     this.boundFileLoadPrev = this.fileLoadPrev.bind(this)
+    this.boundFileLoadNext = this.fileLoadNext.bind(this)
+    this.boundFileDelete = this.fileDelete.bind(this)
 
     this.setupKeyboard()
 
@@ -105,6 +107,8 @@ AFRAME.registerComponent('norman', {
     primaryHand.addEventListener('DOWN_ON', this.boundFileSave)
     primaryHand.addEventListener('UP_ON', this.boundFileNew)
     primaryHand.addEventListener('LEFT_ON', this.boundFileLoadPrev)
+    primaryHand.addEventListener('RIGHT_ON', this.boundFileLoadNext)
+    primaryHand.addEventListener('thumbstickdown', this.boundFileDelete)
   },
 
   removeFileModeListeners() {
@@ -112,6 +116,8 @@ AFRAME.registerComponent('norman', {
     primaryHand.removeEventListener('DOWN_ON', this.boundFileSave)
     primaryHand.removeEventListener('UP_ON', this.boundFileNew)
     primaryHand.removeEventListener('LEFT_ON', this.boundFileLoadPrev)
+    primaryHand.removeEventListener('RIGHT_ON', this.boundFileLoadNext)
+    primaryHand.removeEventListener('thumbstickdown', this.boundFileDelete)
   },
 
   // FILE OPS
@@ -151,6 +157,20 @@ AFRAME.registerComponent('norman', {
       console.log('loaded prev: ', file, fileInfo)
       this.buildComp(file.compData, fileInfo)
     })
+  },
+
+  fileLoadNext() {
+    const {fileInfo} = this
+    loadNext(fileInfo).then(({file, fileInfo}) => {
+      console.log('loaded next: ', file, fileInfo)
+      this.buildComp(file.compData, fileInfo)
+    })
+  },
+
+  fileDelete() {
+    const {fileInfo} = this
+    console.log('deleting: ', fileInfo)
+    deleteComp(fileInfo)
   },
 
   // CTRL

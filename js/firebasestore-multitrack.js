@@ -159,7 +159,7 @@ firebase.auth().onAuthStateChanged(user => {
 })
 
 
-const deleteAnim = ({
+const deleteComp = ({
     filename,
     downloadURL,
     createdAt
@@ -182,7 +182,7 @@ export {
   save,
   loadPrev,
   loadNext,
-  deleteAnim
+  deleteComp
 }
 
 
