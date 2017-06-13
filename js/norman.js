@@ -30,6 +30,7 @@ AFRAME.registerComponent('norman', {
     this.distThresh = 0.001
     this.autoPrev = false
     this.autoNext = false
+    this.grabbed = false
 
     this.STARTED_PLAYING = 'STARTED_PLAYING'
     this.STOPPED_PLAYING = 'STOPPED_PLAYING'
@@ -86,7 +87,12 @@ AFRAME.registerComponent('norman', {
 
     primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
     primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
-    primaryHand.addEventListener('upperbuttondown', ()=> this.handlePrimaryUpperButtonDown())
+    primaryHand.addEventListener('gripdown', e => this.handlePrimaryGripDown(e))
+    primaryHand.addEventListener('gripup', e => this.handlePrimaryGripUp(e))
+    primaryHand.addEventListener('upperbuttondown', () => this.handlePrimaryUpperButtonDown())
+
+    secondaryHand.addEventListener('gripdown', e => this.handleSecondaryGripDown(e))
+    secondaryHand.addEventListener('gripup', e => this.handleSecondaryGripUp(e))
     secondaryHand.addEventListener('triggerdown', () => this.handleSecondaryTriggerDown())
     secondaryHand.addEventListener('triggerup', () => this.handleSecondaryTriggerUp())
     secondaryHand.addEventListener('lowerbuttondown', ()=> this.handleSecondaryLowerButtonDown())
@@ -209,6 +215,22 @@ AFRAME.registerComponent('norman', {
 
   handleSecondaryTriggerUp() {
     this.exitInsertMode()
+  },
+
+  handlePrimaryGripDown({target: hand}) {
+    this.grab(hand)
+  },
+
+  handlePrimaryGripUp() {
+    this.ungrab()
+  },
+
+  handleSecondaryGripDown({target: hand}) {
+    this.grab(hand)
+  },
+
+  handleSecondaryGripUp() {
+    this.ungrab()
   },
 
   handleSecondaryUpOn() {
@@ -376,13 +398,32 @@ AFRAME.registerComponent('norman', {
     }
   },
 
-  // addAnim(animData) {
-  //   const animEnt = document.createElement('a-entity'),
-  //         {el} = this
+  grab(hand) {
+    let {secondaryHand, el} = this
+    this.grabbed = true
+    var normObj3D = el.object3D
+    var handObj3D = hand.object3D
+    handObj3D.updateMatrixWorld()
+    var worldToLocal = new THREE.Matrix4().getInverse(handObj3D.matrixWorld)
+    handObj3D.add(normObj3D)
+    normObj3D.applyMatrix(worldToLocal)
+  },
 
-  //   animEnt.setAttribute('anim', {norman: '#norman', animData})
-  //   el.appendChild(animEnt)
-  // },
+  ungrab() {
+    this.grabbed = false
+    const {secondaryHand, el} = this,
+      normObj3D = el.object3D,
+      pos = normObj3D.getWorldPosition(),
+      rot = normObj3D.getWorldRotation(),
+      {radToDeg} = THREE.Math
+    el.sceneEl.object3D.add(normObj3D)
+    el.setAttribute('position', pos);
+    el.setAttribute('rotation', {
+      x: radToDeg(rot.x),
+      y: radToDeg(rot.y),
+      z: radToDeg(rot.z)
+    })
+  },
 
   togglePlay() {
     if (this.isAnimPlaying) {
