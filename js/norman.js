@@ -30,7 +30,7 @@ AFRAME.registerComponent('norman', {
     this.distThresh = 0.001
     this.autoPrev = false
     this.autoNext = false
-    this.grabbed = false
+    this.grabbedBy = null
 
     this.STARTED_PLAYING = 'STARTED_PLAYING'
     this.STOPPED_PLAYING = 'STOPPED_PLAYING'
@@ -221,16 +221,16 @@ AFRAME.registerComponent('norman', {
     this.grab(hand)
   },
 
-  handlePrimaryGripUp() {
-    this.ungrab()
+  handlePrimaryGripUp({target: hand}) {
+    this.ungrab(hand)
   },
 
   handleSecondaryGripDown({target: hand}) {
     this.grab(hand)
   },
 
-  handleSecondaryGripUp() {
-    this.ungrab()
+  handleSecondaryGripUp({target: hand}) {
+    this.ungrab(hand)
   },
 
   handleSecondaryUpOn() {
@@ -399,30 +399,54 @@ AFRAME.registerComponent('norman', {
   },
 
   grab(hand) {
-    let {secondaryHand, el} = this
-    this.grabbed = true
-    var normObj3D = el.object3D
-    var handObj3D = hand.object3D
-    handObj3D.updateMatrixWorld()
-    var worldToLocal = new THREE.Matrix4().getInverse(handObj3D.matrixWorld)
-    handObj3D.add(normObj3D)
-    normObj3D.applyMatrix(worldToLocal)
+
+    const {grabbedBy} = this
+
+    if (grabbedBy) {
+
+      // nasty hack until I can up my matrix game enough to
+      // properly reparent from anywhere to anywhere
+      // but for now...
+      this.ungrab(grabbedBy)
+      _.delay(() => this.grab(hand), 1)
+      return
+
+    } else {
+      this.grabbedBy = hand
+      
+      const {el} = this,
+            handObj3D = hand.object3D,
+            normObj3D = el.object3D
+
+      handObj3D.updateMatrixWorld()
+      var worldToLocal = new THREE.Matrix4().getInverse(handObj3D.matrixWorld)
+      handObj3D.add(normObj3D)
+      normObj3D.applyMatrix(worldToLocal)
+    }
+
   },
 
-  ungrab() {
-    this.grabbed = false
-    const {secondaryHand, el} = this,
-      normObj3D = el.object3D,
-      pos = normObj3D.getWorldPosition(),
-      rot = normObj3D.getWorldRotation(),
-      {radToDeg} = THREE.Math
-    el.sceneEl.object3D.add(normObj3D)
-    el.setAttribute('position', pos);
-    el.setAttribute('rotation', {
-      x: radToDeg(rot.x),
-      y: radToDeg(rot.y),
-      z: radToDeg(rot.z)
-    })
+  ungrab(hand) {
+
+    const {grabbedBy} = this
+
+    if (grabbedBy === hand) {
+      this.grabbedBy = null
+      const {el} = this,
+        normObj3D = el.object3D,
+        pos = normObj3D.getWorldPosition(),
+        rot = normObj3D.getWorldRotation(),
+        {radToDeg} = THREE.Math
+
+      el.sceneEl.object3D.add(normObj3D)
+      el.setAttribute('position', pos);
+      el.setAttribute('rotation', {
+        x: radToDeg(rot.x),
+        y: radToDeg(rot.y),
+        z: radToDeg(rot.z)
+      })
+    }
+    
   },
 
   togglePlay() {
