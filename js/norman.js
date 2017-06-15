@@ -501,9 +501,3 @@ AFRAME.registerComponent('norman', {
 
 
 
-
-
-
-
-
-
