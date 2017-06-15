@@ -138,6 +138,8 @@ AFRAME.registerComponent('anim', {
   beforeFrameChange() {
     const {el, EXIT_FRAME, currentFrame, normanComp} = this,
           {isDrawing} = normanComp
+          
+    // check for an 'isConnectingLines' flag here to get connected Timepen      
     if (isDrawing) this.finishLine(this.getLocalPenPos(this.pen.position))
     el.emit(EXIT_FRAME, {frame: currentFrame})
   },
@@ -145,6 +147,8 @@ AFRAME.registerComponent('anim', {
   afterFrameChange() {
     const {el, ENTER_FRAME, currentFrame, normanComp} = this,
           {isDrawing} = normanComp
+
+    // check for an 'isConnectingLines' flag here to get connected Timepen      
     if (isDrawing) this.startLine(this.getLocalPenPos(this.pen.position))
     el.emit(ENTER_FRAME, {frame: currentFrame})
   },
