@@ -54,10 +54,30 @@ AFRAME.registerComponent('norman', {
       this.addTrack()
     }, 1) 
 
+
+    // start hack: quick cardboard player
+    this.fileLoadPrev()
+    setInterval(this.fileLoadPrev.bind(this), 5000)
+    this.startPlaying()
+    // end hack
+
   },
 
   tick(time, timeDelta) {
     this.handleDraw()
+    this.handleTurntable()
+  },
+
+  handleTurntable() {
+    const {el} = this,
+          {x, y, z} = el.getAttribute('rotation'),
+          amountToRotate = 0.2,
+          newRot = `${x} ${y + amountToRotate} ${z}`
+
+    // console.log('newRot: ', newRot)
+
+    el.setAttribute('rotation', newRot)
+
   },
 
   setupKeyboard() {
