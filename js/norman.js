@@ -2,9 +2,8 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {loadPrevOld, loadNextOld, loadAnimByNameOld} from './firebasestore'
-import {save, deleteComp} from './firebasestore-multitrack'
-// import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
+import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
+import {loadPrev as loadPrevOld, loadNext as loadNextOld, loadAnimByName as loadAnimByNameOld} from './firebasestore'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 
@@ -27,6 +26,7 @@ AFRAME.registerComponent('norman', {
     this.selectedTrackEnt = null
     this.selectedTrackComp = null
     this.fileInfo = null
+    this.fileInfoOld = null
     this.lastPos = null
     this.pen = null
     this.distThresh = 0.001
@@ -67,7 +67,7 @@ AFRAME.registerComponent('norman', {
       console.log('keydown: ', e)
       if (e.code == 'Enter') {this.togglePlay()} 
       if (e.code == 'Space') {this.fileLoadPrev()} 
-      // else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
+      else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrevOld()}
     })
   },
 
@@ -165,6 +165,55 @@ AFRAME.registerComponent('norman', {
       console.log('loaded prev: ', file, fileInfo)
       this.buildComp(file.compData, fileInfo)
     })
+  },
+
+  fileLoadPrevOld() {
+    const {fileInfo} = this
+    // loadPrev(fileInfo).then(({file, fileInfo}) => {
+    //   console.log('loaded prev: ', file, fileInfo)
+    //   this.buildComp(file.compData, fileInfo)
+    // })
+
+    const comps = [
+      ['mulgy-shift-hops', 'mulgy-prunt-clumps','fropley-limp-hunguses', 'brumpled-brine-glops'],
+      ['clumbied-clam-shanks'], // norman
+      ['clumbied-crank-hops', 'mulgy-bung-flops'],
+      ['lorgussy-clam-hinges'],
+      ['gildered-bung-glops', 'brumpled-crank-glops'],
+      ['fropley-groft-lumps'],
+      ['mulgy-shift-hops', 'mulgy-prunt-clumps'],
+      ['fropley-limp-hunguses', 'brumpled-brine-glops'],
+      ['clumbied-brine-hunguses', 'mulgy-dank-glops'],
+      ['gildered-frump-hinges'],
+      ['brumpled-dank-hunguses'],
+      ['lorgussy-bung-clamps'],
+      ['fropley-clam-shanks', 'trulmy-dank-hops'],
+      ['brumpled-shift-hinges'],
+      ['gildered-shift-hunguses'],
+      ['troubling-plex-hunguses'], // black pearl motion study
+      ['trulmy-limp-donks'], // runnning man
+      ['marbled-groft-clumps'], // craggly norman letters
+      ['mulgy-ront-hops'], // abstract short loop
+    ]
+
+    const animLoads = _.map(comps[2], (name) => {
+      return loadAnimByNameOld(name)
+    })
+
+    Promise.all(animLoads).then(values => {
+      console.log('promise all complete: ', values)
+      const compData = _.map(values, 'animData')
+      console.log('compData: ', compData)
+      this.buildComp(compData, fileInfo)
+      console.log(fileInfo)
+    })
+
+    // loadPrevOld(this.fileInfoOld).then(({animData, currentFileInfo}) => {
+    //   console.log('loaded prev old: ', animData, currentFileInfo)
+    //   this.fileInfoOld = currentFileInfo
+    //   this.buildComp([animData], fileInfo)
+      
+    // })
   },
 
   fileLoadNext() {

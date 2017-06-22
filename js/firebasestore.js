@@ -4,29 +4,29 @@ import * as firebaseui from 'firebaseui'
 import _ from 'lodash'
 import $ from 'jquery'
 
-firebase.initializeApp({
+const single = firebase.initializeApp({
   apiKey: "AIzaSyBxE0HZfnB7uF2J57oTmjFX-0mLeBfJI-0",
   authDomain: "cloudstoragespike.firebaseapp.com",
   databaseURL: "https://cloudstoragespike.firebaseio.com",
   projectId: "cloudstoragespike",
   storageBucket: "cloudstoragespike.appspot.com",
   messagingSenderId: "10638532760"
-})
+}, 'single')
 
 // let currentFileInfo = null
 
 const save = (animData, fileInfo) => {
 
   const upload = (filename) => {
-    const uploadRef = firebase.storage().ref().child('animData/' + filename + '.json'),
+    const uploadRef = single.storage().ref().child('animData/' + filename + '.json'),
           file = new Blob([JSON.stringify(animData)], {type: 'application/json'})
     return uploadRef.put(file).then(function(snapshot) {
       console.log(filename + ' succesfully uploaded!')
-      const animationsRef = firebase.database().ref('animations/' + filename)
+      const animationsRef = single.database().ref('animations/' + filename)
       animationsRef.set({
         filename,
         downloadURL: snapshot.downloadURL,
-        createdAt: firebase.database.ServerValue.TIMESTAMP
+        createdAt: single.database.ServerValue.TIMESTAMP
       })
     })
   }
@@ -51,7 +51,7 @@ const getRandomUniqueName = () => {
   return new Promise((resolve, reject) => {
     let name = getRandomName()
     console.log('checking existence of name: ', name)
-    firebase.database().ref('animations').once('value', snapshot => {
+    single.database().ref('animations').once('value', snapshot => {
       if(snapshot.hasChild(name)) {
         console.log('that name is taken')
         resolve(null)
@@ -72,7 +72,7 @@ const getRandomUniqueName = () => {
 const loadPrev = (currentFileInfo) => {
   console.log('loading prev from fileInfo: ', currentFileInfo)
   return new Promise((resolve, reject) => {
-    firebase.database().ref('animations').once('value', snapshot => {
+    single.database().ref('animations').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['desc'])
       if (!currentFileInfo) {
         currentFileInfo = _.first(fileInfos)
@@ -95,7 +95,7 @@ const loadPrev = (currentFileInfo) => {
 
 const loadNext = (currentFileInfo) => {
   return new Promise((resolve, reject) => {
-    firebase.database().ref('animations').once('value', snapshot => {
+    single.database().ref('animations').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['asc'])
       if (!currentFileInfo) {
         currentFileInfo = _.first(fileInfos)
@@ -117,7 +117,7 @@ const loadNext = (currentFileInfo) => {
 
 const loadAnimByName = (name) => {
   return new Promise((resolve, reject) => {
-    firebase.database().ref('animations').child(name).once('value', snapshot => {
+    single.database().ref('animations').child(name).once('value', snapshot => {
       const currentFileInfo = snapshot.val()
       loadFile(currentFileInfo).then(animData => {
         resolve({animData, currentFileInfo})
@@ -134,15 +134,15 @@ const loadFile = (fileInfo) => {
   })
 }
 
-firebase.auth().onAuthStateChanged(user => {
+single.auth().onAuthStateChanged(user => {
   if (user) {
     console.log('already signed in')
 
-    // firebase.auth().signOut()
+    // single.auth().signOut()
 
 
   } else {
-    const ui = new firebaseui.auth.AuthUI(firebase.auth())
+    const ui = new firebaseui.auth.AuthUI(single.auth())
     ui.start('#firebaseui-auth-container', {
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
@@ -161,10 +161,10 @@ const deleteAnim = ({
     createdAt
   }) => {
     console.log('DELETING: ', filename, downloadURL, createdAt)
-    const storageRef = firebase.storage().ref().child('animData/' + filename + '.json')
+    const storageRef = single.storage().ref().child('animData/' + filename + '.json')
     storageRef.delete().then(()=> {
       console.log('removed json from storage: ', filename)
-      const animationsRef = firebase.database().ref('animations/' + filename)
+      const animationsRef = single.database().ref('animations/' + filename)
       animationsRef.remove().then(() => {
         console.log('removed ref: ', filename)
       })
