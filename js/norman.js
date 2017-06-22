@@ -68,6 +68,8 @@ AFRAME.registerComponent('norman', {
       if (e.code == 'Enter') {this.togglePlay()} 
       if (e.code == 'Space') {this.fileLoadPrev()} 
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrevOld()}
+      else if (e.key == 'ArrowRight' && e.altKey && e.shiftKey) {this.fileLoadNextOld()}
+      else if (e.key == 'ArrowUp' && e.altKey && e.shiftKey) {this.fileLoadPrevOldComp()}
     })
   },
 
@@ -167,7 +169,7 @@ AFRAME.registerComponent('norman', {
     })
   },
 
-  fileLoadPrevOld() {
+  fileLoadPrevOldComp() {
     const {fileInfo} = this
     // loadPrev(fileInfo).then(({file, fileInfo}) => {
     //   console.log('loaded prev: ', file, fileInfo)
@@ -175,6 +177,9 @@ AFRAME.registerComponent('norman', {
     // })
 
     const comps = [
+
+      ['mulgy-limp-lumps', 'mulgy-tap-hops'],
+      ['lorgussy-bung-hinges', 'marbled-crank-lumps'],
       ['mulgy-shift-hops', 'mulgy-prunt-clumps','fropley-limp-hunguses', 'brumpled-brine-glops'],
       ['clumbied-clam-shanks'], // norman
       ['clumbied-crank-hops', 'mulgy-bung-flops'],
@@ -187,7 +192,8 @@ AFRAME.registerComponent('norman', {
       ['gildered-frump-hinges'],
       ['brumpled-dank-hunguses'],
       ['lorgussy-bung-clamps'],
-      ['fropley-clam-shanks', 'trulmy-dank-hops'],
+      // ['fropley-clam-shanks', 'trulmy-dank-hops'],
+      ['fropley-clam-shanks'],
       ['brumpled-shift-hinges'],
       ['gildered-shift-hunguses'],
       ['troubling-plex-hunguses'], // black pearl motion study
@@ -196,7 +202,7 @@ AFRAME.registerComponent('norman', {
       ['mulgy-ront-hops'], // abstract short loop
     ]
 
-    const animLoads = _.map(comps[2], (name) => {
+    const animLoads = _.map(comps[0], (name) => {
       return loadAnimByNameOld(name)
     })
 
@@ -214,6 +220,27 @@ AFRAME.registerComponent('norman', {
     //   this.buildComp([animData], fileInfo)
       
     // })
+  },
+
+
+  fileLoadPrevOld() {
+    const {fileInfo} = this
+    loadPrevOld(this.fileInfoOld).then(({animData, currentFileInfo}) => {
+      console.log('loaded prev old: ', animData, currentFileInfo)
+      this.fileInfoOld = currentFileInfo
+      this.buildComp([animData], fileInfo)
+      
+    })
+  },
+
+  fileLoadNextOld() {
+    const {fileInfo} = this
+    loadNextOld(this.fileInfoOld).then(({animData, currentFileInfo}) => {
+      console.log('loaded next old: ', animData, currentFileInfo)
+      this.fileInfoOld = currentFileInfo
+      this.buildComp([animData], fileInfo)
+      
+    })
   },
 
   fileLoadNext() {
