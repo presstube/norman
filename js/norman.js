@@ -2,7 +2,9 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
+import {loadPrevOld, loadNextOld, loadAnimByNameOld} from './firebasestore'
+import {save, deleteComp} from './firebasestore-multitrack'
+// import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 
