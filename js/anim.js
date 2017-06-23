@@ -30,7 +30,7 @@ AFRAME.registerComponent('anim', {
     this.animData = animData
     this.currentFrame = 0
     this.frameChangeTime = null
-    this.regMarker = new RegMarker(this)
+    this.regMarker = new RegMarker(this.el.object3D)
     this.frames = new Frames(this, animData)
     this.homeFrameGhost = new HomeFrameGhost(this)
     this.onionskin = null

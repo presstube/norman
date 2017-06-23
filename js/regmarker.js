@@ -1,12 +1,14 @@
 import _ from 'lodash'
 
 
-export default (anim) => {
+export default (target, color = 'red') => {
 
-  const {el} = anim,
-        geometry = new THREE.Geometry(),
+
+  console.log('WHAAA: ', target)
+
+  const geometry = new THREE.Geometry(),
         material = new THREE.LineBasicMaterial({
-          color: 'red',
+          color,
           transparent: true,
           opacity: 0.5,
         }),
@@ -28,7 +30,7 @@ export default (anim) => {
   ]
 
   const mesh = new THREE.LineSegments(geometry, material)
-  el.object3D.add(mesh)
+  target.add(mesh)
 
   return mesh
 

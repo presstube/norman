@@ -5,6 +5,7 @@ import $ from 'jquery'
 import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
+import RegMarker from './regmarker'
 
 AFRAME.registerComponent('norman', {
 
@@ -48,6 +49,8 @@ AFRAME.registerComponent('norman', {
 
     this.setupKeyboard()
 
+    this.setupSceneMarker()
+
     // SMELLY delay!
     _.delay(() => {
       this.setupControllers()
@@ -64,8 +67,39 @@ AFRAME.registerComponent('norman', {
     document.addEventListener('keydown', e => {
       console.log('keydown: ', e)
       if (e.code == 'Enter') {this.togglePlay()} 
-      if (e.code == 'Space') {this.fileLoadPrev()} 
+      // if (e.code == 'Space') {this.fileLoadPrev()} 
       // else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
+
+      // need to manually save and refresh after doing this for now
+      else if (e.code == 'Space' && e.altKey && e.shiftKey) {this.setReg()} 
+
+    })
+  },
+
+  setReg() {
+    const {el, sceneMarker} = this
+    const normObj3D = el.object3D
+    sceneMarker.updateMatrixWorld()
+    const worldToLocal = new THREE.Matrix4().getInverse(sceneMarker.matrixWorld)
+    sceneMarker.add(normObj3D)
+    normObj3D.applyMatrix(worldToLocal)
+
+    _.each(this.tracks, (animToTransform) => {
+      const animDataNewReg = this.transformAnimData(animToTransform.components.anim.animData, normObj3D.matrix)
+      animToTransform.components.anim.animData = animDataNewReg
+    })
+  },
+
+  transformAnimData(animData, matrixToApply) {
+    return _.map(animData, (frame) => {
+      return _.map(frame, (line) => {
+        return _.map(line, (point) => {
+          const {x, y, z} = point
+          const p = new THREE.Vector3(x, y, z)
+          p.applyMatrix4(matrixToApply)
+          return p
+        })
+      })
     })
   },
 
@@ -124,6 +158,15 @@ AFRAME.registerComponent('norman', {
     primaryHand.removeEventListener('LEFT_ON', this.boundFileLoadPrev)
     primaryHand.removeEventListener('RIGHT_ON', this.boundFileLoadNext)
     primaryHand.removeEventListener('thumbstickdown', this.boundFileDelete)
+  },
+
+  setupSceneMarker() {
+    this.sceneMarker = new RegMarker(this.el.sceneEl.object3D, 'black')
+    Object.assign(this.sceneMarker.position, this.el.getAttribute('position'))
+
+    // proof of reparenting in
+    // const cube = new THREE.Mesh( new THREE.CubeGeometry( 0.1, 0.1, 0.1 ), new THREE.MeshNormalMaterial() )
+    // this.sceneMarker.add(cube)
   },
 
   // FILE OPS
