@@ -71,7 +71,7 @@ AFRAME.registerComponent('norman', {
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
 
       // secret key shortcut for setReg
-      else if (e.altKey && e.shiftKey && e.code == 'Space') {this.setReg()} 
+      else if (e.code == 'Space' && e.altKey && e.shiftKey) {this.setReg()} 
       // need to manually save and refresh after doing this for now...
 
     })
@@ -193,9 +193,14 @@ AFRAME.registerComponent('norman', {
   },
 
   fileSave() {
-    const {tracks, fileInfo} = this
+
+    // if it's in insert mode case a new duplicate to be saved
+    // by nulling the fileInfo
+    const toSaveFileInfo = this.isInsertMode ? null : this.fileInfo
+
+    const {tracks} = this
     const compData = tracks.map(track => track.components.anim.animData)
-    save({compData}, fileInfo).then(fileInfo => {
+    save({compData}, toSaveFileInfo).then(fileInfo => {
       console.log('just saved: ', fileInfo)
       this.fileInfo = fileInfo
     })
