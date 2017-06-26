@@ -9,7 +9,7 @@
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene">
+    <a-scene id="scene" fog="color: #eee; near: 0.1; far:0.6">
       <a-sky color="#eee"></a-sky>
       <a-camera 
         id="camera" 
@@ -23,7 +23,7 @@
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-cone 
         id="pensphere"
-        height="0.01"
+        height="0.01" 
         rotation="-90 0 0"
         position="0 0 0.005"
         color="black" 
