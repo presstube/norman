@@ -38,6 +38,12 @@ AFRAME.registerComponent('anim', {
     const {regMarker, homeFrameGhost} = this
     this.hideOnPlay = [regMarker, homeFrameGhost]
 
+    if (this.normanComp.isAnimPlaying) {
+      this.onStartedPlaying()
+    } else {
+      this.onStoppedPlaying()
+    }
+
     this.bindNorman()
     this.bindKeyboard()
     this.bindOculusTouchControllers()
