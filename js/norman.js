@@ -109,9 +109,11 @@ AFRAME.registerComponent('norman', {
           [leftHand, rightHand] = controllers,
           primaryHand = this.isRightHanded ? rightHand : leftHand,
           secondaryHand = this.isRightHanded ? leftHand : rightHand,
-          pensphereEnt = document.querySelector("#pensphere")
+          pensphereEnt = document.querySelector("#pensphere"),
+          pensphereSecEnt = document.querySelector("#penspheresecondary")
 
     primaryHand.setObject3D('pensphereEnt', pensphereEnt.object3D)
+    secondaryHand.setObject3D('pensphereSecEnt', pensphereSecEnt.object3D)
     this.pen = primaryHand.object3D
 
     setupThumbStickDirectionEvents(primaryHand, 0.7)

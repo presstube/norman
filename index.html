@@ -9,28 +9,30 @@
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene" fog="color: #eee; near: 0.1; far:0.6">
+    <a-scene id="scene" fog="color: #eee; near: 0.3; far:0.6">
       <a-sky color="#eee"></a-sky>
       <a-camera 
         id="camera" 
         wasd-controls="acceleration: 10; fly:true"
         position="0 0 0"
         ></a-camera>
-      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
-      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
+      <a-entity oculus-touch-controls="hand: left; model:false"></a-entity>
+      <a-entity oculus-touch-controls="hand: right; model:false"></a-entity>
       <a-entity id="norman" norman position="0 1.6 -0.3">
       </a-entity>
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
-      <a-cone 
+      <a-sphere
         id="pensphere"
-        height="0.01" 
-        rotation="-90 0 0"
-        position="0 0 0.005"
-        color="black" 
-        radius-bottom="0.002" 
-        radius-top="0.0001" 
-        material="opacity: 0.5"
-        ></a-cone>
+        color="red" 
+        radius="0.001" 
+        material="opacity: 0.7"
+        ></a-sphere>
+      <a-sphere
+        id="penspheresecondary"
+        color="red" 
+        radius="0.001" 
+        material="opacity: 0.7"
+        ></a-sphere>
     </a-scene>
     <a id="downloadAnchorElem" style="display:none"></a>
   </body>
@@ -50,5 +52,18 @@ fog="color: #eee; near: 0.1; far:0.8"
 fog="color: #eee; near: 0.4; far:0.6w"
   fog="color: #222; near: 0.3; far:0.5w"
         wasd-controls="acceleration: 10; easing: 40; fly: false"
+
+
+      <a-cone 
+        id="pensphere"
+        height="0.01" 
+        rotation="-90 0 0"
+        position="0 0 0.005"
+        color="black" 
+        radius-bottom="0.002" 
+        radius-top="0.0001" 
+        material="opacity: 0.5"
+        ></a-cone>
+
 
 -->

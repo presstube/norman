@@ -19,6 +19,7 @@ export default (anim, animData) => {
 
     anim.fillGeometry(geometry, frameData)
     const mesh = new THREE.LineSegments(geometry, material)
+    mesh.frustumCulled = false
     el.object3D.add(mesh)
     return mesh
   }

@@ -48,8 +48,6 @@ AFRAME.registerComponent('anim', {
     this.bindKeyboard()
     this.bindOculusTouchControllers()
 
-    this.el.object3D.frustumCulled = false
-
   },
 
   remove() {
