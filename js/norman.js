@@ -130,6 +130,7 @@ AFRAME.registerComponent('norman', {
 
     secondaryHand.addEventListener('gripdown', e => this.handleSecondaryGripDown(e))
     secondaryHand.addEventListener('gripup', e => this.handleSecondaryGripUp(e))
+    secondaryHand.addEventListener('triggerchanged', e => this.handleSecondaryTriggerChanged(e))
     secondaryHand.addEventListener('triggerdown', () => this.handleSecondaryTriggerDown())
     secondaryHand.addEventListener('triggerup', () => this.handleSecondaryTriggerUp())
     secondaryHand.addEventListener('lowerbuttondown', ()=> this.handleSecondaryLowerButtonDown())
@@ -260,12 +261,20 @@ AFRAME.registerComponent('norman', {
     console.log('exit gas pedal mode')
   },
 
+  handleSecondaryTriggerChanged(e) {
+    // console.log('2 trig changed: ', e.detail.value)
+    // set the fps based on this
+    // this.fps = e.detail.value * 30
+    this.frameInterval = 1000 / (60 * e.detail.value)
+  },
+
   handleSecondaryTriggerDown() {
     this.enterInsertMode()
   },
 
   handleSecondaryTriggerUp() {
     this.exitInsertMode()
+    console.log('exiting insert mode: ', console.log(this.tracks))
   },
 
   handlePrimaryGripDown({target: hand}) {
@@ -361,6 +370,8 @@ AFRAME.registerComponent('norman', {
     el.appendChild(animEnt)
     this.setSelectedTrack(animEnt)
     tracks.push(animEnt)
+
+    console.log('adding a track')
   },
 
   removeTrack(track) {
@@ -390,6 +401,7 @@ AFRAME.registerComponent('norman', {
       this.selectedTrackComp = null
     }
     el.emit(SELECTED_TRACK_CHANGED)
+    console.log('setting a selected track')
   },
 
   selectPrevTrack() {
