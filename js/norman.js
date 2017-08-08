@@ -7,6 +7,8 @@ import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers
 import './anim'
 import RegMarker from './regmarker'
 
+import {hearts} from './hearts'
+
 AFRAME.registerComponent('norman', {
 
   init() {
@@ -54,8 +56,12 @@ AFRAME.registerComponent('norman', {
     // SMELLY delay!
     _.delay(() => {
       this.setupControllers()
-      this.addTrack()
+      this.fileLoadPrev()
+      // this.buildComp(hearts.compData)
+      window.lbn = this.fileLoadByName.bind(this)
+
     }, 1) 
+
 
   },
 
@@ -228,6 +234,14 @@ AFRAME.registerComponent('norman', {
     const {fileInfo} = this
     console.log('deleting: ', fileInfo)
     deleteComp(fileInfo)
+  },
+
+  fileLoadByName(name) {
+    console.log('loading by name: ', name)
+    loadAnimByName(name).then(({file, fileInfo}) => {
+      console.log('loaded by name: ', file, fileInfo)
+      this.buildComp(file.compData, fileInfo)
+    })
   },
 
   // CTRL

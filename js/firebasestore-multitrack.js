@@ -120,6 +120,8 @@ const loadNext = (fileInfo) => {
 
 
 const loadAnimByName = (name) => {
+
+  console.log('loading by name func: ', name)
   return new Promise((resolve, reject) => {
     firebase.database().ref('animations').child(name).once('value', snapshot => {
       const fileInfo = snapshot.val()

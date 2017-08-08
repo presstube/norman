@@ -30,13 +30,13 @@ AFRAME.registerComponent('anim', {
     this.animData = animData
     this.currentFrame = 0
     this.frameChangeTime = null
-    this.regMarker = new RegMarker(this.el.object3D)
+    this.regMarker = new RegMarker(this.el.object3D, 'red')
     this.frames = new Frames(this, animData)
     this.homeFrameGhost = new HomeFrameGhost(this)
     this.onionskin = null
 
-    const {regMarker, homeFrameGhost} = this
-    this.hideOnPlay = [regMarker, homeFrameGhost]
+    const {/**/regMarker, homeFrameGhost} = this
+    this.hideOnPlay = [/**/regMarker, homeFrameGhost]
 
     if (this.normanComp.isAnimPlaying) {
       this.onStartedPlaying()
