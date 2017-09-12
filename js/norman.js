@@ -58,7 +58,7 @@ AFRAME.registerComponent('norman', {
       this.setupControllers()
       this.fileLoadPrev()
       // this.buildComp(hearts.compData)
-      window.lbn = this.fileLoadByName.bind(this)
+      window.lbn = window.loadByName = this.fileLoadByName.bind(this)
 
     }, 1) 
 
