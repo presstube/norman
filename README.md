@@ -1,3 +1,3 @@
 # Norman
 
-A WebVR frame-by-frame animation experiment for Google Creative Lab.
+An open-source VR animation sketchbook for the browser, made with help from the Google Creative Lab.
