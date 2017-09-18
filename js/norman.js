@@ -56,7 +56,7 @@ AFRAME.registerComponent('norman', {
     // SMELLY delay!
     _.delay(() => {
       this.setupControllers()
-      this.fileLoadPrev()
+      // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
 
