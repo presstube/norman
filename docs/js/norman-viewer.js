@@ -82626,6 +82626,7 @@ var NormanViewer = (_class = function () {
         if (_this.fakeVr) {
           return;
         }
+        _this.navEl.style.visibility = 'hidden';
         _this.renderer.vr.enabled = true;
         _this.scene.fog.near = _this.config.fogNear * _this.config.vrDistMultiple;
         _this.scene.fog.far = _this.config.fogFar * _this.config.vrDistMultiple;
@@ -82634,6 +82635,7 @@ var NormanViewer = (_class = function () {
         if (_this.fakeVr) {
           return;
         }
+        _this.navEl.style.visibility = 'visible';
         _this.renderer.vr.enabled = false;
         _this.scene.fog.near = _this.config.fogNear;
         _this.scene.fog.far = _this.config.fogFar;
