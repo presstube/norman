@@ -82610,7 +82610,7 @@ var NormanViewer = (_class = function () {
       // this.pollControllers()
 
       this.vrManager = new _webvrUi.EnterVRButton(this.renderer.domElement, {
-        color: '#707070',
+        color: '#aaa',
         disabledOpacity: 0
       });
 
@@ -82654,7 +82654,7 @@ var NormanViewer = (_class = function () {
 
         if (method) {
           _this.vrManager.enable();
-          _this.vrManager.setTitle('ENTER FULLSCREEN');
+          _this.vrManager.setTitle('FULLSCREEN');
 
           var dimensions = void 0;
 
@@ -82740,31 +82740,31 @@ var NormanViewer = (_class = function () {
 
               case 16:
 
-                if (this.gamepad) {
-                  // console.log(this.gamepad.axes)
-                  //   this.gamepad.buttons.forEach((button, i) => {
-                  //     console.log('button ' + i + ' pressed', button.pressed)
-                  //     console.log('button ' + i + ' touched', button.touched)
-                  //     console.log('button ' + i + ' value', button.value)
-                  //   })
-                  //   console.log('\n\n')
-                  // console.log(this.gamepad.axes)
-                  // const [x, y, z] = this.gamepad.pose.orientation
-                  // const [x, y, z] = navigator.getGamepads()[1].pose.orientation
-                  // scene.container.rotation.set(x, y, z)
+                if (this.gamepad) {}
+                // console.log(this.gamepad.axes)
+                //   this.gamepad.buttons.forEach((button, i) => {
+                //     console.log('button ' + i + ' pressed', button.pressed)
+                //     console.log('button ' + i + ' touched', button.touched)
+                //     console.log('button ' + i + ' value', button.value)
+                //   })
+                //   console.log('\n\n')
+                // console.log(this.gamepad.axes)
+                // const [x, y, z] = this.gamepad.pose.orientation
+                // const [x, y, z] = navigator.getGamepads()[1].pose.orientation
+                // scene.container.rotation.set(x, y, z)
+
+
+                // this.pollControllers(scene)
+
+                if (this.config.autoRotate && !this.isPointerDown) {
+                  this.rotateScene(scene, this.config.autoRotateSpeed);
                 }
 
-                this.pollControllers(scene);
+                if (this.config.breathing) {
+                  scene.innerContainer.position.set(0, Math.cos(now / 800) / 200, 0);
+                }
 
-                // if (this.config.autoRotate && !this.isPointerDown) {
-                //   this.rotateScene(scene, this.config.autoRotateSpeed)
-                // }
-
-                // if (this.config.breathing) {
-                //   scene.innerContainer.position.set(0, Math.cos(now / 800) / 200, 0)
-                // }
-
-              case 18:
+              case 19:
               case 'end':
                 return _context.stop();
             }
