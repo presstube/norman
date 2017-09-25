@@ -19,6 +19,10 @@
         font-family: "roboto-mono",monospace;
       }
 
+      #norman {
+        height: 600px;
+      }
+
     </style>
     <!-- <link href="norman.css" rel="stylesheet"> -->
   </head>
@@ -33,7 +37,7 @@
     </div> -->
    
     <div class="container-fluid mb-5" align="center">
-      <p class="">An open-source WebVR animation sketchbook,</br>by <a href="http://presstube.com" target="_blank"> James Paterson</a>.</p>
+      <p class="">An open-source WebVR animation sketchbook,</br>by <a href="http://presstube.com" target="_blank">James Paterson</a>.</p>
     </div>   
 
     <div class="container-fluid mb-5" align="center">
@@ -43,15 +47,21 @@
       <a href="http://github.com/presstube/norman" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-github-1.svg" height="40" alt="Fork Norman on Github"/></a>
     </div>
    
-    <div class="container-fluid mb-5 pl-0 pr-0" align="center">
-      <img width="100%" src="images/player-2.png">
-    </div>
 
+
+
+    <div class="container-fluid mb-5 pl-0 pr-0" align="center">
+      <div id="norman"></div>
+      <!-- <img width="100%" src="images/player-2.png"> -->
+    </div>
+<!-- 
+ -->
     <div class="container mb-5">
       <div class="row justify-content-center ">
         <div class="col-12">
           <div class="embed-responsive embed-responsive-16by9">
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/KBVk3Qapbjc?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+            <!-- <img class="embed-responsive-item" src="images/animated-short-thumb.jpg"> -->
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/NzTyc0SyUno?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
           </div>
         </div>
       </div>
@@ -61,13 +71,19 @@
       <div class="row justify-content-center ">
         <div class="col-12">
           <div class="embed-responsive embed-responsive-16by9">
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/BfusHSxNRh4?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+            <img class="embed-responsive-item" src="images/bts-thumb.jpg">
+            <!-- <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/BfusHSxNRh4?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe> -->
           </div>
         </div>
       </div>
     </div>
 
     <div class="container">
+
+      <div class="row justify-content-center mb-5">
+        <h3 class="hidden-sm-up">Norman Tidbits</h3>
+      </div>
+
 
       <div class="row justify-content-center mb-5">
         <div class="col-sm-12 col-md-8 col-lg-8">
@@ -81,18 +97,18 @@
       <div class="row justify-content-center mb-5">
         <div class="col-sm-12 col-md-8 col-lg-8">
           <div class="embed-responsive embed-responsive-16by9">
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/ObXwFx821pQ?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/SHQQ0oEiLQE?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
           </div>
-          <p>✨👀👃 Controller Nose</p>
+          <p>🏡 👻 Home Frame Ghost and some 🔫🔫 pew pew noises while I work</p>
         </div>
       </div>
       
       <div class="row justify-content-center mb-5">
         <div class="col-sm-12 col-md-8 col-lg-8">
           <div class="embed-responsive embed-responsive-16by9">
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/cN8PljMMh78?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/da7fBZFG9jU?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
           </div>
-          <p>🚀📓 Space Notes</p>
+          <p>🎶 🚀📓  Vivaldi Space Notes 1</p>
         </div>
       </div>
 
@@ -132,5 +148,40 @@
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="js/norman-viewer.js"></script>
+    <script>
+      window.norman = new NormanViewer(document.getElementById('norman'), {
+        firebase: {
+          apiKey: 'AIzaSyB0xMSr_6jAO26pkIvUKOSq4gqsrCix1J8',
+          authDomain: 'normanmultitrack.firebaseapp.com',
+          databaseURL: 'https://normanmultitrack.firebaseio.com',
+          projectId: 'normanmultitrack',
+          storageBucket: 'normanmultitrack.appspot.com',
+          messagingSenderId: '160459918557'
+        },
+        sceneIds: {
+          'brumpled-tap-shanks': 1.2,
+          'clumbied-brine-hunguses': .7,
+          'clumbied-frump-lumps': 1,
+          'brumpled-bung-hinges': 0.7,
+          'clumbied-frump-squeefs': 0.8,
+          'fropley-clam-glops': 0.6,
+          'fropley-ront-shanks': 0.6,
+          'gildered-plex-squeefs': 0.7,
+          'gildered-ront-flops': 0.6,
+          'gildered-shift-glops': 1,
+          'mulgy-limp-clamps': 0.6,
+          'mulgy-limp-donks': 1,
+          'mulgy-prunt-clamps': 1,
+          'mulgy-ront-hops': 1,
+          'mulgy-tap-donks': 2,
+          'shingled-ront-lumps': 0.6,
+          'shingled-shift-clumps': 2,
+          'troubling-shift-squeefs': 0.6,
+          'trulmy-clam-lumps': 1,
+          'trulmy-limp-donks': 1
+        }
+      })
+    </script>
   </body>
 </html>
