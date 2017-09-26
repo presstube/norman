@@ -28,25 +28,60 @@
   </head>
   <body class="">
 
-    <div class="container-fluid mt-5 mb-4" align="center">
-      <img width="300" src="images/norman-logo-1.gif">
+          
+          <!-- <img width="300" src="images/norman-logo-1.gif"> -->
+
+
+  <div class="container-fluid mt-5">
+    <div class="row justify-content-md-center align-items-center">
+      <div class="col col-lg-4">
+
+      </div>
+      <div class="col-12 col-md-auto" align="center">
+        <img width="300" src="images/norman-logo-1.gif">
+      </div>
+      <div class="col col-lg-4 hidden-md-down" align="center" >
+        <a href="https://www.instagram.com/explore/tags/normanvr/" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-instagram-14.svg" height="40" alt="#normanvr on Instagram"/></a>
+        <a href="https://www.youtube.com/playlist?list=PLDYOoKgOW0z_HVJhU3zvu9neIY0aVyEpN"  target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-youtube-4.svg" height="40" alt="Norman Youtube playlist"/></a>
+        <a href="https://twitter.com/hashtag/normanvr" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-twitter-4.svg" height="40" alt="#normanvr on Twitter"/></a>
+        <a href="http://github.com/presstube/norman" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-github-1.svg" height="40" alt="Fork Norman on Github"/></a>
+      </div>
+      <div class="col col-lg-4 hidden-lg-up" align="center" >
+      </div>
     </div>
+  </div>
 
-<!--     <div class="container-fluid mt-5 mb-5" align="center">
-      <img width="450" src="images/norman-logo.gif">
-    </div> -->
-   
-    <div class="container-fluid mb-5" align="center">
-      <p class="">An open-source WebVR animation sketchbook,</br>by <a href="http://presstube.com" target="_blank">James Paterson</a>.</p>
-    </div>   
-
-    <div class="container-fluid mb-5" align="center">
+    <div class="container-fluid hidden-lg-up mb-5" align="center">
       <a href="https://www.instagram.com/explore/tags/normanvr/" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-instagram-14.svg" height="40" alt="#normanvr on Instagram"/></a>
       <a href="https://www.youtube.com/playlist?list=PLDYOoKgOW0z_HVJhU3zvu9neIY0aVyEpN"  target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-youtube-4.svg" height="40" alt="Norman Youtube playlist"/></a>
       <a href="https://twitter.com/hashtag/normanvr" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-twitter-4.svg" height="40" alt="#normanvr on Twitter"/></a>
       <a href="http://github.com/presstube/norman" target="_blank"><img class="pl-2 pr-2" src="images/iconmonstr-github-1.svg" height="40" alt="Fork Norman on Github"/></a>
     </div>
    
+
+
+<!--     <div class="container-fluid mt-5 mb-5" align="center">
+      <img width="450" src="images/norman-logo.gif">
+    </div> -->
+<!--    
+    <div class="container-fluid mb-5" align="center">
+      <p class="">An open-source WebVR animation sketchbook,</br>by <a href="http://presstube.com" target="_blank">James Paterson</a>.</p>
+    </div>   
+    -->
+
+    <div class="container mb-3">
+
+      <div class="row justify-content-center" align="center">
+        <div class="col-lg-10">
+          <p class="">Hi, I'm artist and coder <a href="http://presstube.com" target="_blank">James Paterson</a>.</p>
+          <p class="">Norman is the animation tool that I’ve always wanted. I built it in JavaScript, it runs in a web browser, and lets me animate naturally in 3D using VR controllers. Here’s the <a href="https://github.com/presstube/norman" target="_blank">source code</a>.</p>
+          <p class="">To use the tool you’ll need some rather fancy VR gear, but you can also play with my animations below and enjoy <a href="#animatedshort">the animated short</a>, made entirely with Norman.</p>
+        </div>
+      </div>
+
+    </div>   
+
+
 
 
 
@@ -57,11 +92,11 @@
 <!-- 
  -->
     <div class="container mb-5">
-      <div class="row justify-content-center ">
+      <div class="row justify-content-center">
         <div class="col-12">
           <div class="embed-responsive embed-responsive-16by9">
             <!-- <img class="embed-responsive-item" src="images/animated-short-thumb.jpg"> -->
-            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/FeOnW8yi_Fc?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
+            <iframe id="animatedshort" class="embed-responsive-item" src="https://www.youtube.com/embed/FeOnW8yi_Fc?rel=0&showinfo=0" frameborder="0" allowfullscreen></iframe>
           </div>
         </div>
       </div>
@@ -139,15 +174,6 @@
       
     </div>
 
-
-
-
-    
-
-
-    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
     <script src="js/norman-viewer.js"></script>
     <script>
       window.norman = new NormanViewer(document.getElementById('norman'), {
