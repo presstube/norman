@@ -171,41 +171,93 @@
         </div>
 
       </div>
-      
+
     </div>
 
     <script src="js/norman-viewer.js"></script>
     <script>
       window.norman = new NormanViewer(document.getElementById('norman'), {
-        firebase: {
-          apiKey: 'AIzaSyB0xMSr_6jAO26pkIvUKOSq4gqsrCix1J8',
-          authDomain: 'normanmultitrack.firebaseapp.com',
-          databaseURL: 'https://normanmultitrack.firebaseio.com',
-          projectId: 'normanmultitrack',
-          storageBucket: 'normanmultitrack.appspot.com',
-          messagingSenderId: '160459918557'
-        },
         sceneIds: {
-          'brumpled-tap-shanks': 1.2,
-          'clumbied-brine-hunguses': .7,
-          'clumbied-frump-lumps': 1,
-          'brumpled-bung-hinges': 0.7,
-          'clumbied-frump-squeefs': 0.8,
-          'fropley-clam-glops': 0.6,
-          'fropley-ront-shanks': 0.6,
-          'gildered-plex-squeefs': 0.7,
-          'gildered-ront-flops': 0.6,
-          'gildered-shift-glops': 1,
-          'mulgy-limp-clamps': 0.6,
-          'mulgy-limp-donks': 1,
-          'mulgy-prunt-clamps': 1,
-          'mulgy-ront-hops': 1,
-          'mulgy-tap-donks': 2,
-          'shingled-ront-lumps': 0.6,
-          'shingled-shift-clumps': 2,
-          'troubling-shift-squeefs': 0.6,
-          'trulmy-clam-lumps': 1,
-          'trulmy-limp-donks': 1
+          'brumpled-tap-shanks': {
+            scale: 1.2,
+            url: '/animations/brumpled-tap-shanks.json'
+          },
+          'clumbied-brine-hunguses': {
+            scale: 0.7,
+            url: '/animations/clumbied-brine-hunguses.json'
+          },
+          'clumbied-frump-lumps': {
+            scale: 1,
+            url: '/animations/clumbied-frump-lumps.json'
+          },
+          'brumpled-bung-hinges': {
+            scale: 0.7,
+            url: '/animations/brumpled-bung-hinges.json'
+          },
+          'clumbied-frump-squeefs': {
+            scale: 0.8,
+            url: '/animations/clumbied-frump-squeefs.json'
+          },
+          'fropley-clam-glops': {
+            scale: 0.6,
+            url: '/animations/fropley-clam-glops.json'
+          },
+          'fropley-ront-shanks': {
+            scale: 0.6,
+            url: '/animations/fropley-ront-shanks.json'
+          },
+          'gildered-plex-squeefs': {
+            scale: 0.7,
+            url: '/animations/gildered-plex-squeefs.json'
+          },
+          'gildered-ront-flops': {
+            scale: 0.6,
+            url: '/animations/gildered-ront-flops.json'
+          },
+          'gildered-shift-glops': {
+            scale: 1,
+            url: '/animations/gildered-shift-glops.json'
+          },
+          'mulgy-limp-clamps': {
+            scale: 0.6,
+            url: '/animations/mulgy-limp-clamps.json'
+          },
+          'mulgy-limp-donks': {
+            scale: 1,
+            url: '/animations/mulgy-limp-donks.json'
+          },
+          'mulgy-prunt-clamps': {
+            scale: 1,
+            url: '/animations/mulgy-prunt-clamps.json'
+          },
+          'mulgy-ront-hops': {
+            scale: 1,
+            url: '/animations/mulgy-ront-hops.json'
+          },
+          'mulgy-tap-donks': {
+            scale: 2,
+            url: '/animations/mulgy-tap-donks.json'
+          },
+          'shingled-ront-lumps': {
+            scale: 0.6,
+            url: '/animations/shingled-ront-lumps.json'
+          },
+          'shingled-shift-clumps': {
+            scale: 2,
+            url: '/animations/shingled-shift-clumps.json'
+          },
+          'troubling-shift-squeefs': {
+            scale: 0.6,
+            url: '/animations/troubling-shift-squeefs.json'
+          },
+          'trulmy-clam-lumps': {
+            scale: 1,
+            url: '/animations/trulmy-clam-lumps.json'
+          },
+          'trulmy-limp-donks': {
+            scale: 1,
+            url: '/animations/trulmy-limp-donks.json'
+          }
         }
       })
     </script>
