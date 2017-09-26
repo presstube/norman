@@ -7,8 +7,6 @@ import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers
 import './anim'
 import RegMarker from './regmarker'
 
-import {hearts} from './hearts'
-
 AFRAME.registerComponent('norman', {
 
   init() {
