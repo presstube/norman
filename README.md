@@ -12,6 +12,8 @@ To use Norman in its current form you’ll need an Oculus Rift, and to clone/run
 
 You can also view & play with Norman animations at the top of [normanvr.com](https://normanvr.com) using a viewer created by [Dan Motzenbecker](https://github.com/dmotz). Check out Dan's viewer source code [here](https://github.com/googlecreativelab/norman-sketch-player).
 
+A huge thanks to the Google Creative Lab for helping me carve out the time and space to work on this!
+
 A proper README with instructions is coming soon, but for now... A bunch of GIFS!
 
 <img src="https://normanvr.com/gifs/slither.gif" alt="GIF" width="640" height="360"/>
@@ -29,3 +31,4 @@ A proper README with instructions is coming soon, but for now... A bunch of GIFS
 ![GIF](https://normanvr.com/gifs/gas-run.gif "Gas Pedal Run")
 
 ![GIF](https://normanvr.com/gifs/norm-3.gif "What is Norman?")
+
