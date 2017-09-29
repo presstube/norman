@@ -2,7 +2,7 @@
 
 Hi, I'm artist and coder [James Paterson](https://www.instagram.com/presstube/).
 
-Norman is the beginnings of an animation tool I’ve always wanted. I built it in JavaScript, it runs in a web browser, and lets me animate naturally in 3D using VR controllers.
+Norman is the beginnings of an animation tool I’ve always wanted. It was built using JavaScript, it runs in a web browser using [WebVR](https://webvr.info/), and it lets me animate naturally in 3D using VR controllers.
 
 * Check out the [project site](https://normanvr.com/#bts).
 * Watch an [animated short](https://normanvr.com/#animatedshort) made entirely with Norman.
@@ -10,7 +10,7 @@ Norman is the beginnings of an animation tool I’ve always wanted. I built it i
 
 To use Norman in its current form you’ll need an Oculus Rift, and to clone/run the code locally. A more comprehensive, user-friendly experience is in the works.
 
-However, you can also view & play with Norman animations at the top of [normanvr.com](https://normanvr.com) using a viewer created by [Dan Motzenbecker](https://github.com/dmotz). Check out Dan's viewer source code [here](https://github.com/googlecreativelab/norman-sketch-player).
+You can also view & play with Norman animations at the top of [normanvr.com](https://normanvr.com) using a viewer created by [Dan Motzenbecker](https://github.com/dmotz). Check out Dan's viewer source code [here](https://github.com/googlecreativelab/norman-sketch-player).
 
 A proper README with instructions is coming soon, but for now... A bunch of GIFS!
 
