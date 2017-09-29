@@ -29,5 +29,3 @@ A proper README with instructions is coming soon, but for now... A bunch of GIFS
 ![GIF](https://normanvr.com/gifs/gas-run.gif "Gas Pedal Run")
 
 ![GIF](https://normanvr.com/gifs/norm-3.gif "What is Norman?")
-
-![GIF](https://normanvr.com/gifs/red-dot-display.gif "Straight-line Bug")
