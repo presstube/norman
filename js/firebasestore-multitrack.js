@@ -5,12 +5,12 @@ import _ from 'lodash'
 import $ from 'jquery'
 
 firebase.initializeApp({
-  apiKey: "AIzaSyB0xMSr_6jAO26pkIvUKOSq4gqsrCix1J8",
-  authDomain: "normanmultitrack.firebaseapp.com",
-  databaseURL: "https://normanmultitrack.firebaseio.com",
-  projectId: "normanmultitrack",
-  storageBucket: "normanmultitrack.appspot.com",
-  messagingSenderId: "160459918557"
+  apiKey: "AIzaSyCYUVhlNStwAarauyhI2BDgbtQrVKHpGhc",
+  authDomain: "norman-mala.firebaseapp.com",
+  databaseURL: "https://norman-mala.firebaseio.com",
+  projectId: "norman-mala",
+  storageBucket: "norman-mala.appspot.com",
+  messagingSenderId: "853624178535"
 })
 
 // let currentFileInfo = null

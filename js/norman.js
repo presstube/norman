@@ -56,8 +56,9 @@ AFRAME.registerComponent('norman', {
       this.setupControllers()
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
+      this.buildComp()
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
-      window.lbn('trulmy-prunt-squeefs')
+      // window.lbn('trulmy-prunt-squeefs')
 
     }, 1) 
 
