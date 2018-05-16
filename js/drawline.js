@@ -23,7 +23,7 @@ AFRAME.registerComponent('drawline', {
     this.positions = new Float32Array(this.MAX_POINTS * 3)
     this.geometry.addAttribute('position', new THREE.BufferAttribute(this.positions, 3))
     this.geometry.setDrawRange(0, this.drawCount)
-    this.material = new THREE.LineBasicMaterial({color: 'black'})
+    this.material = new THREE.LineBasicMaterial({color: 'white'})
     this.line = new THREE.Line(this.geometry, this.material)
     this.el.setObject3D('line', this.line)
     this.lastPointDrawn = new THREE.Vector3(0, 0, 0)

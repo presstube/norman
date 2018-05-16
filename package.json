@@ -12,7 +12,10 @@
     "firebase": "^3.7.8",
     "firebaseui": "^1.0.1",
     "jquery": "^3.2.1",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "three-obj-exporter": "0.0.1",
+    "three-obj-loader": "^1.1.3",
+    "save-file": "^1.2.0"
   },
   "devDependencies": {
     "budo": "^7.0.0",

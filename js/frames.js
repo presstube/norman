@@ -15,7 +15,7 @@ export default (anim, animData) => {
 
   const makeFrame = (frameData) => {
     const geometry = new THREE.BufferGeometry(),
-          material = new THREE.LineBasicMaterial({color: 'black'})
+          material = new THREE.LineBasicMaterial({color: 'white'})
 
     anim.fillGeometry(geometry, frameData)
     const mesh = new THREE.LineSegments(geometry, material)

@@ -56,7 +56,9 @@ AFRAME.registerComponent('norman', {
       this.setupControllers()
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
-      this.buildComp()
+      // this.buildComp()
+      this.fileLoadPrev()
+      this.startPlaying()
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
       // window.lbn('trulmy-prunt-squeefs')
 
@@ -77,9 +79,12 @@ AFRAME.registerComponent('norman', {
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
 
       // secret key shortcut for setReg
-      else if (e.code == 'Space' && e.altKey && e.shiftKey) {this.setReg()} 
+      // else if (e.code == 'Space' && e.altKey && e.shiftKey) {this.setReg()} 
       // need to manually save and refresh after doing this for now...
 
+      else if (e.code == 'Space') {
+        this.fileLoadPrev()
+      } 
     })
   },
 
