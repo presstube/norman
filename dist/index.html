@@ -4,21 +4,54 @@
     <meta charset="utf-8">
     <title>Norman</title>
     <meta name="description" content="Minimalist animation sketchbook for WebVR.">
-    <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script>
+    <!-- <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script> -->
+    <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/tizzle/aframe-orbit-controls-component/v0.1.14/dist/aframe-orbit-controls-component.min.js"></script>
+
     <script src="build/main.js"></script>
   </head>
   <body>
     <div id="firebaseui-auth-container"></div>
-    <a-scene id="scene" fog="color: #fff; near: 0.45; far:0.6">
-      <a-sky color="#fff"></a-sky>
+    <!-- 
+  
+  
+
+    -->
+    <a-scene 
+      id="scene" 
+      fog="color: #000; near: 0.1; far:0.4"
+      background="color: #000000"
+      >
+
       <a-camera 
-        id="camera" 
-        wasd-controls="acceleration: 5; fly:true"
-        position="0 0 0"
-        ></a-camera>
-      <a-entity oculus-touch-controls="hand: left; model:false"></a-entity>
-      <a-entity oculus-touch-controls="hand: right; model:false"></a-entity>
-      <a-entity id="norman" norman position="0 1.6 -0.3">
+          id="camera"
+          camera="fov: 80; zoom: 1;"
+          mouse-cursor=""
+          position="0 0.3 0"
+          orbit-controls="
+              enableZoom:false;
+              autoRotate: true;
+              target: #norman;
+              enableDamping: true;
+              dampingFactor: 0.125;
+              autoRotateSpeed:0.2;
+              minPolarAngle: 1.57079632679;
+              maxPolarAngle: 1.57079632679;
+        ">
+          
+        </a-camera>
+      <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
+      <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
+      <a-entity id="norman" norman position="0 0 0">
+        <a-entity 
+          seething-ball 
+          id="seething-ball"
+          scale="0.002 0.002 0.002"
+          position="0 0 0"
+          > 
+        </a-entity>
+
+
       </a-entity>
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-sphere
@@ -33,8 +66,9 @@
         radius="0.001" 
         material="opacity: 0.7"
         ></a-sphere>
+
+
     </a-scene>
-    <a id="downloadAnchorElem" style="display:none"></a>
   </body>
 </html>
 
