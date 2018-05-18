@@ -271,8 +271,10 @@ AFRAME.registerComponent('norman', {
     this.exitFileMode()
   },
 
-  handleSecondaryUpperButtonDown() {
-    console.log('enter gas pedal mode')
+  handleSecondaryUpperButtonDown(e) {
+    // console.log('enter gas pedal mode')
+    console.log('summon: ', e)
+    this.summon()
   },
 
   handleSecondaryUpperButtonUp() {
@@ -517,6 +519,10 @@ AFRAME.registerComponent('norman', {
       })
     }
     
+  },
+
+  summon() {
+    this.el.setAttribute('position', this.secondaryHand.getAttribute('position'))
   },
 
   togglePlay() {
