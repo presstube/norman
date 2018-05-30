@@ -42,7 +42,7 @@ const colorPalettes = [
 // const colors = _.sample(colorPalettes)
 const colors = colorPalettes[0]
 
-console.log('colors: ', colors)
+// console.log('colors: ', colors)
 
 
 
@@ -104,7 +104,7 @@ console.log('colors: ', colors)
 const assetsData = [
 
  {
-    objFilename: assetsPath + 'plant-base-1.obj',
+    objFilename: assetsPath + 'plant-base-1-dec-79kverts.obj',
     obj: null,
     sku: 'base',
     spawnPoints: [
@@ -543,10 +543,10 @@ const applyColor = colors => {
 
 }
 
-document.addEventListener('DOMContentLoaded', e => {
-  console.log('DOM fully loaded and parsed')
-  // applyColor(colors)
-});
+// document.addEventListener('DOMContentLoaded', e => {
+//   console.log('DOM fully loaded and parsed')
+//   // applyColor(colors)
+// });
 
 // window.addEventListener("load", e => {
 //   console.log('LOADED!')

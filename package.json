@@ -11,11 +11,12 @@
     "aframe": "^0.5.0",
     "firebase": "^3.7.8",
     "firebaseui": "^1.0.1",
+    "hammerjs": "^2.0.8",
     "jquery": "^3.2.1",
     "lodash": "^4.17.4",
+    "save-file": "^1.2.0",
     "three-obj-exporter": "0.0.1",
-    "three-obj-loader": "^1.1.3",
-    "save-file": "^1.2.0"
+    "three-obj-loader": "^1.1.3"
   },
   "devDependencies": {
     "budo": "^7.0.0",

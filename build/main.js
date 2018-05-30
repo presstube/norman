@@ -882,62 +882,10 @@ console.log('colors: ', colors);
 // ]
 
 var assetsData = [{
-  objFilename: assetsPath + 'plant2-0.obj',
+  objFilename: assetsPath + 'plant-base-1-dec-79kverts.obj',
   obj: null,
   sku: 'base',
   spawnPoints: []
-}, {
-  objFilename: assetsPath + 'plant2-bulby.obj',
-  obj: null,
-  sku: 'base1',
-  spawnPoints: []
-},
-
-// {
-//    objFilename: assetsPath + 'plant2-bigblumpy.obj',
-//    obj: null,
-//    sku: 'base2',
-//    spawnPoints: [
-//    ]
-// },
-
-{
-  objFilename: assetsPath + 'plant2-longus.obj',
-  obj: null,
-  sku: 'base4',
-  spawnPoints: [{
-    position: { x: 0.459, y: 34.732, z: -13.111 },
-    rotation: { x: 2.312, y: -0.296, z: -6.474 }
-  }]
-},
-
-// {
-//    objFilename: assetsPath + 'plant2-1.obj',
-//    obj: null,
-//    sku: 'base5',
-//    spawnPoints: [
-//      {
-//        position: {x: -3.221, y: 12.151, z: 2.394},
-//        rotation: {x: 8.480, y: 3.094, z: 11.918}
-//      },
-//      {
-//        position: {x: 2.769, y: 16.596, z: -2.746},
-//        rotation: {x: -2.807, y: -5.339, z: 3.151}
-//      },
-//    ]
-// },
-
-{
-  objFilename: assetsPath + 'plant2-2prong-cactus-fork.obj',
-  obj: null,
-  sku: 'base6',
-  spawnPoints: [{
-    position: { x: -0.591, y: 15.509, z: -8.914 },
-    rotation: { x: -4.526, y: 0.000, z: 0.000 }
-  }, {
-    position: { x: 5.588, y: 23.067, z: -0.302 },
-    rotation: { x: 2.636, y: 3.161, z: 4.526 }
-  }]
 }];
 
 var findAssetIndexFromFilename = function findAssetIndexFromFilename(filename) {
@@ -1429,16 +1377,16 @@ var spawnBallAsset = function spawnBallAsset(parent) {
   asset.children[0].material = mat;
   var scaleRange = 1.0;
   var posRange = 5;
-  asset.position.set(_lodash2.default.random(-posRange, posRange), _lodash2.default.random(-posRange, posRange), _lodash2.default.random(-posRange, posRange));
+  // asset.position.set(_.random(-posRange, posRange), _.random(-posRange, posRange), _.random(-posRange, posRange))
   asset.rotation.set(_lodash2.default.random(Math.PI * 4), _lodash2.default.random(Math.PI * 4), _lodash2.default.random(Math.PI * 4));
   // const randScale = _.random(0.5, 1.0)
   asset.scale.set(0.01, 0.01, 0.01);
 
-  var tweenDuration = 3000;
+  var tweenDuration = 6000;
   var tweenDelay = 0;
 
-  var tween = new TWEEN.Tween(asset.scale).to({ x: 1, y: 1, z: 1 }, tweenDuration).easing(TWEEN.Easing.Quadratic.Out).onComplete(function () {
-    var tweenOut = new TWEEN.Tween(asset.scale).to({ x: 0.01, y: 0.01, z: 0.01 }, tweenDuration).easing(TWEEN.Easing.Quadratic.In).delay(tweenDelay).onComplete(function () {
+  var tween = new TWEEN.Tween(asset.scale).to({ x: 1, y: 1, z: 1 }, tweenDuration).easing(TWEEN.Easing.Quadratic.InOut).onComplete(function () {
+    var tweenOut = new TWEEN.Tween(asset.scale).to({ x: 0.01, y: 0.01, z: 0.01 }, tweenDuration).easing(TWEEN.Easing.Quadratic.InOut).delay(tweenDelay).onComplete(function () {
       parent.remove(asset);
       _lodash2.default.remove(ballAssets, asset);
     }).start();
@@ -1475,7 +1423,7 @@ AFRAME.registerComponent('seething-ball', {
         asset.rotateX(_lodash2.default.random(-0.01, 0.01));
         asset.rotateZ(_lodash2.default.random(-0.01, 0.01));
       });
-      if (tickCount % 2 == 0) {
+      if (tickCount % 200 == 0) {
         spawnBallAsset(this.el.object3D);
       }
     }
