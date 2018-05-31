@@ -2,10 +2,13 @@ import _ from 'lodash'
 import OBJLoader from 'three-obj-loader'
 import OBJExporter from 'three-obj-exporter'
 import save from 'save-file'
+import Hammer from 'hammerjs'
 
 OBJLoader(THREE)
 
 const assetsPath = 'models-low/'
+
+let currentSegment
 
 const assetsData = [
 
@@ -73,21 +76,56 @@ const loadAssets = assetsData => {
   return Promise.all(loadingPromises)
 }
 
-
-
-
-
 AFRAME.registerComponent('vine', {
 
   init: function() {
-
-    console.log('vine here')
-
     this.tickCount = 0
+    this.container = new THREE.Group()
+    this.el.object3D.add(this.container)
 
     loadAssets(assetsData).then(()=> {
-      console.log('assets loaded')
+
+
+      const geo = new THREE.SphereGeometry( 0.01, 32, 32 )
+      const mat = new THREE.MeshBasicMaterial( {color: 0x0000ff} )
+      const sp = new THREE.Mesh( geo, mat )
+      const sc = this.el.sceneEl.object3D
+      sc.add(sp)
+
+
+      currentSegment = this.spawn()
+      console.log('currentSegment: ', currentSegment)
+
+      const mc = new Hammer (document.getElementById('scene'))
+
+      mc.on('tap', e => {
+
+        currentSegment = this.spawnNext(currentSegment)
+
+        const geometry = new THREE.SphereGeometry( 0.01, 32, 32 )
+        const material = new THREE.MeshBasicMaterial( {color: 0xff0000} )
+        const sphere = new THREE.Mesh( geometry, material )
+        const parent = this.el.sceneEl.object3D
+        const scene = this.el.sceneEl.object3D
+        // parent.updateMatrixWorld()
+        parent.add( sphere )
+
+        // const vector = new THREE.Vector3();
+        // vector.setFromMatrixPosition( currentSegment.matrixWorld );
+        // console.log('ps: ', currentSegment.position)
+
+        const wp = currentSegment.getWorldPosition()
+        console.log('wp: ', wp)
+        const {x, y, z} = wp
+        sphere.position.set(x, y, z)
+
+        window.scene = parent
+        window.scene = scene
+        window.sphere = sphere
+      })
+
     })
+
   },
 
   update: function() {
@@ -96,11 +134,47 @@ AFRAME.registerComponent('vine', {
   tick: function(time) {
     this.tickCount++
     if (this.tickCount % 10 == 0) {
-      this.spawn()
+      // this.spawn()
     }
   },
 
   spawn: function() {
+
+    const asset = assetsData[2]
+    const segment = asset.obj.clone()
+    segment.spawnPoints = asset.spawnPoints
+    // const obj3D = this.el.object3D
+    this.container.add(segment)
+    return segment
+    
+    // console.log('this: ', this.el.object3D)
+
+
+  },
+
+  spawnNext: function(parentSegment) {
+    const asset = assetsData[2]
+    const segment = asset.obj.clone()
+    segment.spawnPoints = asset.spawnPoints
+    const spawnPoint = parentSegment.spawnPoints[0]
+    const {x, y, z} = spawnPoint.position
+    segment.position.set(x, y, z)
+    segment.rotateY(_.random(Math.PI*4))
+
+    parentSegment.add(segment)
+
+    return segment  
   }
 
 })
+
+
+
+
+
+
+
+
+
+
+
