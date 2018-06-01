@@ -86,15 +86,15 @@ AFRAME.registerComponent('vine', {
     loadAssets(assetsData).then(()=> {
 
 
-      const geo = new THREE.SphereGeometry( 0.01, 32, 32 )
-      const mat = new THREE.MeshBasicMaterial( {color: 0x0000ff} )
-      const sp = new THREE.Mesh( geo, mat )
-      const sc = this.el.sceneEl.object3D
-      sc.add(sp)
+      // const geo = new THREE.SphereGeometry( 0.01, 32, 32 )
+      // const mat = new THREE.MeshBasicMaterial( {color: 0x0000ff} )
+      // const sp = new THREE.Mesh( geo, mat )
+      // const sc = this.el.sceneEl.object3D
+      // sc.add(sp)
 
 
       currentSegment = this.spawn()
-      console.log('currentSegment: ', currentSegment)
+      // console.log('currentSegment: ', currentSegment)
 
       const mc = new Hammer (document.getElementById('scene'))
 
@@ -102,26 +102,48 @@ AFRAME.registerComponent('vine', {
 
         currentSegment = this.spawnNext(currentSegment)
 
-        const geometry = new THREE.SphereGeometry( 0.01, 32, 32 )
+        // const geometry = new THREE.SphereGeometry( 0.01, 32, 32 )
+        // const material = new THREE.MeshBasicMaterial( {color: 0xff0000} )
+        // const sphere = new THREE.Mesh( geometry, material )
+        // const scene = this.el.sceneEl.object3D
+        // scene.add( sphere )
+
+        // const wp = currentSegment.getWorldPosition()
+        // console.log('wp: ', wp)
+        // const {x, y, z} = wp
+        // sphere.position.set(x, y, z)
+
+        const geometry = new THREE.SphereGeometry( 3, 32, 32 )
         const material = new THREE.MeshBasicMaterial( {color: 0xff0000} )
         const sphere = new THREE.Mesh( geometry, material )
-        const parent = this.el.sceneEl.object3D
         const scene = this.el.sceneEl.object3D
-        // parent.updateMatrixWorld()
-        parent.add( sphere )
+        this.container.add( sphere )
 
-        // const vector = new THREE.Vector3();
-        // vector.setFromMatrixPosition( currentSegment.matrixWorld );
-        // console.log('ps: ', currentSegment.position)
+        currentSegment.updateMatrixWorld()
 
-        const wp = currentSegment.getWorldPosition()
-        console.log('wp: ', wp)
-        const {x, y, z} = wp
+        const lp = currentSegment.position.clone()
+        console.log('lp: ', lp)
+        const wp = currentSegment.localToWorld(lp)
+        console.log('wp: ', lp)
+
+        const pp = this.container.worldToLocal(lp)
+        console.log('pp: ', pp)
+
+        const {x, y, z} = pp
         sphere.position.set(x, y, z)
 
-        window.scene = parent
-        window.scene = scene
-        window.sphere = sphere
+
+
+        // console.log("currentSegment:", currentSegment.position)
+        // console.log("currentSegment.localToWorld(new THREE.Vector3():", currentSegment.localToWorld(currentSegment.position))
+
+        // const wp = currentSegment.localToWorld(new THREE.Vector3())
+        // // const lp = this.container.worldToLocal()
+
+        // console.log('wp: ', wp)
+        // console.log('currentSegment: ', currentSegment.position)
+        // // console.log('lp: ', lp)
+
       })
 
     })
