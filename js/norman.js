@@ -73,7 +73,7 @@ AFRAME.registerComponent('norman', {
 
   setupKeyboard() {
     document.addEventListener('keydown', e => {
-      console.log('keydown: ', e)
+      // console.log('keydown: ', e.code)
       if (e.code == 'Enter') {this.togglePlay()} 
       // if (e.code == 'Space') {this.fileLoadPrev()} 
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
@@ -83,6 +83,9 @@ AFRAME.registerComponent('norman', {
       // need to manually save and refresh after doing this for now...
 
       else if (e.code == 'Space') {
+        // this.fileLoadPrev()
+
+      } else if (e.code == 'KeyL') {
         this.fileLoadPrev()
       } 
     })

@@ -763,7 +763,7 @@ AFRAME.registerComponent('seething-ball', {
 AFRAME.registerComponent('glint', {
 
   init: function() {
-    // console.log('glint')
+    console.log('glint')
 
     this.tickCount = 0
     // this.geo = new THREE.OctahedronGeometry(0.05)
@@ -779,12 +779,13 @@ AFRAME.registerComponent('glint', {
     this.tickCount++
     this.el.object3D.rotateY(-0.02)
     
-    if (this.tickCount % 10 == 0) {
+    if (this.tickCount % 1 == 0) {
       this.spawn()
     }
   },
 
   spawn: function() {
+    console.log('spawn')
     const time = _.random(1000, 2000)
     const mat = new THREE.MeshBasicMaterial( { color: colors[2], transparent: true, opacity: 0.7} )
     // const mat = new THREE.MeshStandardMaterial( { color: 0xffffff, transparent: true, opacity: 0.2 } )

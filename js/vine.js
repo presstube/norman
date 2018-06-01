@@ -8,9 +8,53 @@ OBJLoader(THREE)
 
 const assetsPath = 'models-low/'
 
+const pace = 5
+const paceMultiplier = 50
+let playing = false
+
+let segments = []
 let currentSegment
+const colorPalettes = [
+  ['#ffffff', '#000000', '#ffffff'],
+  ['#000000', '#ffffff', '#000000'],
+  ['#AEF3E7', '#C33C54', '#37718E'],
+  ['#002A32', '#F40076', '#FFC6AC'],
+  ['#00BD9D', '#FFFBFA', '#F7567C'],
+  ['#FF0054', '#390099', '#FFBD00'],
+  ['#AFFC41', '#3C1642', '#B2FF9E'],
+  ['#00171F', '#FFEEF2', '#00A7E1'],
+  ['#FF92C2', '#595758', '#FFFFFF'],
+  ['#EDF0DA', '#8F5C38', '#FFFFFF'],
+  ['#EDF0DA', '#AA4465', '#FFFFFF'],
+  ['#45503B', '#E5EBEA', '#FFFFFF'],
+  ['#EE6055', '#AAF683', '#FFFFFF'],
+  ['#F40696', '#FAAFBE', '#FFFFFF']
+]
+
+// const colors = _.sample(colorPalettes)
+const colors = colorPalettes[0]
 
 const assetsData = [
+
+
+
+
+ {
+    objFilename: assetsPath + 'plant2-0.obj',
+    obj: null,
+    sku: 'base',
+    spawnPoints: [
+    ]
+ },
+
+ {
+    objFilename: assetsPath + 'plant2-bigblumpy.obj',
+    obj: null,
+    sku: 'base2',
+    spawnPoints: [
+    ]
+ },
+
 
  {
     objFilename: assetsPath + 'plant2-bulby.obj',
@@ -48,6 +92,43 @@ const assetsData = [
     ]
  },
 
+ {
+    objFilename: assetsPath + 'plant2-2prong-cactus-fork.obj',
+    obj: null,
+    sku: 'base6',
+    spawnPoints: [
+      {
+        position: {x: -0.591, y: 15.509, z: -8.914},
+        rotation: {x: -4.526, y: 0.000, z: 0.000}
+      },
+      {
+        position: {x: 5.588, y: 23.067, z: -0.302},
+        rotation: {x: 2.636, y: 3.161, z: 4.526}
+      },
+    ]
+ },
+
+ {
+    objFilename: assetsPath + 'plant2-curvefan.obj',
+    obj: null,
+    sku: 'base7',
+    spawnPoints: [
+      {
+        position: {x: 15.513, y: 31.730, z: 9.991},
+        rotation: {x: -39.706, y: 0.000, z: 0.000}
+      },
+      {
+        position: {x: 16.746, y: 28.190, z: -3.726},
+        rotation: {x: -49.504, y: -8.652, z: 35.237}
+      },
+      {
+        position: {x: 15.143, y: 18.675, z: -10.272},
+        rotation: {x: -49.504, y: -8.652, z: 14.209}
+      },
+    ]
+ },
+
+
 ]
 
 const loadAsset = function(filename) {
@@ -79,72 +160,57 @@ const loadAssets = assetsData => {
 AFRAME.registerComponent('vine', {
 
   init: function() {
+
     this.tickCount = 0
     this.container = new THREE.Group()
     this.el.object3D.add(this.container)
 
     loadAssets(assetsData).then(()=> {
 
-
-      // const geo = new THREE.SphereGeometry( 0.01, 32, 32 )
-      // const mat = new THREE.MeshBasicMaterial( {color: 0x0000ff} )
-      // const sp = new THREE.Mesh( geo, mat )
-      // const sc = this.el.sceneEl.object3D
-      // sc.add(sp)
-
-
       currentSegment = this.spawn()
-      // console.log('currentSegment: ', currentSegment)
+
+      segments.push(currentSegment)
 
       const mc = new Hammer (document.getElementById('scene'))
 
       mc.on('tap', e => {
-
-        currentSegment = this.spawnNext(currentSegment)
-
-        // const geometry = new THREE.SphereGeometry( 0.01, 32, 32 )
-        // const material = new THREE.MeshBasicMaterial( {color: 0xff0000} )
-        // const sphere = new THREE.Mesh( geometry, material )
-        // const scene = this.el.sceneEl.object3D
-        // scene.add( sphere )
-
-        // const wp = currentSegment.getWorldPosition()
-        // console.log('wp: ', wp)
-        // const {x, y, z} = wp
-        // sphere.position.set(x, y, z)
-
-        const geometry = new THREE.SphereGeometry( 3, 32, 32 )
-        const material = new THREE.MeshBasicMaterial( {color: 0xff0000} )
-        const sphere = new THREE.Mesh( geometry, material )
-        const scene = this.el.sceneEl.object3D
-        this.container.add( sphere )
-
-        currentSegment.updateMatrixWorld()
-
-        const lp = currentSegment.position.clone()
-        console.log('lp: ', lp)
-        const wp = currentSegment.localToWorld(lp)
-        console.log('wp: ', lp)
-
-        const pp = this.container.worldToLocal(lp)
-        console.log('pp: ', pp)
-
-        const {x, y, z} = pp
-        sphere.position.set(x, y, z)
-
-
-
-        // console.log("currentSegment:", currentSegment.position)
-        // console.log("currentSegment.localToWorld(new THREE.Vector3():", currentSegment.localToWorld(currentSegment.position))
-
-        // const wp = currentSegment.localToWorld(new THREE.Vector3())
-        // // const lp = this.container.worldToLocal()
-
-        // console.log('wp: ', wp)
-        // console.log('currentSegment: ', currentSegment.position)
-        // // console.log('lp: ', lp)
-
+        this.step()
       })
+
+      document.addEventListener("mousedown", e => {
+        console.log('touchstart')
+        if (e.code == 'Space') {
+          playing = true
+
+        }
+      })
+      document.addEventListener("mouseup", e => {
+        console.log('touchend')
+        if (e.code == 'Space') {
+          playing = false
+
+
+        }
+      })
+
+      document.addEventListener('keydown', e => {
+        // console.log('kd: ', e.keyCode)
+        if (e.code == 'Space') {
+          playing = true
+
+        }
+      })
+      document.addEventListener('keyup', e => {
+        console.log('kd: ', e)
+        if (e.code == 'Space') {
+          playing = false
+
+
+        }
+      })
+      // mc.on('press', e => {
+      //   playing = !playing
+      // })
 
     })
 
@@ -155,37 +221,90 @@ AFRAME.registerComponent('vine', {
 
   tick: function(time) {
     this.tickCount++
-    if (this.tickCount % 10 == 0) {
+    if (this.tickCount % pace == 0) {
+      if (playing) { 
+        this.step()
+      }
       // this.spawn()
     }
   },
 
-  spawn: function() {
-
-    const asset = assetsData[2]
+  makeSegment: function() {
+    const asset = assetsData[_.random(4, 6)]
     const segment = asset.obj.clone()
+    const mat = new THREE.MeshBasicMaterial( { color: colors[0] } )
+    segment.children[0].material = mat
     segment.spawnPoints = asset.spawnPoints
-    // const obj3D = this.el.object3D
+    return segment
+  },
+
+  spawn: function() {
+    // const asset = assetsData[_.random(1, 4)]
+    const segment = this.makeSegment()
     this.container.add(segment)
     return segment
-    
-    // console.log('this: ', this.el.object3D)
-
-
   },
 
   spawnNext: function(parentSegment) {
-    const asset = assetsData[2]
-    const segment = asset.obj.clone()
-    segment.spawnPoints = asset.spawnPoints
-    const spawnPoint = parentSegment.spawnPoints[0]
+    const segment = this.makeSegment()
+
+    const spawnPoint = parentSegment.spawnPoints[_.random(parentSegment.spawnPoints.length-1)]
     const {x, y, z} = spawnPoint.position
     segment.position.set(x, y, z)
+    const {x:rx, y:ry, z:rz} = spawnPoint.rotation
+    segment.rotation.set(THREE.Math.degToRad(rx), THREE.Math.degToRad(ry), THREE.Math.degToRad(rz))
+    segment.parentSegment = parentSegment
     segment.rotateY(_.random(Math.PI*4))
+    segment.scale.set(0.01, 0.01, 0.01)
+    const tween = new TWEEN.Tween(segment.scale)
+      .to({x: 1, y: 1, z: 1}, pace * paceMultiplier - 20)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
+
 
     parentSegment.add(segment)
 
     return segment  
+  },
+
+  step: function() {
+    currentSegment = this.spawnNext(currentSegment)
+    segments.push(currentSegment)
+
+
+    // const geometry = new THREE.SphereGeometry( 3, 32, 32 )
+    // const material = new THREE.MeshBasicMaterial( {color: 0xff0000} )
+    // const sphere = new THREE.Mesh( geometry, material )
+    const scene = this.el.sceneEl.object3D
+    // this.container.add( sphere )
+
+    currentSegment.updateMatrixWorld()
+
+    const lp = new THREE.Vector3()
+    const wp = currentSegment.localToWorld(lp)
+    const holder = document.getElementById('holder').object3D
+    const pp = holder.worldToLocal(lp)
+    // console.log('holder: ', holder)
+    // const pp = this.container.worldToLocal(lp)
+    const {x, y, z} = pp
+    // sphere.position.set(x, y, z)
+
+    // this.container.add( currentSegment )
+    // currentSegment.position.set(x, y, z)
+
+    // holder.position.set(-x, -y, -z)
+    // this.container.position.set(-x, -y, -z)
+
+    const tween = new TWEEN.Tween(holder.position)
+      .to({x:-x, y:-y, z:-z}, pace * paceMultiplier)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
+
+    // if (segments.length > 10) {
+    //   const segToRemove = segments.shift()
+    //   this.container.remove(segToRemove)
+    // }
+
   }
 
 })
