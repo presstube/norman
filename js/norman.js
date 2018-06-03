@@ -90,12 +90,14 @@ AFRAME.registerComponent('norman', {
       } else if (e.code == 'KeyL') {
         this.fileLoadPrev()
       } 
-      const mc = new Hammer (document.getElementById('scene'))
+      
 
-      mc.on('tap', e => {
-        this.fileLoadPrev()
-        // this.step()
-      })
+
+      // const mc = new Hammer (document.getElementById('scene'))
+      // mc.on('tap', e => {
+      //   this.fileLoadPrev()
+      //   // this.step()
+      // })
 
 
     })

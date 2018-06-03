@@ -8,8 +8,8 @@ OBJLoader(THREE)
 
 const assetsPath = 'models-low/'
 
-const pace = 5
-const paceMultiplier = 50
+const pace = 50
+const paceMultiplier = 15
 let playing = false
 
 let segments = []
@@ -33,6 +33,37 @@ const colorPalettes = [
 
 // const colors = _.sample(colorPalettes)
 const colors = colorPalettes[0]
+
+const reparent = (child, parent) => {
+
+    // console.log('child parent: ', child.parent)
+
+    // parent.updateMatrixWorld()
+    // var worldToLocal = new THREE.Matrix4().getInverse(parent.matrixWorld)
+    // parent.add(child)
+    // child.applyMatrix(worldToLocal)
+
+    //     const {el} = this,
+    //       normObj3D = el.object3D,
+        
+
+  // const pos = child.getWorldPosition(),
+  //       rot = child.getWorldRotation()
+
+  // parent.add(child)
+  // child.position.set(pos.x, pos.y, pos.z)
+  // child.rotation.set(rot.x, rot.y, rot.z)
+
+      // el.setAttribute('position', pos);
+      // el.setAttribute('rotation', {
+      //   x: radToDeg(rot.x),
+      //   y: radToDeg(rot.y),
+      //   z: radToDeg(rot.z)
+      // })
+
+
+}
+
 
 const assetsData = [
 
@@ -171,27 +202,27 @@ AFRAME.registerComponent('vine', {
 
       segments.push(currentSegment)
 
-      // const mc = new Hammer (document.getElementById('scene'))
+      const mc = new Hammer (document.getElementById('scene'))
 
-      // mc.on('tap', e => {
-      //   this.step()
+      mc.on('tap', e => {
+        this.step()
+      })
+
+      // window.addEventListener("touchstart", e => {
+      //     playing = true
+      //   console.log('touchstart')
+      //   if (e.code == 'Space') {
+
+      //   }
       // })
-
-      window.addEventListener("touchstart", e => {
-          playing = true
-        console.log('touchstart')
-        if (e.code == 'Space') {
-
-        }
-      })
-      window.addEventListener("touchend", e => {
-          playing = false
-        console.log('touchend')
-        if (e.code == 'Space') {
+      // window.addEventListener("touchend", e => {
+      //     playing = false
+      //   console.log('touchend')
+      //   if (e.code == 'Space') {
 
 
-        }
-      })
+      //   }
+      // })
 
       document.addEventListener('keydown', e => {
         // console.log('kd: ', e.keyCode)
@@ -204,10 +235,9 @@ AFRAME.registerComponent('vine', {
         console.log('kd: ', e)
         if (e.code == 'Space') {
           playing = false
-
-
         }
       })
+
       // mc.on('press', e => {
       //   playing = !playing
       // })
@@ -230,7 +260,7 @@ AFRAME.registerComponent('vine', {
   },
 
   makeSegment: function() {
-    const asset = assetsData[_.random(4, 6)]
+    const asset = assetsData[_.random(3, 6)]
     const segment = asset.obj.clone()
     const mat = new THREE.MeshBasicMaterial( { color: colors[0] } )
     segment.children[0].material = mat
@@ -255,6 +285,7 @@ AFRAME.registerComponent('vine', {
     segment.rotation.set(THREE.Math.degToRad(rx), THREE.Math.degToRad(ry), THREE.Math.degToRad(rz))
     segment.parentSegment = parentSegment
     segment.rotateY(_.random(Math.PI*4))
+    
     segment.scale.set(0.01, 0.01, 0.01)
     const tween = new TWEEN.Tween(segment.scale)
       .to({x: 1, y: 1, z: 1}, pace * paceMultiplier - 20)
@@ -268,8 +299,15 @@ AFRAME.registerComponent('vine', {
   },
 
   step: function() {
+
+
+
     currentSegment = this.spawnNext(currentSegment)
     segments.push(currentSegment)
+
+    // reparent(currentSegment, this.container)
+
+
 
 
     // const geometry = new THREE.SphereGeometry( 3, 32, 32 )
@@ -282,15 +320,27 @@ AFRAME.registerComponent('vine', {
 
     const lp = new THREE.Vector3()
     const wp = currentSegment.localToWorld(lp)
-    const holder = document.getElementById('holder').object3D
+    // const holder = document.getElementById('holder').object3D
     // const pp = holder.worldToLocal(lp)
     // console.log('holder: ', holder)
     const pp = this.container.worldToLocal(lp)
     const {x, y, z} = pp
+
+    const q = new THREE.Quaternion()
+    // console.log('q: ', q)
+
+    currentSegment.getWorldQuaternion(q)
+
+    // console.log('wq: ', q)
+
     // sphere.position.set(x, y, z)
 
-    // this.container.add( currentSegment )
-    // currentSegment.position.set(x, y, z)
+    this.container.add( currentSegment )
+    currentSegment.position.set(x, y, z)
+    currentSegment.setRotationFromQuaternion(q)
+
+
+
 
     // holder.position.set(-x, -y, -z)
     // this.container.position.set(-x, -y, -z)
@@ -301,10 +351,10 @@ AFRAME.registerComponent('vine', {
       .easing(TWEEN.Easing.Quadratic.InOut)
       .start()
 
-    // if (segments.length > 10) {
-    //   const segToRemove = segments.shift()
-    //   this.container.remove(segToRemove)
-    // }
+    if (segments.length > 10) {
+      const segToRemove = segments.shift()
+      this.container.remove(segToRemove)
+    }
 
   }
 
