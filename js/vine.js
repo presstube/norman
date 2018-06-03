@@ -171,23 +171,23 @@ AFRAME.registerComponent('vine', {
 
       segments.push(currentSegment)
 
-      const mc = new Hammer (document.getElementById('scene'))
+      // const mc = new Hammer (document.getElementById('scene'))
 
-      mc.on('tap', e => {
-        this.step()
-      })
+      // mc.on('tap', e => {
+      //   this.step()
+      // })
 
-      document.addEventListener("mousedown", e => {
+      window.addEventListener("touchstart", e => {
+          playing = true
         console.log('touchstart')
         if (e.code == 'Space') {
-          playing = true
 
         }
       })
-      document.addEventListener("mouseup", e => {
+      window.addEventListener("touchend", e => {
+          playing = false
         console.log('touchend')
         if (e.code == 'Space') {
-          playing = false
 
 
         }
@@ -283,9 +283,9 @@ AFRAME.registerComponent('vine', {
     const lp = new THREE.Vector3()
     const wp = currentSegment.localToWorld(lp)
     const holder = document.getElementById('holder').object3D
-    const pp = holder.worldToLocal(lp)
+    // const pp = holder.worldToLocal(lp)
     // console.log('holder: ', holder)
-    // const pp = this.container.worldToLocal(lp)
+    const pp = this.container.worldToLocal(lp)
     const {x, y, z} = pp
     // sphere.position.set(x, y, z)
 
@@ -295,7 +295,8 @@ AFRAME.registerComponent('vine', {
     // holder.position.set(-x, -y, -z)
     // this.container.position.set(-x, -y, -z)
 
-    const tween = new TWEEN.Tween(holder.position)
+    const tween = new TWEEN.Tween(this.container.position)
+    // const tween = new TWEEN.Tween(holder.position)
       .to({x:-x, y:-y, z:-z}, pace * paceMultiplier)
       .easing(TWEEN.Easing.Quadratic.InOut)
       .start()

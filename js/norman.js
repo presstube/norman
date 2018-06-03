@@ -7,6 +7,8 @@ import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers
 import './anim'
 import RegMarker from './regmarker'
 
+import Hammer from 'hammerjs'
+
 AFRAME.registerComponent('norman', {
 
   init() {
@@ -88,6 +90,14 @@ AFRAME.registerComponent('norman', {
       } else if (e.code == 'KeyL') {
         this.fileLoadPrev()
       } 
+      const mc = new Hammer (document.getElementById('scene'))
+
+      mc.on('tap', e => {
+        this.fileLoadPrev()
+        // this.step()
+      })
+
+
     })
   },
 

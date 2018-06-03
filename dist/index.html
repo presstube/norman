@@ -7,7 +7,7 @@
     <!-- <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script> -->
     <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
     <script src="https://cdn.rawgit.com/tizzle/aframe-orbit-controls-component/v0.1.14/dist/aframe-orbit-controls-component.min.js"></script>
-
+    <script src="https://hammerjs.github.io/dist/hammer.js"></script>
     <script src="build/main.js"></script>
 
     <style>
@@ -28,7 +28,7 @@
     -->
     <a-scene 
       id="scene" 
-      fog="color: #000; near: 0.1; far:0.4"
+      fog="color: #000; near: .1; far:0.4"
       background="color: #000000"
       >
 
@@ -40,27 +40,48 @@
           orbit-controls="
               enableZoom:false;
               autoRotate: true;
-              target: #norman;
+              target: #vine;
               enableDamping: true;
               dampingFactor: 0.125;
-              autoRotateSpeed:0.2;
+              autoRotateSpeed:.2;
               minPolarAngle: 1.57079632679;
               maxPolarAngle: 1.57079632679;
         ">
           
         </a-camera>
+
+<!--       <a-sphere
+        id="greensphere"
+        color="green" 
+        radius="0.01" 
+        ></a-sphere> -->
+
       <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
       <a-entity oculus-touch-controls="hand: right; model:true"></a-entity>
-      <a-entity id="norman" norman position="0 0 0">
-        <a-entity 
-          seething-ball 
+
+      <a-entity id="holder">
+
+<!--         <a-entity 
+          seething-ball
           id="seething-ball"
           scale="0.002 0.002 0.002"
           position="0 0 0"
           > 
+        </a-entity> -->
+        <a-entity 
+          vine
+          id="vine"
+          scale="0.001 0.001 0.001"
+          position="0 0 0"
+          > 
         </a-entity>
 
-
+        <a-entity id="norman" norman scale="1 1 1" position="0 0 0"></a-entity>
+        <a-entity id="norman" norman scale="2 2 2" position="0 0 0"></a-entity>
+        <a-entity id="norman" norman scale="3 3 3" position=".1 .1 .1"></a-entity>
+        <a-entity id="norman" norman position="-.1 -.1 -.1"></a-entity>
+        <a-entity id="norman" norman position="-.1 .1 -.1"></a-entity>
+        <a-entity id="norman" norman position="-.1 -.1 .1"></a-entity>
       </a-entity>
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-sphere
