@@ -16,20 +16,19 @@
         padding: 0;
         margin: 0;
       }
+
     </style>
 
   </head>
   <body>
-    <div id="firebaseui-auth-container"></div>
     <!-- 
-  
-  
 
     -->
     <a-scene 
       id="scene" 
       fog="color: #000; near: 0.1; far:0.4"
       background="color: #000000"
+      vr-mode-ui="enabled: true"
       >
 
       <a-camera 
@@ -46,7 +45,8 @@
               autoRotateSpeed:0.2;
               minPolarAngle: 1.57079632679;
               maxPolarAngle: 1.57079632679;
-        ">
+        "
+        >
           
         </a-camera>
       <a-entity oculus-touch-controls="hand: left; model:true"></a-entity>
@@ -78,6 +78,7 @@
 
 
     </a-scene>
+    <div id="firebaseui-auth-container"></div>
   </body>
 </html>
 
