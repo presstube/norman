@@ -2578,16 +2578,16 @@ AFRAME.registerComponent('vine', {
       //   this.step()
       // })
 
-      window.addEventListener("touchstart", function (e) {
-        playing = true;
-        console.log('touchstart');
-        if (e.code == 'Space') {}
-      });
-      window.addEventListener("touchend", function (e) {
-        playing = false;
-        console.log('touchend');
-        if (e.code == 'Space') {}
-      });
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+
+        window.addEventListener("touchstart", function (e) {
+          playing = true;
+        });
+
+        window.addEventListener("touchend", function (e) {
+          playing = false;
+        });
+      }
 
       document.addEventListener('keydown', function (e) {
         // console.log('kd: ', e.keyCode)
@@ -2595,12 +2595,14 @@ AFRAME.registerComponent('vine', {
           playing = true;
         }
       });
+
       document.addEventListener('keyup', function (e) {
         console.log('kd: ', e);
         if (e.code == 'Space') {
           playing = false;
         }
       });
+
       // mc.on('press', e => {
       //   playing = !playing
       // })

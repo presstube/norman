@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>MEM - Vine</title>
-    <meta name="description" content="Minimalist animation sketchbook for WebVR.">
+    <title>MEM</title>
+    <meta name="description" content="Interactive poems about mind training.">
     <!-- <script src="https://rawgit.com/aframevr/aframe/320bc14/dist/aframe-master.min.js"></script> -->
     <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
     <script src="https://cdn.rawgit.com/tizzle/aframe-orbit-controls-component/v0.1.14/dist/aframe-orbit-controls-component.min.js"></script>
@@ -20,7 +20,6 @@
 
   </head>
   <body>
-    <div id="firebaseui-auth-container"></div>
     <!-- 
   
   
@@ -68,20 +67,24 @@
           position="0 0 0"
           > 
         </a-entity> -->
-        <a-entity 
-          vine
-          id="vine"
-          scale="0.001 0.001 0.001"
-          position="0 0 0"
-          > 
-        </a-entity>
 
-        <a-entity id="norman" norman scale="1 1 1" position="0 0 0"></a-entity>
+
+        <a-entity id="norman" norman scale="1 1 1" position="0 0 0">
+          
+          <a-entity 
+            vine
+            id="vine"
+            scale="0.001 0.001 0.001"
+            position="0 0 0"
+            > 
+          </a-entity>
+          
+        </a-entity>
 <!--         <a-entity id="norman" norman scale="2 2 2" position="0 0 0"></a-entity>
         <a-entity id="norman" norman scale="3 3 3" position=".1 .1 .1"></a-entity> -->
-        <a-entity id="norman" norman position="-.1 -.1 -.1"></a-entity>
+<!--         <a-entity id="norman" norman position="-.1 -.1 -.1"></a-entity>
         <a-entity id="norman" norman position="-.1 .1 -.1"></a-entity>
-        <a-entity id="norman" norman position="-.1 -.1 .1"></a-entity>
+        <a-entity id="norman" norman position="-.1 -.1 .1"></a-entity> -->
       </a-entity>
       <a-ring color="tomato" radius-inner="0.5" radius-outer="0.51" rotation="-90 0 0"></a-ring>
       <a-sphere
@@ -99,6 +102,7 @@
 
 
     </a-scene>
+    <div id="firebaseui-auth-container"></div>
   </body>
 </html>
 

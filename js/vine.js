@@ -177,37 +177,32 @@ AFRAME.registerComponent('vine', {
       //   this.step()
       // })
 
-      window.addEventListener("touchstart", e => {
+      if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+       
+        window.addEventListener("touchstart", e => {
           playing = true
-        console.log('touchstart')
-        if (e.code == 'Space') {
+        })
 
-        }
-      })
-      window.addEventListener("touchend", e => {
+        window.addEventListener("touchend", e => {
           playing = false
-        console.log('touchend')
-        if (e.code == 'Space') {
+        })
 
-
-        }
-      })
+      }
 
       document.addEventListener('keydown', e => {
         // console.log('kd: ', e.keyCode)
         if (e.code == 'Space') {
           playing = true
-
         }
       })
+
       document.addEventListener('keyup', e => {
         console.log('kd: ', e)
         if (e.code == 'Space') {
           playing = false
-
-
         }
       })
+
       // mc.on('press', e => {
       //   playing = !playing
       // })
