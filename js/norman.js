@@ -57,10 +57,10 @@ AFRAME.registerComponent('norman', {
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       // this.buildComp()
-      this.fileLoadPrev()
-      this.startPlaying()
+      // this.fileLoadPrev()
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
-      // window.lbn('trulmy-prunt-squeefs')
+      window.lbn('fropley-ront-clumps')
+      this.startPlaying()
 
     }, 1) 
 

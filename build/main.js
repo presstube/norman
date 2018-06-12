@@ -1617,10 +1617,10 @@ AFRAME.registerComponent('norman', {
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       // this.buildComp()
-      _this.fileLoadPrev();
-      _this.startPlaying();
+      // this.fileLoadPrev()
       window.lbn = window.loadByName = _this.fileLoadByName.bind(_this);
-      // window.lbn('trulmy-prunt-squeefs')
+      window.lbn('fropley-ront-clumps');
+      _this.startPlaying();
     }, 1);
   },
   tick: function tick(time, timeDelta) {

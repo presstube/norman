@@ -11,19 +11,30 @@
     <script src="build/main.js"></script>
 
     <style>
+
       html, body {
         -webkit-tap-highlight-color: rgba(0,0,0,0);
         padding: 0;
         margin: 0;
       }
 
+/*      
+      #firebaseui-auth-container {
+        z-index: 999;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+      }
+*/
+
     </style>
 
   </head>
   <body>
-    <!-- 
 
+    <!--
     -->
+
     <a-scene 
       id="scene" 
       fog="color: #000; near: 0.1; far:0.4"
@@ -76,9 +87,10 @@
         material="opacity: 0.7"
         ></a-sphere>
 
-
     </a-scene>
+
     <div id="firebaseui-auth-container"></div>
+
   </body>
 </html>
 
