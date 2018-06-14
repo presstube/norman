@@ -59,10 +59,10 @@ AFRAME.registerComponent('norman', {
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       // this.buildComp()
-      this.fileLoadPrev()
-      this.startPlaying()
+      // this.fileLoadPrev()
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
-      // window.lbn('trulmy-prunt-squeefs')
+      window.lbn('brumpled-crank-glops')
+      this.startPlaying()
 
     }, 1) 
 
@@ -146,27 +146,27 @@ AFRAME.registerComponent('norman', {
     abstractABXY(rightHand, 'right')
     Object.assign(this, {secondaryHand, primaryHand})
 
-    primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
-    primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
-    primaryHand.addEventListener('gripdown', e => this.handlePrimaryGripDown(e))
-    primaryHand.addEventListener('gripup', e => this.handlePrimaryGripUp(e))
-    primaryHand.addEventListener('upperbuttondown', () => this.handlePrimaryUpperButtonDown())
+    // primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
+    // primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
+    // primaryHand.addEventListener('gripdown', e => this.handlePrimaryGripDown(e))
+    // primaryHand.addEventListener('gripup', e => this.handlePrimaryGripUp(e))
+    // primaryHand.addEventListener('upperbuttondown', () => this.handlePrimaryUpperButtonDown())
 
+    // secondaryHand.addEventListener('lowerbuttondown', ()=> this.handleSecondaryLowerButtonDown())
+    // secondaryHand.addEventListener('lowerbuttonup', ()=> this.handleSecondaryLowerButtonUp())
+    // secondaryHand.addEventListener('upperbuttonup', ()=> this.handleSecondaryUpperButtonUp())
+    // secondaryHand.addEventListener('UP_ON', () => this.handleSecondaryUpOn())
+    // secondaryHand.addEventListener('DOWN_ON', () => this.handleSecondaryDownOn())
+    // secondaryHand.addEventListener('LEFT_ON', () => this.handleSecondaryLeftOn())
+    // secondaryHand.addEventListener('RIGHT_ON', () => this.handleSecondaryRightOn())
+    // secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
+    // secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
+    // secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
     secondaryHand.addEventListener('gripdown', e => this.handleSecondaryGripDown(e))
     secondaryHand.addEventListener('gripup', e => this.handleSecondaryGripUp(e))
     secondaryHand.addEventListener('triggerdown', () => this.handleSecondaryTriggerDown())
     secondaryHand.addEventListener('triggerup', () => this.handleSecondaryTriggerUp())
-    secondaryHand.addEventListener('lowerbuttondown', ()=> this.handleSecondaryLowerButtonDown())
-    secondaryHand.addEventListener('lowerbuttonup', ()=> this.handleSecondaryLowerButtonUp())
     secondaryHand.addEventListener('upperbuttondown', ()=> this.handleSecondaryUpperButtonDown())
-    secondaryHand.addEventListener('upperbuttonup', ()=> this.handleSecondaryUpperButtonUp())
-    secondaryHand.addEventListener('UP_ON', () => this.handleSecondaryUpOn())
-    secondaryHand.addEventListener('DOWN_ON', () => this.handleSecondaryDownOn())
-    secondaryHand.addEventListener('LEFT_ON', () => this.handleSecondaryLeftOn())
-    secondaryHand.addEventListener('RIGHT_ON', () => this.handleSecondaryRightOn())
-    secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
-    secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
-    secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
   },
 
   addFileModeListeners() {
@@ -284,8 +284,8 @@ AFRAME.registerComponent('norman', {
     this.exitFileMode()
   },
 
-  handleSecondaryUpperButtonDown(e) {
     // console.log('enter gas pedal mode')
+  handleSecondaryUpperButtonDown(e) {
     console.log('summon: ', e)
     this.summon()
   },
@@ -295,11 +295,13 @@ AFRAME.registerComponent('norman', {
   },
 
   handleSecondaryTriggerDown() {
-    this.enterInsertMode()
+    // this.enterInsertMode()
+    window.playing = true
   },
 
   handleSecondaryTriggerUp() {
-    this.exitInsertMode()
+    // this.exitInsertMode()
+    window.playing = false
   },
 
   handlePrimaryGripDown({target: hand}) {
@@ -501,12 +503,15 @@ AFRAME.registerComponent('norman', {
       
       const {el} = this,
             handObj3D = hand.object3D,
-            normObj3D = el.object3D
+            normObj3D = el.object3D,
+            holderObj3D = document.getElementById('holderholder').object3D
+
+      console.log('holderObj3D: ', holderObj3D)
 
       handObj3D.updateMatrixWorld()
       var worldToLocal = new THREE.Matrix4().getInverse(handObj3D.matrixWorld)
-      handObj3D.add(normObj3D)
-      normObj3D.applyMatrix(worldToLocal)
+      handObj3D.add(holderObj3D)
+      holderObj3D.applyMatrix(worldToLocal)
     }
 
   },
@@ -519,13 +524,19 @@ AFRAME.registerComponent('norman', {
       this.grabbedBy = null
       const {el} = this,
         normObj3D = el.object3D,
-        pos = normObj3D.getWorldPosition(),
-        rot = normObj3D.getWorldRotation(),
+        // pos = normObj3D.getWorldPosition(),
+        // rot = normObj3D.getWorldRotation(),
+        holderEl = document.getElementById('holderholder'),
+        holderObj3D = holderEl.object3D,
+        pos = holderObj3D.getWorldPosition(),
+        rot = holderObj3D.getWorldRotation(),
         {radToDeg} = THREE.Math
 
-      el.sceneEl.object3D.add(normObj3D)
-      el.setAttribute('position', pos);
-      el.setAttribute('rotation', {
+      console.log('holderEl: ', holderEl)
+
+      el.sceneEl.object3D.add(holderObj3D)
+      holderEl.setAttribute('position', pos);
+      holderEl.setAttribute('rotation', {
         x: radToDeg(rot.x),
         y: radToDeg(rot.y),
         z: radToDeg(rot.z)
@@ -535,7 +546,8 @@ AFRAME.registerComponent('norman', {
   },
 
   summon() {
-    this.el.setAttribute('position', this.secondaryHand.getAttribute('position'))
+    // this.el.setAttribute('position', this.secondaryHand.getAttribute('position'))
+    document.getElementById('holderholder').setAttribute('position', this.secondaryHand.getAttribute('position'))
   },
 
   togglePlay() {

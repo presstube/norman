@@ -10,7 +10,7 @@ const assetsPath = 'models-low/'
 
 const pace = 5
 const paceMultiplier = 50
-let playing = false
+window.playing = false
 
 let segments = []
 let currentSegment
@@ -157,6 +157,39 @@ const loadAssets = assetsData => {
   return Promise.all(loadingPromises)
 }
 
+
+AFRAME.registerComponent('scatter', {
+  init: function() {
+
+    console.log('scatter here')
+
+    this.geo = new THREE.IcosahedronGeometry(0.005)
+
+    const spawn = () => {
+
+      // const mat = new THREE.MeshBasicMaterial( { color: 'white', transparent: false, opacity: 0.7} )
+      const mat = new THREE.MeshBasicMaterial( { color: 0x555555})
+      // const mat = new THREE.MeshStandardMaterial( { color: 0xffffff, transparent: true, opacity: 0.2 } )
+      const mesh = new THREE.Mesh(this.geo, mat)
+      const spread = 1.1
+      // console.log('spawn: ', _.random(-2.1, 2.1))
+      const initPos = [_.random(-spread, spread), _.random(-spread, spread), _.random(-spread, spread)]
+      mesh.position.set(...initPos)
+      mesh.rotateY(_.random(Math.PI*4))
+      mesh.rotateX(_.random(Math.PI*4))
+      mesh.rotateZ(_.random(Math.PI*4))
+      this.el.object3D.add(mesh)
+
+
+    }
+
+    _.times(1000, spawn)
+
+
+  }
+})
+
+
 AFRAME.registerComponent('vine', {
 
   init: function() {
@@ -180,11 +213,11 @@ AFRAME.registerComponent('vine', {
       if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
        
         window.addEventListener("touchstart", e => {
-          playing = true
+          window.playing = true
         })
 
         window.addEventListener("touchend", e => {
-          playing = false
+          window.playing = false
         })
 
       }
@@ -192,19 +225,19 @@ AFRAME.registerComponent('vine', {
       document.addEventListener('keydown', e => {
         // console.log('kd: ', e.keyCode)
         if (e.code == 'Space') {
-          playing = true
+          window.playing = true
         }
       })
 
       document.addEventListener('keyup', e => {
         console.log('kd: ', e)
         if (e.code == 'Space') {
-          playing = false
+          window.playing = false
         }
       })
 
       // mc.on('press', e => {
-      //   playing = !playing
+      //   window.playing = !window.playing
       // })
 
     })
@@ -217,7 +250,7 @@ AFRAME.registerComponent('vine', {
   tick: function(time) {
     this.tickCount++
     if (this.tickCount % pace == 0) {
-      if (playing) { 
+      if (window.playing) { 
         this.step()
       }
       // this.spawn()
@@ -278,9 +311,9 @@ AFRAME.registerComponent('vine', {
     const lp = new THREE.Vector3()
     const wp = currentSegment.localToWorld(lp)
     const holder = document.getElementById('holder').object3D
-    // const pp = holder.worldToLocal(lp)
+    const pp = holder.worldToLocal(lp)
     // console.log('holder: ', holder)
-    const pp = this.container.worldToLocal(lp)
+    // const pp = this.container.worldToLocal(lp)
     const {x, y, z} = pp
     // sphere.position.set(x, y, z)
 
@@ -290,8 +323,8 @@ AFRAME.registerComponent('vine', {
     // holder.position.set(-x, -y, -z)
     // this.container.position.set(-x, -y, -z)
 
-    const tween = new TWEEN.Tween(this.container.position)
-    // const tween = new TWEEN.Tween(holder.position)
+    // const tween = new TWEEN.Tween(this.container.position)
+    const tween = new TWEEN.Tween(holder.position)
       .to({x:-x, y:-y, z:-z}, pace * paceMultiplier)
       .easing(TWEEN.Easing.Quadratic.InOut)
       .start()

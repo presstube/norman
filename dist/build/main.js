@@ -1599,10 +1599,10 @@ AFRAME.registerComponent('norman', {
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       // this.buildComp()
-      _this.fileLoadPrev();
-      _this.startPlaying();
+      // this.fileLoadPrev()
       window.lbn = window.loadByName = _this.fileLoadByName.bind(_this);
-      // window.lbn('trulmy-prunt-squeefs')
+      window.lbn('brumpled-crank-glops');
+      _this.startPlaying();
     }, 1);
   },
   tick: function tick(time, timeDelta) {
@@ -1694,22 +1694,22 @@ AFRAME.registerComponent('norman', {
     (0, _oculustouchhelpers.abstractABXY)(rightHand, 'right');
     Object.assign(this, { secondaryHand: secondaryHand, primaryHand: primaryHand });
 
-    primaryHand.addEventListener('triggerdown', function () {
-      return _this4.handlePrimaryTriggerDown();
-    });
-    primaryHand.addEventListener('triggerup', function () {
-      return _this4.handlePrimaryTriggerUp();
-    });
-    primaryHand.addEventListener('gripdown', function (e) {
-      return _this4.handlePrimaryGripDown(e);
-    });
-    primaryHand.addEventListener('gripup', function (e) {
-      return _this4.handlePrimaryGripUp(e);
-    });
-    primaryHand.addEventListener('upperbuttondown', function () {
-      return _this4.handlePrimaryUpperButtonDown();
-    });
+    // primaryHand.addEventListener('triggerdown', () => this.handlePrimaryTriggerDown())
+    // primaryHand.addEventListener('triggerup', () => this.handlePrimaryTriggerUp()) 
+    // primaryHand.addEventListener('gripdown', e => this.handlePrimaryGripDown(e))
+    // primaryHand.addEventListener('gripup', e => this.handlePrimaryGripUp(e))
+    // primaryHand.addEventListener('upperbuttondown', () => this.handlePrimaryUpperButtonDown())
 
+    // secondaryHand.addEventListener('lowerbuttondown', ()=> this.handleSecondaryLowerButtonDown())
+    // secondaryHand.addEventListener('lowerbuttonup', ()=> this.handleSecondaryLowerButtonUp())
+    // secondaryHand.addEventListener('upperbuttonup', ()=> this.handleSecondaryUpperButtonUp())
+    // secondaryHand.addEventListener('UP_ON', () => this.handleSecondaryUpOn())
+    // secondaryHand.addEventListener('DOWN_ON', () => this.handleSecondaryDownOn())
+    // secondaryHand.addEventListener('LEFT_ON', () => this.handleSecondaryLeftOn())
+    // secondaryHand.addEventListener('RIGHT_ON', () => this.handleSecondaryRightOn())
+    // secondaryHand.addEventListener('LEFT_OFF', () => this.handleSecondaryLeftOff())
+    // secondaryHand.addEventListener('RIGHT_OFF', () => this.handleSecondaryRightOff())
+    // secondaryHand.addEventListener('thumbstickdown', () => this.handleSecondaryThumbstickDown())
     secondaryHand.addEventListener('gripdown', function (e) {
       return _this4.handleSecondaryGripDown(e);
     });
@@ -1722,38 +1722,8 @@ AFRAME.registerComponent('norman', {
     secondaryHand.addEventListener('triggerup', function () {
       return _this4.handleSecondaryTriggerUp();
     });
-    secondaryHand.addEventListener('lowerbuttondown', function () {
-      return _this4.handleSecondaryLowerButtonDown();
-    });
-    secondaryHand.addEventListener('lowerbuttonup', function () {
-      return _this4.handleSecondaryLowerButtonUp();
-    });
     secondaryHand.addEventListener('upperbuttondown', function () {
       return _this4.handleSecondaryUpperButtonDown();
-    });
-    secondaryHand.addEventListener('upperbuttonup', function () {
-      return _this4.handleSecondaryUpperButtonUp();
-    });
-    secondaryHand.addEventListener('UP_ON', function () {
-      return _this4.handleSecondaryUpOn();
-    });
-    secondaryHand.addEventListener('DOWN_ON', function () {
-      return _this4.handleSecondaryDownOn();
-    });
-    secondaryHand.addEventListener('LEFT_ON', function () {
-      return _this4.handleSecondaryLeftOn();
-    });
-    secondaryHand.addEventListener('RIGHT_ON', function () {
-      return _this4.handleSecondaryRightOn();
-    });
-    secondaryHand.addEventListener('LEFT_OFF', function () {
-      return _this4.handleSecondaryLeftOff();
-    });
-    secondaryHand.addEventListener('RIGHT_OFF', function () {
-      return _this4.handleSecondaryRightOff();
-    });
-    secondaryHand.addEventListener('thumbstickdown', function () {
-      return _this4.handleSecondaryThumbstickDown();
     });
   },
   addFileModeListeners: function addFileModeListeners() {
@@ -1888,8 +1858,10 @@ AFRAME.registerComponent('norman', {
   handleSecondaryLowerButtonUp: function handleSecondaryLowerButtonUp() {
     this.exitFileMode();
   },
+
+
+  // console.log('enter gas pedal mode')
   handleSecondaryUpperButtonDown: function handleSecondaryUpperButtonDown(e) {
-    // console.log('enter gas pedal mode')
     console.log('summon: ', e);
     this.summon();
   },
@@ -1897,10 +1869,12 @@ AFRAME.registerComponent('norman', {
     console.log('exit gas pedal mode');
   },
   handleSecondaryTriggerDown: function handleSecondaryTriggerDown() {
-    this.enterInsertMode();
+    // this.enterInsertMode()
+    window.playing = true;
   },
   handleSecondaryTriggerUp: function handleSecondaryTriggerUp() {
-    this.exitInsertMode();
+    // this.exitInsertMode()
+    window.playing = false;
   },
   handlePrimaryGripDown: function handlePrimaryGripDown(_ref4) {
     var hand = _ref4.target;
@@ -2124,13 +2098,16 @@ AFRAME.registerComponent('norman', {
 
       var el = this.el,
           handObj3D = hand.object3D,
-          normObj3D = el.object3D;
+          normObj3D = el.object3D,
+          holderObj3D = document.getElementById('holderholder').object3D;
 
+
+      console.log('holderObj3D: ', holderObj3D);
 
       handObj3D.updateMatrixWorld();
       var worldToLocal = new THREE.Matrix4().getInverse(handObj3D.matrixWorld);
-      handObj3D.add(normObj3D);
-      normObj3D.applyMatrix(worldToLocal);
+      handObj3D.add(holderObj3D);
+      holderObj3D.applyMatrix(worldToLocal);
     }
   },
   ungrab: function ungrab(hand) {
@@ -2141,14 +2118,18 @@ AFRAME.registerComponent('norman', {
       this.grabbedBy = null;
       var el = this.el,
           normObj3D = el.object3D,
-          pos = normObj3D.getWorldPosition(),
-          rot = normObj3D.getWorldRotation(),
+          holderEl = document.getElementById('holderholder'),
+          holderObj3D = holderEl.object3D,
+          pos = holderObj3D.getWorldPosition(),
+          rot = holderObj3D.getWorldRotation(),
           radToDeg = THREE.Math.radToDeg;
 
 
-      el.sceneEl.object3D.add(normObj3D);
-      el.setAttribute('position', pos);
-      el.setAttribute('rotation', {
+      console.log('holderEl: ', holderEl);
+
+      el.sceneEl.object3D.add(holderObj3D);
+      holderEl.setAttribute('position', pos);
+      holderEl.setAttribute('rotation', {
         x: radToDeg(rot.x),
         y: radToDeg(rot.y),
         z: radToDeg(rot.z)
@@ -2156,7 +2137,8 @@ AFRAME.registerComponent('norman', {
     }
   },
   summon: function summon() {
-    this.el.setAttribute('position', this.secondaryHand.getAttribute('position'));
+    // this.el.setAttribute('position', this.secondaryHand.getAttribute('position'))
+    document.getElementById('holderholder').setAttribute('position', this.secondaryHand.getAttribute('position'));
   },
   togglePlay: function togglePlay() {
     if (this.isAnimPlaying) {
@@ -2462,7 +2444,7 @@ var assetsPath = 'models-low/';
 
 var pace = 5;
 var paceMultiplier = 50;
-var playing = false;
+window.playing = false;
 
 var segments = [];
 var currentSegment = void 0;
@@ -2557,10 +2539,39 @@ var loadAssets = function loadAssets(assetsData) {
   return Promise.all(loadingPromises);
 };
 
+AFRAME.registerComponent('scatter', {
+  init: function init() {
+    var _this = this;
+
+    console.log('scatter here');
+
+    this.geo = new THREE.IcosahedronGeometry(0.005);
+
+    var spawn = function spawn() {
+      var _mesh$position;
+
+      // const mat = new THREE.MeshBasicMaterial( { color: 'white', transparent: false, opacity: 0.7} )
+      var mat = new THREE.MeshBasicMaterial({ color: 0x555555 });
+      // const mat = new THREE.MeshStandardMaterial( { color: 0xffffff, transparent: true, opacity: 0.2 } )
+      var mesh = new THREE.Mesh(_this.geo, mat);
+      var spread = 1.1;
+      // console.log('spawn: ', _.random(-2.1, 2.1))
+      var initPos = [_lodash2.default.random(-spread, spread), _lodash2.default.random(-spread, spread), _lodash2.default.random(-spread, spread)];
+      (_mesh$position = mesh.position).set.apply(_mesh$position, initPos);
+      mesh.rotateY(_lodash2.default.random(Math.PI * 4));
+      mesh.rotateX(_lodash2.default.random(Math.PI * 4));
+      mesh.rotateZ(_lodash2.default.random(Math.PI * 4));
+      _this.el.object3D.add(mesh);
+    };
+
+    _lodash2.default.times(1000, spawn);
+  }
+});
+
 AFRAME.registerComponent('vine', {
 
   init: function init() {
-    var _this = this;
+    var _this2 = this;
 
     this.tickCount = 0;
     this.container = new THREE.Group();
@@ -2568,7 +2579,7 @@ AFRAME.registerComponent('vine', {
 
     loadAssets(assetsData).then(function () {
 
-      currentSegment = _this.spawn();
+      currentSegment = _this2.spawn();
 
       segments.push(currentSegment);
 
@@ -2581,30 +2592,30 @@ AFRAME.registerComponent('vine', {
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
 
         window.addEventListener("touchstart", function (e) {
-          playing = true;
+          window.playing = true;
         });
 
         window.addEventListener("touchend", function (e) {
-          playing = false;
+          window.playing = false;
         });
       }
 
       document.addEventListener('keydown', function (e) {
         // console.log('kd: ', e.keyCode)
         if (e.code == 'Space') {
-          playing = true;
+          window.playing = true;
         }
       });
 
       document.addEventListener('keyup', function (e) {
         console.log('kd: ', e);
         if (e.code == 'Space') {
-          playing = false;
+          window.playing = false;
         }
       });
 
       // mc.on('press', e => {
-      //   playing = !playing
+      //   window.playing = !window.playing
       // })
     });
   },
@@ -2614,7 +2625,7 @@ AFRAME.registerComponent('vine', {
   tick: function tick(time) {
     this.tickCount++;
     if (this.tickCount % pace == 0) {
-      if (playing) {
+      if (window.playing) {
         this.step();
       }
       // this.spawn()
@@ -2678,9 +2689,9 @@ AFRAME.registerComponent('vine', {
     var lp = new THREE.Vector3();
     var wp = currentSegment.localToWorld(lp);
     var holder = document.getElementById('holder').object3D;
-    // const pp = holder.worldToLocal(lp)
+    var pp = holder.worldToLocal(lp);
     // console.log('holder: ', holder)
-    var pp = this.container.worldToLocal(lp);
+    // const pp = this.container.worldToLocal(lp)
     var x = pp.x,
         y = pp.y,
         z = pp.z;
@@ -2692,9 +2703,9 @@ AFRAME.registerComponent('vine', {
     // holder.position.set(-x, -y, -z)
     // this.container.position.set(-x, -y, -z)
 
-    var tween = new TWEEN.Tween(this.container.position)
-    // const tween = new TWEEN.Tween(holder.position)
-    .to({ x: -x, y: -y, z: -z }, pace * paceMultiplier).easing(TWEEN.Easing.Quadratic.InOut).start();
+    // const tween = new TWEEN.Tween(this.container.position)
+
+    var tween = new TWEEN.Tween(holder.position).to({ x: -x, y: -y, z: -z }, pace * paceMultiplier).easing(TWEEN.Easing.Quadratic.InOut).start();
 
     // if (segments.length > 10) {
     //   const segToRemove = segments.shift()
