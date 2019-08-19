@@ -5,10 +5,11 @@
   "license": "MIT",
   "scripts": {
     "start": "budo js/index.js:build/main.js --live --verbose --port 4000",
-    "build": "browserify js/index.js > build/main.js"
+    "build": "browserify js/index.js > build/main.js && cp -rf build dist && cp index.html dist",
+    "deploy": "npm run build && surge dist normanvr.surge.sh"
   },
   "dependencies": {
-    "aframe": "^0.5.0",
+    "aframe": "^0.7.1",
     "firebase": "^3.7.8",
     "firebaseui": "^1.0.1",
     "jquery": "^3.2.1",
