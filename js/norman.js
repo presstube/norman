@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
+import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multiuser'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 import RegMarker from './regmarker'
@@ -59,11 +59,12 @@ AFRAME.registerComponent('norman', {
     // SMELLY delay!
     _.delay(() => {
       this.setupControllers()
-      this.fileLoadPrev()
+      // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
       // window.lbn('trulmy-prunt-squeefs')
       // window.lbn("gildered-brine-clamps")
+      // window.lbn("brumpled-brine-hops")
 
     }, 1) 
 
@@ -83,6 +84,9 @@ AFRAME.registerComponent('norman', {
       
       else if (e.key == 'c') { 
         this.flipColors()
+      }      
+      else if (e.key == 's') { 
+        this.fileSave()
       }
 
       // secret key shortcut for setReg
