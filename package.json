@@ -6,7 +6,7 @@
   "scripts": {
     "start": "budo js/index.js:build/main.js --live --verbose --port 4000",
     "build": "browserify js/index.js > build/main.js && cp -rf build dist && cp index.html dist",
-    "deploy": "npm run build && surge dist normanvr.surge.sh"
+    "deploy": "npm run build && surge dist normanmulti.surge.sh"
   },
   "dependencies": {
     "aframe": "^0.7.1",

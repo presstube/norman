@@ -16,8 +16,9 @@ firebase.initializeApp({
 // let currentFileInfo = null
 
 const save = (animData, fileInfo) => {
-  console.log('auth: ', firebase.auth().currentUser.uid)
+  
   const uid = firebase.auth().currentUser.uid
+  // const name = 
   return new Promise((resolve, reject) => {
 
     // const animationsRef = firebase.database().ref('users/'+uid+'/animations/' + "toop")
@@ -30,7 +31,7 @@ const save = (animData, fileInfo) => {
     // resolve(fileInfo)
 
     const upload = (filename) => {
-      const uploadRef = firebase.storage().ref().child('animData/' + filename + '.json'),
+      const uploadRef = firebase.storage().ref().child('user/'+uid+'/' + filename + '.json'),
             file = new Blob([JSON.stringify(animData)], {type: 'application/json'})
       return uploadRef.put(file).then(function(snapshot) {
         const animationsRef = firebase.database().ref('users/'+uid+'/animations/' + filename)
@@ -56,10 +57,11 @@ const save = (animData, fileInfo) => {
 }
 
 const getRandomName = () => {
+  const displayName = firebase.auth().currentUser.displayName.replace(' ', '-')
   const first = ['mulgy', 'trulmy', 'gildered', 'marbled', 'troubling', 'lorgussy', 'shingled', 'brumpled', 'clumbied', 'fropley'],
         second = ['frump', 'dank', 'prunt', 'limp', 'groft', 'plex', 'bung', 'tap', 'ront', 'clam', 'brine', 'shift', 'crank'],
         third = ['shanks', 'lumps', 'glops', 'hinges', 'hunguses', 'hops', 'squeefs', 'clamps', 'clumps','donks', 'flops']
-  return `${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
+  return `${displayName}-${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
 }
 
 const getRandomUniqueName = () => {
@@ -87,6 +89,8 @@ const getRandomUniqueName = () => {
 // TODO: DRY up loadPrev & loadNext
 
 const loadPrev = (fileInfo) => {
+  console.log('auth: ', firebase.auth().currentUser.displayName.replace(' ', '-'))
+
   const uid = firebase.auth().currentUser.uid
   console.log('loading prev from fileInfo: ', fileInfo)
   return new Promise((resolve, reject) => {

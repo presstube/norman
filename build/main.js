@@ -394,25 +394,36 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 firebase.initializeApp({
-  apiKey: "AIzaSyB0xMSr_6jAO26pkIvUKOSq4gqsrCix1J8",
-  authDomain: "normanmultitrack.firebaseapp.com",
-  databaseURL: "https://normanmultitrack.firebaseio.com",
-  projectId: "normanmultitrack",
-  storageBucket: "normanmultitrack.appspot.com",
-  messagingSenderId: "160459918557"
+  apiKey: "AIzaSyB1uYrfoU0x36FzJnmr_M5pDbkfTf4iifQ",
+  authDomain: "normanmultiuser.firebaseapp.com",
+  databaseURL: "https://normanmultiuser.firebaseio.com",
+  projectId: "normanmultiuser",
+  storageBucket: "normanmultiuser.appspot.com",
+  messagingSenderId: "613134892355"
 });
 
 // let currentFileInfo = null
 
 var save = function save(animData, fileInfo) {
 
+  var uid = firebase.auth().currentUser.uid;
+  // const name = 
   return new Promise(function (resolve, reject) {
 
+    // const animationsRef = firebase.database().ref('users/'+uid+'/animations/' + "toop")
+    //       fileInfo = {
+    //         filename: "toop",
+    //         downloadURL: 'doooooc',
+    //         createdAt: firebase.database.ServerValue.TIMESTAMP
+    //       }
+    // animationsRef.set(fileInfo)
+    // resolve(fileInfo)
+
     var upload = function upload(filename) {
-      var uploadRef = firebase.storage().ref().child('animData/' + filename + '.json'),
+      var uploadRef = firebase.storage().ref().child('user/' + uid + '/' + filename + '.json'),
           file = new Blob([JSON.stringify(animData)], { type: 'application/json' });
       return uploadRef.put(file).then(function (snapshot) {
-        var animationsRef = firebase.database().ref('animations/' + filename);
+        var animationsRef = firebase.database().ref('users/' + uid + '/animations/' + filename);
         fileInfo = {
           filename: filename,
           downloadURL: snapshot.downloadURL,
@@ -433,18 +444,20 @@ var save = function save(animData, fileInfo) {
 };
 
 var getRandomName = function getRandomName() {
+  var displayName = firebase.auth().currentUser.displayName.replace(' ', '-');
   var first = ['mulgy', 'trulmy', 'gildered', 'marbled', 'troubling', 'lorgussy', 'shingled', 'brumpled', 'clumbied', 'fropley'],
       second = ['frump', 'dank', 'prunt', 'limp', 'groft', 'plex', 'bung', 'tap', 'ront', 'clam', 'brine', 'shift', 'crank'],
       third = ['shanks', 'lumps', 'glops', 'hinges', 'hunguses', 'hops', 'squeefs', 'clamps', 'clumps', 'donks', 'flops'];
-  return _lodash2.default.sample(first) + '-' + _lodash2.default.sample(second) + '-' + _lodash2.default.sample(third);
+  return displayName + '-' + _lodash2.default.sample(first) + '-' + _lodash2.default.sample(second) + '-' + _lodash2.default.sample(third);
 };
 
 var getRandomUniqueName = function getRandomUniqueName() {
+  var uid = firebase.auth().currentUser.uid;
   // recursive promise checking existence of name in DB
   return new Promise(function (resolve, reject) {
     var name = getRandomName();
     console.log('checking existence of name: ', name);
-    firebase.database().ref('animations').once('value', function (snapshot) {
+    firebase.database().ref('users/' + uid + '/animations/').once('value', function (snapshot) {
       if (snapshot.hasChild(name)) {
         console.log('that name is taken');
         resolve(null);
@@ -461,9 +474,12 @@ var getRandomUniqueName = function getRandomUniqueName() {
 // TODO: DRY up loadPrev & loadNext
 
 var loadPrev = function loadPrev(fileInfo) {
+  console.log('auth: ', firebase.auth().currentUser.displayName.replace(' ', '-'));
+
+  var uid = firebase.auth().currentUser.uid;
   console.log('loading prev from fileInfo: ', fileInfo);
   return new Promise(function (resolve, reject) {
-    firebase.database().ref('animations').once('value', function (snapshot) {
+    firebase.database().ref('users/' + uid + '/animations/').once('value', function (snapshot) {
       var fileInfos = _lodash2.default.orderBy(snapshot.val(), ['createdAt'], ['desc']);
       if (!fileInfo) {
         fileInfo = _lodash2.default.first(fileInfos);
@@ -485,8 +501,9 @@ var loadPrev = function loadPrev(fileInfo) {
 };
 
 var loadNext = function loadNext(fileInfo) {
+  var uid = firebase.auth().currentUser.uid;
   return new Promise(function (resolve, reject) {
-    firebase.database().ref('animations').once('value', function (snapshot) {
+    firebase.database().ref('users/' + uid + '/animations/').once('value', function (snapshot) {
       var fileInfos = _lodash2.default.orderBy(snapshot.val(), ['createdAt'], ['asc']);
       if (!fileInfo) {
         fileInfo = _lodash2.default.first(fileInfos);
@@ -509,9 +526,10 @@ var loadNext = function loadNext(fileInfo) {
 
 var loadAnimByName = function loadAnimByName(name) {
 
+  var uid = firebase.auth().currentUser.uid;
   console.log('loading by name func: ', name);
   return new Promise(function (resolve, reject) {
-    firebase.database().ref('animations').child(name).once('value', function (snapshot) {
+    firebase.database().ref('users/' + uid + '/animations/').child(name).once('value', function (snapshot) {
       var fileInfo = snapshot.val();
       loadFile(fileInfo).then(function (file) {
         resolve({ file: file, fileInfo: fileInfo });
@@ -552,11 +570,12 @@ var deleteComp = function deleteComp(_ref) {
       downloadURL = _ref.downloadURL,
       createdAt = _ref.createdAt;
 
+  var uid = firebase.auth().currentUser.uid;
   console.log('DELETING: ', filename, downloadURL, createdAt);
   var storageRef = firebase.storage().ref().child('animData/' + filename + '.json');
   storageRef.delete().then(function () {
     console.log('removed json from storage: ', filename);
-    var animationsRef = firebase.database().ref('animations/' + filename);
+    var animationsRef = firebase.database().ref('users/' + uid + '/animations/' + filename);
     animationsRef.remove().then(function () {
       console.log('removed ref: ', filename);
     });
@@ -787,7 +806,7 @@ var _jquery = require('jquery');
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
-var _firebasestoreMultitrack = require('./firebasestore-multitrack');
+var _firebasestoreMultiuser = require('./firebasestore-multiuser');
 
 var _oculustouchhelpers = require('./oculustouchhelpers');
 
@@ -851,11 +870,12 @@ AFRAME.registerComponent('norman', {
     // SMELLY delay!
     _lodash2.default.delay(function () {
       _this.setupControllers();
-      _this.fileLoadPrev();
+      // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       window.lbn = window.loadByName = _this.fileLoadByName.bind(_this);
       // window.lbn('trulmy-prunt-squeefs')
       // window.lbn("gildered-brine-clamps")
+      // window.lbn("brumpled-brine-hops")
     }, 1);
   },
   tick: function tick(time, timeDelta) {
@@ -874,6 +894,8 @@ AFRAME.registerComponent('norman', {
           _this2.fileLoadPrev(!e.ctrlKey);
         } else if (e.key == 'c') {
           _this2.flipColors();
+        } else if (e.key == 's') {
+          _this2.fileSave();
         }
 
         // secret key shortcut for setReg
@@ -1087,7 +1109,7 @@ AFRAME.registerComponent('norman', {
     var compData = tracks.map(function (track) {
       return track.components.anim.animData;
     });
-    (0, _firebasestoreMultitrack.save)({ compData: compData }, toSaveFileInfo).then(function (fileInfo) {
+    (0, _firebasestoreMultiuser.save)({ compData: compData }, toSaveFileInfo).then(function (fileInfo) {
       console.log('just saved: ', fileInfo);
       _this6.fileInfo = fileInfo;
     });
@@ -1097,7 +1119,7 @@ AFRAME.registerComponent('norman', {
 
     var fileInfo = this.fileInfo;
 
-    (0, _firebasestoreMultitrack.loadPrev)(fileInfo).then(function (_ref) {
+    (0, _firebasestoreMultiuser.loadPrev)(fileInfo).then(function (_ref) {
       var file = _ref.file,
           fileInfo = _ref.fileInfo;
 
@@ -1110,7 +1132,7 @@ AFRAME.registerComponent('norman', {
 
     var fileInfo = this.fileInfo;
 
-    (0, _firebasestoreMultitrack.loadNext)(fileInfo).then(function (_ref2) {
+    (0, _firebasestoreMultiuser.loadNext)(fileInfo).then(function (_ref2) {
       var file = _ref2.file,
           fileInfo = _ref2.fileInfo;
 
@@ -1122,13 +1144,13 @@ AFRAME.registerComponent('norman', {
     var fileInfo = this.fileInfo;
 
     console.log('deleting: ', fileInfo);
-    (0, _firebasestoreMultitrack.deleteComp)(fileInfo);
+    (0, _firebasestoreMultiuser.deleteComp)(fileInfo);
   },
   fileLoadByName: function fileLoadByName(name) {
     var _this9 = this;
 
     console.log('loading by name: ', name);
-    (0, _firebasestoreMultitrack.loadAnimByName)(name).then(function (_ref3) {
+    (0, _firebasestoreMultiuser.loadAnimByName)(name).then(function (_ref3) {
       var file = _ref3.file,
           fileInfo = _ref3.fileInfo;
 
@@ -1474,7 +1496,7 @@ AFRAME.registerComponent('norman', {
   }
 });
 
-},{"./anim":1,"./firebasestore-multitrack":2,"./oculustouchhelpers":7,"./regmarker":9,"jquery":17,"lodash":18}],7:[function(require,module,exports){
+},{"./anim":1,"./firebasestore-multiuser":2,"./oculustouchhelpers":7,"./regmarker":9,"jquery":17,"lodash":18}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
