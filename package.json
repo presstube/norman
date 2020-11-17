@@ -5,23 +5,23 @@
   "license": "MIT",
   "scripts": {
     "start": "budo js/index.js:build/main.js --live --verbose --port 4000",
-    "build": "browserify js/index.js > build/main.js && cp -rf build dist && cp index.html dist",
+    "build": "browserify js/index.js > build/main.js && xcopy /y build dist && copy index.html dist",
     "deploy": "npm run build && surge dist normanmulti.surge.sh"
   },
   "dependencies": {
     "aframe": "^0.7.1",
     "firebase": "^3.7.8",
     "firebaseui": "^1.0.1",
-    "jquery": "^3.2.1",
-    "lodash": "^4.17.4"
+    "jquery": "^3.5.1",
+    "lodash": "^4.17.20"
   },
   "devDependencies": {
-    "budo": "^7.0.0",
-    "ghpages": "0.0.3",
-    "browserify": "^14.0.0",
     "babel-preset-es2015": "^6.16.0",
     "babel-preset-stage-2": "^6.22.0",
-    "babelify": "^7.3.0"
+    "babelify": "^7.3.0",
+    "browserify": "^14.0.0",
+    "budo": "^7.0.0",
+    "ghpages": "0.0.10"
   },
   "keywords": [
     "aframe",
