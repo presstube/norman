@@ -5,25 +5,36 @@ import _ from 'lodash'
 import $ from 'jquery'
 
 firebase.initializeApp({
-  apiKey: "AIzaSyC1c3St6jJeJI_7Vc7WnxTVCpSzElYYOho",
-  authDomain: "norman-multitrack.firebaseapp.com",
-  databaseURL: "https://norman-multitrack.firebaseio.com",
-  projectId: "norman-multitrack",
-  storageBucket: "norman-multitrack.appspot.com",
-  messagingSenderId: "1033377312095"
+  apiKey: "AIzaSyAr9U3u2GA1S51bU-ykG9woyBnGHpMaPA8",
+  authDomain: "norman-multiuser.firebaseapp.com",
+  databaseURL: "https://norman-multiuser.firebaseio.com",
+  projectId: "norman-multiuser",
+  storageBucket: "norman-multiuser.appspot.com",
+  messagingSenderId: "1062924419675"
 })
 
 // let currentFileInfo = null
 
 const save = (animData, fileInfo) => {
-
+  
+  const uid = firebase.auth().currentUser.uid
+  // const name = 
   return new Promise((resolve, reject) => {
 
+    // const animationsRef = firebase.database().ref('users/'+uid+'/animations/' + "toop")
+    //       fileInfo = {
+    //         filename: "toop",
+    //         downloadURL: 'doooooc',
+    //         createdAt: firebase.database.ServerValue.TIMESTAMP
+    //       }
+    // animationsRef.set(fileInfo)
+    // resolve(fileInfo)
+
     const upload = (filename) => {
-      const uploadRef = firebase.storage().ref().child('animData/' + filename + '.json'),
+      const uploadRef = firebase.storage().ref().child('user/'+uid+'/' + filename + '.json'),
             file = new Blob([JSON.stringify(animData)], {type: 'application/json'})
       return uploadRef.put(file).then(function(snapshot) {
-        const animationsRef = firebase.database().ref('animations/' + filename)
+        const animationsRef = firebase.database().ref('users/'+uid+'/animations/' + filename)
               fileInfo = {
                 filename,
                 downloadURL: snapshot.downloadURL,
@@ -46,18 +57,20 @@ const save = (animData, fileInfo) => {
 }
 
 const getRandomName = () => {
+  const displayName = firebase.auth().currentUser.displayName.replace(' ', '-')
   const first = ['mulgy', 'trulmy', 'gildered', 'marbled', 'troubling', 'lorgussy', 'shingled', 'brumpled', 'clumbied', 'fropley'],
         second = ['frump', 'dank', 'prunt', 'limp', 'groft', 'plex', 'bung', 'tap', 'ront', 'clam', 'brine', 'shift', 'crank'],
         third = ['shanks', 'lumps', 'glops', 'hinges', 'hunguses', 'hops', 'squeefs', 'clamps', 'clumps','donks', 'flops']
-  return `${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
+  return `${displayName}-${_.sample(first)}-${_.sample(second)}-${_.sample(third)}`
 }
 
 const getRandomUniqueName = () => {
+  const uid = firebase.auth().currentUser.uid
   // recursive promise checking existence of name in DB
   return new Promise((resolve, reject) => {
     let name = getRandomName()
     console.log('checking existence of name: ', name)
-    firebase.database().ref('animations').once('value', snapshot => {
+    firebase.database().ref('users/'+uid+'/animations/').once('value', snapshot => {
       if(snapshot.hasChild(name)) {
         console.log('that name is taken')
         resolve(null)
@@ -76,9 +89,12 @@ const getRandomUniqueName = () => {
 // TODO: DRY up loadPrev & loadNext
 
 const loadPrev = (fileInfo) => {
+  console.log('auth: ', firebase.auth().currentUser.displayName.replace(' ', '-'))
+
+  const uid = firebase.auth().currentUser.uid
   console.log('loading prev from fileInfo: ', fileInfo)
   return new Promise((resolve, reject) => {
-    firebase.database().ref('animations').once('value', snapshot => {
+    firebase.database().ref('users/'+uid+'/animations/').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['desc'])
       if (!fileInfo) {
         fileInfo = _.first(fileInfos)
@@ -98,8 +114,9 @@ const loadPrev = (fileInfo) => {
 }
 
 const loadNext = (fileInfo) => {
+  const uid = firebase.auth().currentUser.uid
   return new Promise((resolve, reject) => {
-    firebase.database().ref('animations').once('value', snapshot => {
+    firebase.database().ref('users/'+uid+'/animations/').once('value', snapshot => {
       const fileInfos = _.orderBy(snapshot.val(), ['createdAt'], ['asc'])
       if (!fileInfo) {
         fileInfo = _.first(fileInfos)
@@ -121,9 +138,10 @@ const loadNext = (fileInfo) => {
 
 const loadAnimByName = (name) => {
 
+  const uid = firebase.auth().currentUser.uid
   console.log('loading by name func: ', name)
   return new Promise((resolve, reject) => {
-    firebase.database().ref('animations').child(name).once('value', snapshot => {
+    firebase.database().ref('users/'+uid+'/animations/').child(name).once('value', snapshot => {
       const fileInfo = snapshot.val()
       loadFile(fileInfo).then(file => {
         resolve({file, fileInfo})
@@ -166,11 +184,12 @@ const deleteComp = ({
     downloadURL,
     createdAt
   }) => {
+    const uid = firebase.auth().currentUser.uid
     console.log('DELETING: ', filename, downloadURL, createdAt)
     const storageRef = firebase.storage().ref().child('animData/' + filename + '.json')
     storageRef.delete().then(()=> {
       console.log('removed json from storage: ', filename)
-      const animationsRef = firebase.database().ref('animations/' + filename)
+      const animationsRef = firebase.database().ref('users/'+uid+'/animations/' + filename)
       animationsRef.remove().then(() => {
         console.log('removed ref: ', filename)
       })
