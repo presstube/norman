@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import $ from 'jquery'
 
-import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multitrack'
+import {save, deleteComp, loadPrev, loadNext, loadAnimByName} from './firebasestore-multiuser'
 import {abstractABXY, setupThumbStickDirectionEvents} from './oculustouchhelpers'
 import './anim'
 import RegMarker from './regmarker'
@@ -32,6 +32,11 @@ AFRAME.registerComponent('norman', {
     this.autoPrev = false
     this.autoNext = false
     this.grabbedBy = null
+    this.lightColor = '#ddd'
+    this.darkColor = '#000'
+    this.bgColor = '#ddd'
+    this.fgColor = '#000'
+    this.compData = null
 
     this.STARTED_PLAYING = 'STARTED_PLAYING'
     this.STOPPED_PLAYING = 'STOPPED_PLAYING'
@@ -57,7 +62,9 @@ AFRAME.registerComponent('norman', {
       // this.fileLoadPrev()
       // this.buildComp(hearts.compData)
       window.lbn = window.loadByName = this.fileLoadByName.bind(this)
-      window.lbn('trulmy-prunt-squeefs')
+      // window.lbn('trulmy-prunt-squeefs')
+      // window.lbn("gildered-brine-clamps")
+      // window.lbn("brumpled-brine-hops")
 
     }, 1) 
 
@@ -74,12 +81,41 @@ AFRAME.registerComponent('norman', {
       if (e.code == 'Enter') {this.togglePlay()} 
       // if (e.code == 'Space') {this.fileLoadPrev()} 
       else if (e.key == 'ArrowLeft' && e.altKey && e.shiftKey) {this.fileLoadPrev(!e.ctrlKey)}
+      
+      else if (e.key == 'c') { 
+        this.flipColors()
+      }      
+      else if (e.key == 's') { 
+        this.fileSave()
+      }
 
       // secret key shortcut for setReg
+      else if (e.code == 'Space' && e.altKey && e.shiftKey) {this.setReg()} 
+
       else if (e.code == 'Space' && e.altKey && e.shiftKey) {this.setReg()} 
       // need to manually save and refresh after doing this for now...
 
     })
+  },
+
+  flipColors() {
+    if (this.bgColor === this.lightColor) {
+      this.setColors(this.darkColor, this.lightColor)   
+    } else {
+      this.setColors(this.lightColor, this.darkColor)   
+    }
+  },
+
+  setColors(bgColor, fgColor) {
+    this.bgColor = bgColor
+    this.fgColor = fgColor
+    const {el, sceneMarker} = this
+    const sky =   document.querySelectorAll('a-sky')[0]
+    sky.setAttribute('color', bgColor)
+    el.sceneEl.setAttribute('fog', {color: bgColor})
+    this.buildComp(this.compData, this.fileInfo)
+
+    console.log('flipping colors: ', sky)
   },
 
   setReg() {
@@ -183,6 +219,7 @@ AFRAME.registerComponent('norman', {
     const {tracks} = this
     this.removeAllTracks()
     this.fileInfo = fileInfo
+    this.compData = compData
     if (compData) {
       compData.forEach(trackData => {
         this.addTrack(trackData)
@@ -267,6 +304,7 @@ AFRAME.registerComponent('norman', {
 
   handleSecondaryUpperButtonDown() {
     console.log('enter gas pedal mode')
+    this.flipColors()
   },
 
   handleSecondaryUpperButtonUp() {
